@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "191496871410",
+    "project_id": "senior-test-eb7cb",
+    "storage_bucket": "senior-test-eb7cb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:191496871410:android:4a93fe9f0a70fafcac1f6b",
+        "android_client_info": {
+          "package_name": "com.example.unifind"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJA4JbXd_0DatPFBNh0zKIxF4LpbiCLQc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
