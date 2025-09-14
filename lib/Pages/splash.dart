@@ -7,7 +7,7 @@ class Splash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 249, 249, 249),
+      backgroundColor: Color.fromARGB(255, 239, 239, 239),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.only(top: 150),

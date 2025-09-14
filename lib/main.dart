@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       home: Splash(),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Color.fromARGB(255, 119, 31, 153),
+          seedColor: Color.fromARGB(255, 86, 69, 139),
         ),
       ),
       routes: {
