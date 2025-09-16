@@ -22,8 +22,11 @@ class MyTextField extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 25.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.grey[300],
-          border: Border.all(color: const Color.fromARGB(255, 119, 31, 153)),
+          color: const Color.fromARGB(255, 241, 241, 241),
+          border: Border.all(
+            color: const Color.fromARGB(255, 119, 31, 153),
+            width: 2.5,
+          ),
           borderRadius: BorderRadius.circular(12),
         ),
         height: 55,

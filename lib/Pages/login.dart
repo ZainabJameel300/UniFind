@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:unifind/Components/my_textfield.dart';
 import 'package:unifind/components/my_button.dart';
@@ -13,11 +14,87 @@ class _LoginState extends State<Login> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> login() async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      // if success -> show SnackBar and direct to homepage
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Login Successful!",
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          backgroundColor: const Color.fromARGB(255, 119, 31, 153),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      Navigator.pushReplacementNamed(context, 'homepage');
+
+      //if there's an error show the diaoulge box
+    } on FirebaseAuthException catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: const Color.fromARGB(255, 119, 31, 153),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                "Login Failed",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            "Error: ${e.code}",
+            style: const TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: const Color.fromARGB(255, 119, 31, 153),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text("OK"),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 239, 239, 239),
+      backgroundColor: Colors.white,
 
       body: SafeArea(
         child: Center(
@@ -80,11 +157,11 @@ class _LoginState extends State<Login> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Spacer(),
                         TextButton(
                           onPressed: () {
-                            //Later
+                            Navigator.pushNamed(context, 'forgotpasswordpage');
                           },
                           child: Text(
                             "Forgot Password?",
@@ -105,9 +182,7 @@ class _LoginState extends State<Login> {
                     text: 'Login',
                     onTap: () {
                       if (_formKey.currentState!.validate()) {
-                        print("Logging in with ${emailController.text}");
-                      } else {
-                        print("Could Not Loggin!");
+                        login();
                       }
                     },
                   ),

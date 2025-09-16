@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:unifind/Components/my_button.dart';
 import 'package:unifind/Components/my_textfield.dart';
@@ -16,6 +18,95 @@ class _SignupState extends State<Signup> {
   final TextEditingController confirmpasswordController =
       TextEditingController();
 
+  @override
+  void dispose() {
+    usernameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmpasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> signUp() async {
+    try {
+      //create the user
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+
+      // Add user details to Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+            'username': usernameController.text.trim(),
+            'email': emailController.text.trim(),
+            'avatar': '', // Set later
+          });
+
+      // if Success then show SnackBar and navigate to homepage
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            "Account created successfully!",
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          backgroundColor: const Color.fromARGB(255, 119, 31, 153),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      Navigator.pushReplacementNamed(context, 'homepage');
+
+      //if there's an error show the diaoulge box
+    } on FirebaseAuthException catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: const Color.fromARGB(255, 119, 31, 153),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                "Sign Up Failed",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            "Error: ${e.code}",
+            style: const TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: const Color.fromARGB(255, 119, 31, 153),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    }
+  } // end of SignUp method
+
   final _formKey = GlobalKey<FormState>();
 
   // UOB email validator method
@@ -29,7 +120,7 @@ class _SignupState extends State<Signup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 239, 239, 239),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -133,9 +224,7 @@ class _SignupState extends State<Signup> {
                     text: 'Sign Up',
                     onTap: () {
                       if (_formKey.currentState!.validate()) {
-                        print("Signing up with:");
-                        print("Username: ${usernameController.text}");
-                        print("Email: ${emailController.text}");
+                        signUp();
                       }
                     },
                   ),

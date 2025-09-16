@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:unifind/Pages/HomePage.dart';
+import 'package:unifind/Pages/forgotpassword.dart';
 import 'package:unifind/Pages/login.dart';
 import 'package:unifind/Pages/signup.dart';
 import 'package:unifind/Pages/splash.dart';
+import 'package:unifind/auth/mainPage.dart';
 import 'package:unifind/firebase_options.dart';
 
 void main() async {
@@ -18,7 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Splash(),
+      home: Mainpage(),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Color.fromARGB(255, 86, 69, 139),
@@ -28,6 +31,8 @@ class MyApp extends StatelessWidget {
         'splashpage': (context) => Splash(),
         'loginpage': (context) => Login(),
         'signuppage': (context) => Signup(),
+        'homepage': (context) => Homepage(),
+        'forgotpasswordpage': (context) => Forgotpassword(),
       },
     );
   }
