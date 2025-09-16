@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:unifind/components/post.dart';
 import '../components/filters.dart';
@@ -12,9 +13,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  // get posts data
   final Stream<QuerySnapshot> _postStream = FirebaseFirestore.instance
-    .collection('Posts')
+    .collection('posts')
+    .orderBy('createdAt', descending: true)
     .snapshots();
+
+  // to get post publisher data
+  CollectionReference publishers = FirebaseFirestore.instance.collection('users');
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +96,7 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 15.0, left: 15.0, right: 15.0,),
+                  // read posts data 
                   child: StreamBuilder(
                     stream: _postStream, 
                     builder: (context, snapshot) {
@@ -98,30 +106,58 @@ class _HomePageState extends State<HomePage> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Center(child: const CircularProgressIndicator());
                       }
-                        
+
+                      final posts = snapshot.data!.docs;
+
+                      if (posts.isEmpty) {
+                        return const Center(child: Text("No posts yet"));
+                      }
+
                       return ListView.builder(
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index){
-                          DocumentSnapshot data = snapshot.data!.docs.elementAt(index);
-                            return Post(
-                              // avatar: avatar, 
-                              // username: username, 
-                              uid: data["uid"], 
-                              createdAt: data["date"], 
-                              pic: data["picture"], 
-                              title: data["title"], 
-                              description: data["description"], 
-                              date: data["date"], 
-                              location: data["location"], 
-                              status: data["claim_status"],
-                            );
+                          DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
+                          // Delete line below if auth is ready, and uncomment the one below it
+                          bool isCurrentUser = postData['uid'] == "IGlMtumRLmILBhYRiPTL";
+                          // bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
+                          String uid = postData["uid"];
+
+                          // read the publisher data for each post
+                          return FutureBuilder<DocumentSnapshot>(
+                            future: publishers.doc(uid).get(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasError) {
+                                return Text("Could not load user");
+                              }
+
+                              if (snapshot.connectionState == ConnectionState.done) {
+                                Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
+                                
+                                return Post(
+                                  isCurrentUser: isCurrentUser,
+                                  publisherAvatar: publisherData["avatar"],
+                                  publisherName: publisherData["name"],
+                                  publisherID: postData["uid"],
+                                  createdAt: postData["createdAt"].toDate(),
+                                  pic: postData["picture"],
+                                  title: postData["title"],
+                                  description: postData["description"],
+                                  date: postData["date"],
+                                  location: postData["location"],
+                                  status: postData["claim_status"],
+                                );
+                              }
+
+                              return SizedBox.shrink();
+                            },
+                          );
                         }
                       );
                     },
                   ),
                 ),
               ),
-              
+
             ],
           ),
         )

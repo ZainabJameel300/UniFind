@@ -21,7 +21,7 @@ class PostDetail extends StatelessWidget {
           color: const Color(0xFFD0B1DB), 
           size: 20.0,
         ),
-        const SizedBox(width: 3.0),
+        const SizedBox(width: 4.0),
         Text(
           text, 
           style: TextStyle(

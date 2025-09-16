@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unifind/pages/home_page.dart';
 import 'package:unifind/pages/keepers_page.dart';
-import 'package:unifind/pages/chats_page.dart';
+import 'package:unifind/pages/chatRooms_page.dart';
 import 'package:unifind/pages/profile_page.dart';
 import 'package:unifind/pages/report_item_page.dart';
 
@@ -20,7 +20,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const HomePage(),
     const KeepersPage(),
     const ReportItemPage(), 
-    const ChatsPage(),
+    const ChatRoomsPage(),
     const ProfilePage(),
   ];
 
