@@ -37,10 +37,12 @@ class _SignupState extends State<Signup> {
           );
 
       // Add user details to Firestore
+      // Add user details to Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
           .set({
+            'uid': userCredential.user!.uid,
             'username': usernameController.text.trim(),
             'email': emailController.text.trim(),
             'avatar': '', // Set later
