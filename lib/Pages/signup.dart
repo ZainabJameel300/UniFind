@@ -185,7 +185,7 @@ class _SignupState extends State<Signup> {
                       return null;
                     },
                   ),
-                  SizedBox(height: 18),
+                  SizedBox(height: 19),
 
                   // Password TextFiled
                   MyTextField(
