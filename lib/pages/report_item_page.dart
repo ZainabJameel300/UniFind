@@ -5,8 +5,6 @@ class ReportItemPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SafeArea(
-      child: Center(child: Text('Report')),
-    );
+    return const SafeArea(child: Center(child: Text('Report an Item')));
   }
 }
