@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:unifind/Pages/forgotpassword.dart';
+import 'package:unifind/Pages/login.dart';
+import 'package:unifind/Pages/signup.dart';
+import 'package:unifind/Pages/splash.dart';
+import 'package:unifind/auth/mainPage.dart';
 import 'package:unifind/firebase_options.dart';
 import 'pages/bottom_navbar.dart';
 
@@ -18,6 +23,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const BottomNavBar(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Color.fromARGB(255, 86, 69, 139),
+        ),
+      ),
+      routes: {
+        'splashpage': (context) => Splash(),
+        'loginpage': (context) => Login(),
+        'signuppage': (context) => Signup(),
+        'forgotpasswordpage': (context) => Forgotpassword(),
+      },
     );
   }
 }
