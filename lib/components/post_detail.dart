@@ -26,7 +26,7 @@ class PostDetail extends StatelessWidget {
           text, 
           style: TextStyle(
             fontSize: 12.0,
-            color: textColor,
+            color: textColor ?? Colors.grey[800],
           ),
         ),
       ],

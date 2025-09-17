@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:unifind/firebase_options.dart';
-import 'package:unifind/pages/chat_page.dart';
 import 'pages/bottom_navbar.dart';
 
 void main() async {

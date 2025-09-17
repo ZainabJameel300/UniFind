@@ -75,12 +75,10 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ), 
-                    
                     const SizedBox(height: 4.0),
                     
                     // filters
                     const Filters(),
-        
                     const SizedBox(height: 4.0),
                   ],
                 ),
@@ -127,7 +125,7 @@ class _HomePageState extends State<HomePage> {
                             future: publishers.doc(uid).get(),
                             builder: (context, snapshot) {
                               if (snapshot.hasError) {
-                                return Text("Could not load user");
+                                return Text("Error");
                               }
 
                               if (snapshot.connectionState == ConnectionState.done) {

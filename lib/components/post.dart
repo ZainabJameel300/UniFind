@@ -101,7 +101,7 @@ class Post extends StatelessWidget {
           ),
 
           SizedBox(height: 12.0),
-          Divider(color: Color(0xFF8C8C8C), thickness: 1, height: 1),
+          Divider(color: Colors.grey[500], thickness: 1, height: 1),
                   
           // item pic 
           if (pic.isNotEmpty)
@@ -133,7 +133,7 @@ class Post extends StatelessWidget {
           // description 
           Text(
             description,
-            style: TextStyle(fontSize: 14.0), 
+            style: TextStyle(fontSize: 13.0), 
           ),
       
           // details row
