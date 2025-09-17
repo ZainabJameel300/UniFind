@@ -115,9 +115,7 @@ class _HomePageState extends State<HomePage> {
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index){
                           DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
-                          // Delete line below if auth is ready, and uncomment the one below it
-                          bool isCurrentUser = postData['uid'] == "IGlMtumRLmILBhYRiPTL";
-                          // bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
+                          bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
                           String uid = postData["uid"];
 
                           // read the publisher data for each post
