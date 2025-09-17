@@ -63,7 +63,7 @@ class _SignupState extends State<Signup> {
           ),
         ),
       );
-      Navigator.pushReplacementNamed(context, 'homepage');
+      Navigator.pushReplacementNamed(context, 'bottomnavBar');
 
       //if there's an error show the diaoulge box
     } on FirebaseAuthException catch (e) {

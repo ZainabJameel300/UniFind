@@ -6,7 +6,7 @@ import 'package:unifind/Pages/signup.dart';
 import 'package:unifind/Pages/splash.dart';
 import 'package:unifind/auth/mainPage.dart';
 import 'package:unifind/firebase_options.dart';
-import 'pages/bottom_navbar.dart';
+import 'package:unifind/pages/bottom_navbar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,10 +19,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const BottomNavBar(),
+      home: Mainpage(),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: Color.fromARGB(255, 86, 69, 139),
@@ -33,6 +32,7 @@ class MyApp extends StatelessWidget {
         'loginpage': (context) => Login(),
         'signuppage': (context) => Signup(),
         'forgotpasswordpage': (context) => Forgotpassword(),
+        'bottomnavBar': (context) => BottomNavBar(),
       },
     );
   }

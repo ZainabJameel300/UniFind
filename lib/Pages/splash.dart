@@ -9,48 +9,46 @@ class Splash extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 239, 239, 239),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 150),
-          child: Column(
-            children: [
-              //1-Welcome Message
-              Text(
-                "Welcome to UniFind",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            //1-Welcome Message
+            Text(
+              "Welcome to UniFind",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
 
-                  fontSize: 35,
-                  color: Colors.black,
-                ),
+                fontSize: 35,
+                color: Colors.black,
               ),
+            ),
+            SizedBox(height: 15),
 
-              //2-Logo Image
-              Padding(padding: EdgeInsetsGeometry.only(top: 60)),
-              Image(
-                image: AssetImage('assets/logo_recolored.png'),
-                height: 300,
-                width: 300,
-              ),
+            //2-Logo Image
+            Image(
+              image: AssetImage('assets/logo_recolored.png'),
+              height: 300,
+              width: 300,
+            ),
+            SizedBox(height: 50),
 
-              //3-Register Button
-              Padding(padding: EdgeInsetsGeometry.only(top: 100)),
-              MyButton(
-                text: 'SignUp',
-                onTap: () {
-                  Navigator.pushNamed(context, 'signuppage');
-                },
-              ),
+            //3-Register Button
+            MyButton(
+              text: 'SignUp',
+              onTap: () {
+                Navigator.pushNamed(context, 'signuppage');
+              },
+            ),
+            SizedBox(height: 50),
 
-              //4- Login Button
-              Padding(padding: EdgeInsetsGeometry.only(top: 50)),
-              MyButton(
-                text: 'Login',
-                onTap: () {
-                  Navigator.pushNamed(context, 'loginpage');
-                },
-              ),
-            ],
-          ),
+            //4- Login Button
+            MyButton(
+              text: 'Login',
+              onTap: () {
+                Navigator.pushNamed(context, 'loginpage');
+              },
+            ),
+          ],
         ),
       ),
     );

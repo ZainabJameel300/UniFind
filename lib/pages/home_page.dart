@@ -4,7 +4,6 @@ import 'package:unifind/components/post.dart';
 import '../components/filters.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -13,15 +12,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   // get posts data
   final Stream<QuerySnapshot> _postStream = FirebaseFirestore.instance
-    .collection('posts')
-    .orderBy('createdAt', descending: true)
-    .snapshots();
+      .collection('posts')
+      .orderBy('createdAt', descending: true)
+      .snapshots();
 
   // to get post publisher data
-  CollectionReference publishers = FirebaseFirestore.instance.collection('users');
+  CollectionReference publishers = FirebaseFirestore.instance.collection(
+    'users',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -47,23 +47,25 @@ class _HomePageState extends State<HomePage> {
                             ),
                             child: const Row(
                               children: [
-                                
-                                // search 
+                                // search
                                 Icon(Icons.search),
-                                SizedBox(width: 5.0,),
-                                Text("Search Items", style: TextStyle(fontSize: 16.0),),
-        
+                                SizedBox(width: 5.0),
+                                Text(
+                                  "Search Items",
+                                  style: TextStyle(fontSize: 16.0),
+                                ),
+
                                 Spacer(),
-        
+
                                 // AI search (camera)
-                                Icon(Icons.photo_camera_outlined),              
+                                Icon(Icons.photo_camera_outlined),
                               ],
                             ),
                           ),
                         ),
-        
+
                         const SizedBox(width: 8.0),
-                        
+
                         // notifications icon
                         Container(
                           padding: const EdgeInsets.all(10.0),
@@ -71,32 +73,40 @@ class _HomePageState extends State<HomePage> {
                             borderRadius: BorderRadius.circular(15.0),
                             color: const Color(0xFFF1F1F1),
                           ),
-                          child: const Icon(Icons.notifications_outlined)
+                          child: const Icon(Icons.notifications_outlined),
                         ),
                       ],
-                    ), 
+                    ),
                     const SizedBox(height: 4.0),
-                    
+
                     // filters
                     const Filters(),
                     const SizedBox(height: 4.0),
                   ],
                 ),
               ),
-                    
+
               // line
               const SizedBox(
                 width: double.infinity,
-                child: Divider(color: Color(0xFF8C8C8C), thickness: 1, height: 1,),
-              ),     
-                  
-              // posts 
+                child: Divider(
+                  color: Color(0xFF8C8C8C),
+                  thickness: 1,
+                  height: 1,
+                ),
+              ),
+
+              // posts
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 15.0, left: 15.0, right: 15.0,),
-                  // read posts data 
+                  padding: const EdgeInsets.only(
+                    top: 15.0,
+                    left: 15.0,
+                    right: 15.0,
+                  ),
+                  // read posts data
                   child: StreamBuilder(
-                    stream: _postStream, 
+                    stream: _postStream,
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return const Text("Error");
@@ -113,9 +123,12 @@ class _HomePageState extends State<HomePage> {
 
                       return ListView.builder(
                         itemCount: snapshot.data!.docs.length,
-                        itemBuilder: (context, index){
-                          DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
-                          bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
+                        itemBuilder: (context, index) {
+                          DocumentSnapshot postData = snapshot.data!.docs
+                              .elementAt(index);
+                          bool isCurrentUser =
+                              postData['uid'] ==
+                              FirebaseAuth.instance.currentUser!.uid;
                           String uid = postData["uid"];
 
                           // read the publisher data for each post
@@ -126,13 +139,16 @@ class _HomePageState extends State<HomePage> {
                                 return Text("Error");
                               }
 
-                              if (snapshot.connectionState == ConnectionState.done) {
-                                Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
-                                
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                Map<String, dynamic> publisherData =
+                                    snapshot.data!.data()
+                                        as Map<String, dynamic>;
+
                                 return Post(
                                   isCurrentUser: isCurrentUser,
                                   publisherAvatar: publisherData["avatar"],
-                                  publisherName: publisherData["name"],
+                                  publisherName: publisherData["username"],
                                   publisherID: postData["uid"],
                                   createdAt: postData["createdAt"].toDate(),
                                   pic: postData["picture"],
@@ -147,16 +163,15 @@ class _HomePageState extends State<HomePage> {
                               return SizedBox.shrink();
                             },
                           );
-                        }
+                        },
                       );
                     },
                   ),
                 ),
               ),
-
             ],
           ),
-        )
+        ),
       ),
     );
   }
