@@ -9,6 +9,7 @@ class Post extends StatelessWidget {
   final String publisherName;
   final String publisherID; 
   final DateTime createdAt;
+  final String type;
   final String pic;
   final String title;
   final String description;
@@ -23,6 +24,7 @@ class Post extends StatelessWidget {
     required this.publisherName,
     required this.publisherID,
     required this.createdAt,
+    required this.type,
     required this.pic,
     required this.title,
     required this.description,
@@ -53,6 +55,7 @@ class Post extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
            Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [     
               // publisher avatar
               buildAvatar(publisherAvatar), 
@@ -74,29 +77,52 @@ class Post extends StatelessWidget {
               ),
 
               const Spacer(),
-                    
-              // chat button
-              if (!isCurrentUser) 
-                GestureDetector( 
-                  onTap: () { 
-                    // go to publisher chat page 
-                    Navigator.push(
-                      context, 
-                      MaterialPageRoute( 
-                        builder: (context) => ChatPage(
-                          receiverID: publisherID, 
-                        ),
+                  
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // post type
+                  Container(
+                    width: 55,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
+                    child: Center(
+                      child: Text(
+                        type,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
-                    ); 
-                  },
-                  child: Row(
-                    children: [
-                      Icon(Icons.chat_bubble, color: Color(0xFFD0B1DB), size: 20.0),
-                      const SizedBox(width: 3),
-                      Text("Chat", style: TextStyle(fontSize: 13.0)),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+
+                  // chat button
+                  if (!isCurrentUser) 
+                  GestureDetector( 
+                    onTap: () { 
+                      // go to publisher chat page 
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute( 
+                          builder: (context) => ChatPage(
+                            receiverID: publisherID, 
+                          ),
+                        ),
+                      ); 
+                    },
+                    child: Row(
+                      children: [
+                        Icon(Icons.chat_bubble, color: Color(0xFFD0B1DB), size: 20.0),
+                        const SizedBox(width: 3),
+                        Text("Chat", style: TextStyle(fontSize: 13.0)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
             ],
           ),
 
@@ -138,7 +164,7 @@ class Post extends StatelessWidget {
       
           // details row
           Padding(
-            padding: const EdgeInsets.only(top: 15, right: 10, left: 10, bottom: 10),
+            padding: const EdgeInsets.only(top: 15, right: 10, left: 10, bottom: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

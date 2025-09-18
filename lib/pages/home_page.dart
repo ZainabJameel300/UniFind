@@ -19,9 +19,7 @@ class _HomePageState extends State<HomePage> {
       .snapshots();
 
   // to get post publisher data
-  CollectionReference publishers = FirebaseFirestore.instance.collection(
-    'users',
-  );
+  CollectionReference publishers = FirebaseFirestore.instance.collection('users');
 
   @override
   Widget build(BuildContext context) {
@@ -124,11 +122,8 @@ class _HomePageState extends State<HomePage> {
                       return ListView.builder(
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index) {
-                          DocumentSnapshot postData = snapshot.data!.docs
-                              .elementAt(index);
-                          bool isCurrentUser =
-                              postData['uid'] ==
-                              FirebaseAuth.instance.currentUser!.uid;
+                          DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
+                          bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
                           String uid = postData["uid"];
 
                           // read the publisher data for each post
@@ -139,11 +134,8 @@ class _HomePageState extends State<HomePage> {
                                 return Text("Error");
                               }
 
-                              if (snapshot.connectionState ==
-                                  ConnectionState.done) {
-                                Map<String, dynamic> publisherData =
-                                    snapshot.data!.data()
-                                        as Map<String, dynamic>;
+                              if (snapshot.connectionState == ConnectionState.done) {
+                                Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
 
                                 return Post(
                                   isCurrentUser: isCurrentUser,
@@ -151,6 +143,7 @@ class _HomePageState extends State<HomePage> {
                                   publisherName: publisherData["username"],
                                   publisherID: postData["uid"],
                                   createdAt: postData["createdAt"].toDate(),
+                                  type: postData["type"],
                                   pic: postData["picture"],
                                   title: postData["title"],
                                   description: postData["description"],
@@ -160,7 +153,9 @@ class _HomePageState extends State<HomePage> {
                                 );
                               }
 
-                              return SizedBox.shrink();
+                              return Center(
+                                child: const CircularProgressIndicator(),
+                              );
                             },
                           );
                         },
