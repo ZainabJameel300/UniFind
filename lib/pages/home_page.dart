@@ -108,21 +108,13 @@ class _HomePageState extends State<HomePage> {
             // line
             const SizedBox(
               width: double.infinity,
-              child: Divider(
-                color: Color(0xFF8C8C8C),
-                thickness: 1,
-                height: 1,
-              ),
+              child: Divider(color: Color(0xFF8C8C8C), thickness: 1, height: 1,),
             ),
 
             // posts
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 15.0,
-                  left: 15.0,
-                  right: 15.0,
-                ),
+                padding: const EdgeInsets.only(top: 15.0, left: 15.0, right: 15.0,),
                 // read posts data
                 child: StreamBuilder(
                   stream: _postStream,

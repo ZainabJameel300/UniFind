@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:unifind/providers/filter_provider.dart';
 
 class FiltersTabs extends StatefulWidget {
   const FiltersTabs({super.key});
@@ -10,6 +12,17 @@ class FiltersTabs extends StatefulWidget {
 class _FiltersTabsState extends State<FiltersTabs> {
   List<bool> selections = [true, false, false];
 
+  void changeType(int index) {
+    final filterProvider = Provider.of<FilterProvider>(context, listen: false);
+    if (index == 0) {
+      filterProvider.setType(null); // All
+    } else if (index == 1) {
+      filterProvider.setType("Lost");
+    } else if (index == 2) {
+      filterProvider.setType("Found");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ToggleButtons(
@@ -20,6 +33,8 @@ class _FiltersTabsState extends State<FiltersTabs> {
             selections[i] = i == index;
           }
         });
+        // update provider type filter
+        changeType(index);
       },
       renderBorder: false,
       color: Colors.black45,

@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; 
 import 'package:unifind/Components/my_filter_chip.dart';
 import 'package:unifind/Components/my_drawer_button.dart';
+import 'package:unifind/providers/filter_provider.dart';
 
 class FiltersDrawer extends StatefulWidget {
   const FiltersDrawer({super.key});
@@ -10,7 +13,6 @@ class FiltersDrawer extends StatefulWidget {
 }
 
 class _FiltersDrawerState extends State<FiltersDrawer> {
-  
   final List<String> statuses = ["Claimed", "Unclaimed"];
   final List<String> categories = [
     "Electronics",
@@ -22,23 +24,24 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
     "Other",
   ];
 
-  Set<String> selectedStatuses = {};
-  Set<String> selectedCategories = {};
-
-  void applyFilter() {
-    Navigator.of(context).pop(); 
-    print("Statuses: $selectedStatuses, Categories: $selectedCategories");
+  void filterStatus(String status) {
+    Provider.of<FilterProvider>(context, listen: false).filterStatus(status);
+  }
+  void filterCategory(String category) {
+    Provider.of<FilterProvider>(context, listen: false).filterCategory(category); 
   }
 
+  void applyFilter() {
+    Navigator.of(context).pop();
+  }
   void clearFilter() {
-    setState(() {
-      selectedStatuses.clear();
-      selectedCategories.clear();
-    });
+    Provider.of<FilterProvider>(context, listen: false).clearFilters(); 
   }
 
   @override
   Widget build(BuildContext context) {
+    final filterProvider = Provider.of<FilterProvider>(context); 
+
     return Drawer(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       backgroundColor: Colors.white,
@@ -48,68 +51,58 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "Filter",
-                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w400),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w400),
               ),
               const SizedBox(height: 20),
 
               // Status filter
-              const Text("Status", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              const Text(
+                "Status",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
               Wrap(
                 spacing: 10,
-                children: statuses.map((status) {
-                  return MyFilterChip(
+                children: statuses.map(
+                  (status) => MyFilterChip(
                     label: status,
-                    isSelected: selectedStatuses.contains(status),
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          selectedStatuses.add(status);
-                        } else {
-                          selectedStatuses.remove(status);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
+                    isSelected: filterProvider.selectedStatuses.contains(status),
+                    onSelected: (_) => filterStatus(status),
+                  ),
+                ).toList(),
               ),
               const SizedBox(height: 20),
 
               // Category filter
-              const Text("Category", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              const Text(
+                "Category",
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
               Wrap(
                 spacing: 10,
-                children: categories.map((category) {
-                  return MyFilterChip(
+                children: categories.map(
+                  (category) => MyFilterChip(
                     label: category,
-                    isSelected: selectedCategories.contains(category),
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          selectedCategories.add(category);
-                        } else {
-                          selectedCategories.remove(category);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
+                    isSelected: filterProvider.selectedCategories.contains(category),
+                    onSelected: (_) => filterCategory(category),
+                  ),
+                ).toList(),
               ),
               const Spacer(),
 
               // buttons row
               Row(
-                mainAxisAlignment: MainAxisAlignment.end, 
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   MyDrawerButton(
                     text: "Clear",
-                    onTap: clearFilter,
+                    onTap: clearFilter, 
                   ),
                   const SizedBox(width: 10),
                   MyDrawerButton(
-                    text: "Apply", 
-                    onTap: applyFilter
+                    text: "Apply",
+                    onTap: applyFilter,
                   ),
                 ],
               ),
