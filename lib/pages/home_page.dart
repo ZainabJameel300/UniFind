@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Icon(Icons.filter_alt_outlined, ),
+                                Icon(Icons.filter_alt_outlined),
                                 Icon(Icons.density_medium, size: 18.0,),
                               ],
                             ),

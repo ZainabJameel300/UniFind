@@ -42,6 +42,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         ),
         child: Icon(
           isSelected ? selectedicon : notselectedicon,
+          color: isSelected ? Colors.black : Colors.black45,
         ),
       ),
     );
