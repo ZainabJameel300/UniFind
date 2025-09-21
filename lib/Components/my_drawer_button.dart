@@ -16,6 +16,7 @@ class MyDrawerButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         side: secondery
             ? BorderSide(color: Colors.grey.shade400, width: 1.5)
             : BorderSide.none,
