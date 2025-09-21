@@ -55,7 +55,7 @@ class _SignupState extends State<Signup> {
             "Account created successfully!",
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
-          backgroundColor: const Color.fromARGB(255, 119, 31, 153),
+          backgroundColor: const Color(0xFF771F98),
           behavior: SnackBarBehavior.floating,
           margin: const EdgeInsets.all(12),
           shape: RoundedRectangleBorder(
@@ -76,10 +76,7 @@ class _SignupState extends State<Signup> {
           ),
           title: Row(
             children: [
-              Icon(
-                Icons.error_outline,
-                color: const Color.fromARGB(255, 119, 31, 153),
-              ),
+              Icon(Icons.error_outline, color: const Color(0xFF771F98)),
               const SizedBox(width: 8),
               const Text(
                 "Sign Up Failed",
@@ -96,7 +93,7 @@ class _SignupState extends State<Signup> {
               onPressed: () => Navigator.pop(context),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: const Color.fromARGB(255, 119, 31, 153),
+                backgroundColor: const Color(0xFF771F98),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
