@@ -106,11 +106,8 @@ class _HomePageState extends State<HomePage> {
             ),
 
             // line
-            const SizedBox(
-              width: double.infinity,
-              child: Divider(color: Color(0xFF8C8C8C), thickness: 1, height: 1,),
-            ),
-
+            Divider(color: Color(0xFF8C8C8C), thickness: 1, height: 1,),
+      
             // posts
             Expanded(
               child: Padding(

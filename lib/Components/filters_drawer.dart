@@ -30,7 +30,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
     Provider.of<FilterProvider>(context, listen: false).filterCategory(category); 
   }
 
-  void applyFilter() {
+  void closeDrawer() {
     Navigator.of(context).pop();
   }
   void clearFilter() {
@@ -50,9 +50,22 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Filter",
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w400),
+              Row(
+                children: [
+                  // back button
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios),
+                    onPressed: closeDrawer,
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: const Text(
+                        "Filter",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
 
@@ -90,7 +103,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
               ),
               const Spacer(),
 
-              // buttons row
+              // buttons 
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -101,7 +114,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
                   const SizedBox(width: 10),
                   MyDrawerButton(
                     text: "Apply",
-                    onTap: applyFilter,
+                    onTap: closeDrawer,
                   ),
                 ],
               ),
