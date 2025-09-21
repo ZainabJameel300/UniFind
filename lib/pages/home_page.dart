@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unifind/Components/filters_tabs.dart';
@@ -29,9 +30,9 @@ class _HomePageState extends State<HomePage> {
         .orderBy('createdAt', descending: true);
 
     // type filter
-    if (filterProvider.postType != null) {
-      query = query.where('type', isEqualTo: filterProvider.postType
-      );
+    final String? selectedtype = filterProvider.postType;
+    if (selectedtype != null && selectedtype != "All") {
+      query = query.where('type', isEqualTo: selectedtype);
     }
     // claim statuses filter
     final bool? statusBool = filterProvider.getBooleanStatus;
@@ -39,9 +40,9 @@ class _HomePageState extends State<HomePage> {
       query = query.where('claim_status', isEqualTo: statusBool);
     }
     // categories filter
-    if (filterProvider.selectedCategories.isNotEmpty) {
-      query = query.where('category', whereIn: filterProvider.selectedCategories.toList(),
-      );
+    final Set<String> categories = filterProvider.selectedCategories;
+    if (categories.isNotEmpty && categories.length != 7 ) {
+      query = query.where('category', whereIn: categories.toList());
     }
 
     return query.snapshots();
@@ -88,7 +89,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const SizedBox(width: 8.0),
 
-                      // notifications icon
+                      // notifications 
                       Container(
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
