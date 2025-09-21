@@ -5,6 +5,18 @@ class FilterProvider extends ChangeNotifier {
   Set<String> selectedCategories = {};
   String? postType;
 
+  // convert status string to boolean
+  bool? get getBooleanStatus {
+    // user selected only one status
+    if (selectedStatuses.length == 1) {
+      final status = selectedStatuses.first;
+      if (status == 'Claimed') return true;
+      if (status == 'Unclaimed') return false;
+    }
+    // user selected zero or both (all)
+    return null;
+  }
+
   // filter status
   void filterStatus(String status) {
     if (selectedStatuses.contains(status)) {
@@ -36,6 +48,15 @@ class FilterProvider extends ChangeNotifier {
     selectedStatuses.clear();
     selectedCategories.clear();
     notifyListeners();
+  }
+
+  bool get hasAnyFilter{
+    if (postType == null && selectedStatuses.isEmpty && selectedCategories.isEmpty) {
+      return false;
+    }
+    else {
+      return true;
+    }
   }
 }
 

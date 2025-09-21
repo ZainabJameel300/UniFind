@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:unifind/Components/filters_tabs.dart';
 import 'package:unifind/components/post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:unifind/providers/filter_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,11 +14,38 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // get posts data
-  final Stream<QuerySnapshot> _postStream = FirebaseFirestore.instance
-      .collection('posts')
-      .orderBy('createdAt', descending: true)
-      .snapshots();
+  // all posts
+  // final Stream<QuerySnapshot> _postStream = FirebaseFirestore.instance
+  //     .collection('posts')
+  //     .orderBy('createdAt', descending: true)
+  //     .snapshots();
+
+  // get filtered posts
+  Stream<QuerySnapshot> _getFilteredPosts() {
+    final filterProvider = Provider.of<FilterProvider>(context);
+
+    Query query = FirebaseFirestore.instance
+        .collection('posts')
+        .orderBy('createdAt', descending: true);
+
+    // type filter
+    if (filterProvider.postType != null) {
+      query = query.where('type', isEqualTo: filterProvider.postType
+      );
+    }
+    // claim statuses filter
+    final bool? statusBool = filterProvider.getBooleanStatus;
+    if (statusBool != null) {
+      query = query.where('claim_status', isEqualTo: statusBool);
+    }
+    // categories filter
+    if (filterProvider.selectedCategories.isNotEmpty) {
+      query = query.where('category', whereIn: filterProvider.selectedCategories.toList(),
+      );
+    }
+
+    return query.snapshots();
+  }
 
   // to get post publisher data
   CollectionReference publishers = FirebaseFirestore.instance.collection('users');
@@ -50,16 +79,13 @@ class _HomePageState extends State<HomePage> {
                                 "Search Items",
                                 style: TextStyle(fontSize: 16.0),
                               ),
-
                               Spacer(),
-
                               // AI search (camera)
                               Icon(Icons.photo_camera_outlined),
                             ],
                           ),
                         ),
                       ),
-
                       const SizedBox(width: 8.0),
 
                       // notifications icon
@@ -104,8 +130,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-
-            // line
             Divider(color: Color(0xFF8C8C8C), thickness: 1, height: 1,),
       
             // posts
@@ -114,18 +138,23 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.only(top: 15.0, left: 15.0, right: 15.0,),
                 // read posts data
                 child: StreamBuilder(
-                  stream: _postStream,
+                  stream: _getFilteredPosts(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return const Text("Error");
+                      return Center(child: const Text("Error"));
                     }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: const CircularProgressIndicator());
                     }
-
+                    // no post found
                     final posts = snapshot.data!.docs;
                     if (posts.isEmpty) {
-                      return const Center(child: Text("No posts yet"));
+                      bool hasAnyFilter = Provider.of<FilterProvider>(context, listen: false).hasAnyFilter;
+                      return Center(
+                        child: Text(
+                          hasAnyFilter ? "No results for current filters" : "No posts yet",
+                        ),
+                      );
                     }
 
                     return ListView.builder(
@@ -140,12 +169,12 @@ class _HomePageState extends State<HomePage> {
                           future: publishers.doc(uid).get(),
                           builder: (context, snapshot) {
                             if (snapshot.hasError) {
-                              return Text("Error");
+                              return Center(child: Text("Error"));
                             }
 
                             if (snapshot.connectionState == ConnectionState.done) {
                               Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
-
+                              
                               return Post(
                                 isCurrentUser: isCurrentUser,
                                 publisherAvatar: publisherData["avatar"],
@@ -161,7 +190,6 @@ class _HomePageState extends State<HomePage> {
                                 status: postData["claim_status"],
                               );
                             }
-
                             return const SizedBox.shrink();
                           },
                         );
