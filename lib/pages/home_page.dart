@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unifind/Components/filters_tabs.dart';
+import 'package:unifind/Components/post_search.dart';
 import 'package:unifind/components/post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:unifind/providers/filter_provider.dart';
@@ -53,6 +53,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    bool hasAnyFilter = Provider.of<FilterProvider>(context, listen: false).hasAnyFilter;
     return SafeArea(
       child: Center(
         child: Column(
@@ -101,6 +102,24 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   const SizedBox(height: 4.0),
+                  GestureDetector(
+                    onTap: () {
+                      showSearch(
+                        context: context,
+                        delegate: PostSearch(),
+                      );
+                    },
+                    child: const Row(
+                      children: [
+                        Icon(Icons.search),
+                        SizedBox(width: 5.0),
+                        Text("Search Items", style: TextStyle(fontSize: 16.0)),
+                        Spacer(),
+                        Icon(Icons.photo_camera_outlined),
+                      ],
+                    ),
+                  ),
+
 
                   // filters 
                   Row(
@@ -115,11 +134,17 @@ class _HomePageState extends State<HomePage> {
                             onTap: () {
                               Scaffold.of(context).openEndDrawer();
                             },
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Icon(Icons.filter_alt_outlined),
-                                Icon(Icons.density_medium, size: 18.0,),
+                                Icon(Icons.filter_alt_outlined, color: hasAnyFilter
+                                      ? const Color.fromARGB(255, 119, 31, 153)
+                                      : Colors.black,
+                                ),
+                                Icon(Icons.density_medium, size: 18.0, color: hasAnyFilter
+                                      ? const Color.fromARGB(255, 119, 31, 153)
+                                      : Colors.black,
+                                ),
                               ],
                             ),
                           );
@@ -150,7 +175,6 @@ class _HomePageState extends State<HomePage> {
                     // no post found
                     final posts = snapshot.data!.docs;
                     if (posts.isEmpty) {
-                      bool hasAnyFilter = Provider.of<FilterProvider>(context, listen: false).hasAnyFilter;
                       return Center(
                         child: Text(
                           hasAnyFilter ? "No results for current filters" : "No posts yet",

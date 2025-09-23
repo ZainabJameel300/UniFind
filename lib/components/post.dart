@@ -44,7 +44,7 @@ class Post extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.0), 
         border: Border.all(
-          color: const Color(0xFF771F98), 
+          color: const Color.fromARGB(255, 119, 31, 153), 
           width: 1.5,
         ),
       ),
@@ -65,69 +65,58 @@ class Post extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    name,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                  Row(
+                    children: [
+                      Text(
+                        name,
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                      const SizedBox(width: 8),
+                      // chat button
+                      if (!isCurrentUser)
+                        GestureDetector(
+                          onTap: () {
+                            // go to publisher chat page
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ChatPage(receiverID: publisherID),
+                              ),
+                            );
+                          },
+                          child: Icon(Icons.chat_rounded, color: Color(0xFFD0B1DB), size: 18),
+                        ),
+                    ],
                   ),
                   Text(
                     TimestampFormat.getFormat(createdAt),
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12.0),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ],
               ),
-
               const Spacer(),
-                  
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // post type
-                  Container(
-                    width: 55,
-                    height: 18,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Center(
-                      child: Text(
-                        type,
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
 
-                  // chat button
-                  if (!isCurrentUser) 
-                  GestureDetector( 
-                    onTap: () { 
-                      // go to publisher chat page 
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute( 
-                          builder: (context) => ChatPage(
-                            receiverID: publisherID, 
-                          ),
-                        ),
-                      ); 
-                    },
-                    child: Row(
-                      children: [
-                        Icon(Icons.chat_bubble, color: Color(0xFFD0B1DB), size: 20.0),
-                        const SizedBox(width: 3),
-                        Text("Chat", style: TextStyle(fontSize: 13.0)),
-                      ],
-                    ),
+              // post type - lost or found
+              Container(
+                width: 55,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Center(
+                  child: Text(
+                    type,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
-                ],
+                ),
               ),
-              
             ],
           ),
 
-          SizedBox(height: 12.0),
-          Divider(color: Colors.grey[500], thickness: 1, height: 1),
+          SizedBox(height: 10.0),
+          Divider(color: Colors.grey[400], thickness: 1, height: 1),
                   
           // item pic 
           if (pic.isNotEmpty)
@@ -143,23 +132,29 @@ class Post extends StatelessWidget {
               ),   
             ),
           ),
-          SizedBox(height: 12.0),
+          SizedBox(height: 10.0),
             
           // title
           Row(
             children: [
               Text(
                 title, 
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold, 
+                  fontSize: 16, 
+                  color: const Color.fromARGB(255, 67, 17, 87),
+                  ),
               ),
             ],
           ),
           const SizedBox(height: 5.0),
             
-          // description 
+          // description - less lines with pic
           Text(
             description,
-            style: TextStyle(fontSize: 13.0), 
+            maxLines: pic.isNotEmpty ? 1 : 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 13.0, height: 1.3),
           ),
       
           // details row
