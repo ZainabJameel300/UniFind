@@ -1,9 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unifind/Components/filters_tabs.dart';
+import 'package:unifind/Components/post_card.dart';
 import 'package:unifind/Components/post_search.dart';
-import 'package:unifind/components/post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:unifind/providers/filter_provider.dart';
 
@@ -66,25 +65,33 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     children: [
                       Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15.0),
-                            color: const Color(0xFFF1F1F1),
-                          ),
-                          child: const Row(
-                            children: [
-                              // search
-                              Icon(Icons.search),
-                              SizedBox(width: 5.0),
-                              Text(
-                                "Search Items",
-                                style: TextStyle(fontSize: 16.0),
-                              ),
-                              Spacer(),
-                              // AI search (camera)
-                              Icon(Icons.photo_camera_outlined),
-                            ],
+                        child: GestureDetector(
+                          onTap: () {
+                            showSearch(
+                              context: context,
+                              delegate: PostSearch(),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15.0),
+                              color: const Color(0xFFF1F1F1),
+                            ),
+                            child: const Row(
+                              children: [
+                                // search
+                                Icon(Icons.search),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  "Search Items",
+                                  style: TextStyle(fontSize: 16.0),
+                                ),
+                                Spacer(),
+                                // AI search (camera)
+                                Icon(Icons.photo_camera_outlined),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -100,24 +107,6 @@ class _HomePageState extends State<HomePage> {
                         child: const Icon(Icons.notifications_outlined),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 4.0),
-                  GestureDetector(
-                    onTap: () {
-                      showSearch(
-                        context: context,
-                        delegate: PostSearch(),
-                      );
-                    },
-                    child: const Row(
-                      children: [
-                        Icon(Icons.search),
-                        SizedBox(width: 5.0),
-                        Text("Search Items", style: TextStyle(fontSize: 16.0)),
-                        Spacer(),
-                        Icon(Icons.photo_camera_outlined),
-                      ],
-                    ),
                   ),
 
 
@@ -138,11 +127,11 @@ class _HomePageState extends State<HomePage> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Icon(Icons.filter_alt_outlined, color: hasAnyFilter
-                                      ? const Color.fromARGB(255, 119, 31, 153)
+                                      ? const Color(0xFF771F98)
                                       : Colors.black,
                                 ),
                                 Icon(Icons.density_medium, size: 18.0, color: hasAnyFilter
-                                      ? const Color.fromARGB(255, 119, 31, 153)
+                                      ? const Color(0xFF771F98)
                                       : Colors.black,
                                 ),
                               ],
@@ -167,7 +156,8 @@ class _HomePageState extends State<HomePage> {
                   stream: _getFilteredPosts(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return Center(child: const Text("Error"));
+                      return Center(child: const Text("Error", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16,),
+                        ));
                     }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: const CircularProgressIndicator());
@@ -178,6 +168,7 @@ class _HomePageState extends State<HomePage> {
                       return Center(
                         child: Text(
                           hasAnyFilter ? "No results for current filters" : "No posts yet",
+                          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                         ),
                       );
                     }
@@ -186,7 +177,6 @@ class _HomePageState extends State<HomePage> {
                       itemCount: snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
                         DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
-                        bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
                         String uid = postData["uid"];
 
                         // read the publisher data for each post
@@ -194,25 +184,15 @@ class _HomePageState extends State<HomePage> {
                           future: publishers.doc(uid).get(),
                           builder: (context, snapshot) {
                             if (snapshot.hasError) {
-                              return Center(child: Text("Error"));
+                              return Center(child: Text("Error", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)));
                             }
 
                             if (snapshot.connectionState == ConnectionState.done) {
                               Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
                               
-                              return Post(
-                                isCurrentUser: isCurrentUser,
-                                publisherAvatar: publisherData["avatar"],
-                                publisherName: publisherData["username"],
-                                publisherID: postData["uid"],
-                                createdAt: postData["createdAt"].toDate(),
-                                type: postData["type"],
-                                pic: postData["picture"],
-                                title: postData["title"],
-                                description: postData["description"],
-                                date: postData["date"],
-                                location: postData["location"],
-                                status: postData["claim_status"],
+                              return PostCard(
+                                publisherData: publisherData,
+                                postData: postData,
                               );
                             }
                             return const SizedBox.shrink();
