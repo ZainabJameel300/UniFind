@@ -15,7 +15,7 @@ class MyAppbar extends StatelessWidget implements PreferredSizeWidget {
         icon: Icon(Icons.arrow_back, color: Colors.black),
         onPressed: onBack ?? () => Navigator.pop(context),
       ),
-      title: Text(title, style: TextStyle(fontSize: 28, color: Colors.black)),
+      title: Text(title, style: TextStyle(fontSize: 30, color: Colors.black)),
       bottom: const PreferredSize(
         preferredSize: Size.fromHeight(20),
         child: Divider(color: Color.fromARGB(255, 110, 110, 110), height: 1.5),
