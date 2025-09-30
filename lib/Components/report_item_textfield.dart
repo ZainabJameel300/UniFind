@@ -34,8 +34,10 @@ class ReportItemTextfield extends StatelessWidget {
             controller: controller,
             obscureText: obscureText,
             keyboardType: TextInputType.multiline,
-            maxLines: null,
-            expands: true,
+            minLines: height > 60
+                ? 3
+                : 1, // If height is big, show multiple lines
+            maxLines: height > 60 ? null : 1, // null lets it expand naturally
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: hintText,
