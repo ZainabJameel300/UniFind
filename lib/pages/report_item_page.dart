@@ -425,6 +425,52 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     ),
                   ),
 
+                  // Remove image button
+                  if (_image != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10, right: 35),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton.icon(
+                            style: TextButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                225,
+                                224,
+                                224,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _image = null;
+                              });
+                            },
+                            icon: Icon(
+                              Icons.clear,
+                              color: Colors.red[700],
+                              size: 22,
+                            ),
+                            label: Text(
+                              "Remove Image",
+                              style: TextStyle(
+                                color: Color(0xFF771F98),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   SizedBox(height: 45),
 
                   //Submit Button
@@ -450,7 +496,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                           _categoryError == null &&
                           _locationError == null &&
                           _dateError == null) {
-                        // proceed with submission
+                        // LOGIC AFTER THE FORM IS VALIDATED !!!!!
+
+                        //----------------!!-----------------------
                       }
                     },
                   ),
