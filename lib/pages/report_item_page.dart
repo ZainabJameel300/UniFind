@@ -28,6 +28,8 @@ class _ReportItemPageState extends State<ReportItemPage> {
 
   final List<String> categories = [
     "Electronics",
+    "Charger",
+    "Cards",
     "Wallet",
     "Keys",
     "Bags",
@@ -155,13 +157,33 @@ class _ReportItemPageState extends State<ReportItemPage> {
                   ),
                   SizedBox(height: 25),
 
-                  // title label
-                  Label(text: "Title :"),
+                  // title label + red info icon for the found items only
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Label(text: "Title :"),
+                      if (type == "Found")
+                        Positioned(
+                          left: 115,
+                          top: 0,
+                          child: Tooltip(
+                            message:
+                                "This field will be public, don't reveal any descriptive information!",
+                            child: const Icon(
+                              Icons.info_outline,
+                              color: Colors.red,
+                              size: 25,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+
                   SizedBox(height: 5),
 
                   //title textfield
                   ReportItemTextfield(
-                    hintText: "",
+                    hintText: "Enter a short title (e.g. Lost student ID card)",
                     obscureText: false,
                     controller: titlecontroller,
                     height: 55,
@@ -177,13 +199,33 @@ class _ReportItemPageState extends State<ReportItemPage> {
                   ),
                   SizedBox(height: 20),
 
-                  // description label
-                  Label(text: "Descreption :"),
+                  // Descreption label + red info icon for the found items only
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Label(text: "Descreption :"),
+                      if (type == "Found")
+                        Positioned(
+                          left: 175,
+                          top: 0,
+                          child: Tooltip(
+                            message:
+                                "This field is hidden from the public for confidentiality!",
+                            child: const Icon(
+                              Icons.info_outline,
+                              color: Colors.red,
+                              size: 25,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+
                   SizedBox(height: 5),
 
                   //description textfield
                   ReportItemTextfield(
-                    hintText: "",
+                    hintText: "Describe the item (e.g. color, size, brand..)",
                     obscureText: false,
                     controller: desccontroller,
                     height: 120,
@@ -485,11 +527,13 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         _locationError = selectedlocation == null
                             ? "Location is required!"
                             : null;
-                        _dateError =
-                            (selectedDate != null &&
-                                selectedDate!.isAfter(DateTime.now()))
-                            ? "The Date cannot be in the future!"
-                            : null;
+                        if (selectedDate == null) {
+                          _dateError = "Date is required!";
+                        } else if (selectedDate!.isAfter(DateTime.now())) {
+                          _dateError = "The Date cannot be in the future!";
+                        } else {
+                          _dateError = null;
+                        }
                       });
 
                       if (isValid &&

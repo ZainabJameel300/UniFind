@@ -41,6 +41,9 @@ class ReportItemTextfield extends StatelessWidget {
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: hintText,
+              hintStyle: TextStyle(
+                color: const Color.fromARGB(255, 198, 196, 196),
+              ),
             ),
             validator: validator,
           ),
