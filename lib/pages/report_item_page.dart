@@ -5,6 +5,9 @@ import 'package:unifind/Components/my_AppBar.dart';
 import 'package:unifind/Components/my_button.dart';
 import 'package:unifind/Components/report_item_textfield.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ReportItemPage extends StatefulWidget {
   const ReportItemPage({super.key});
@@ -82,7 +85,8 @@ class _ReportItemPageState extends State<ReportItemPage> {
 
   File? _image;
 
-  final ImagePicker _picker = ImagePicker();
+  final ImagePicker _picker =
+      ImagePicker(); // this line baiscally builds an instance of the image picker
 
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(
@@ -95,6 +99,83 @@ class _ReportItemPageState extends State<ReportItemPage> {
       setState(() {
         _image = File(pickedFile.path);
       });
+    }
+  }
+
+  //This method is used to save the entered data to the database
+
+  Future<void> _savePost() async {
+    try {
+      // This will Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF771F98)),
+        ),
+      );
+
+      // Get current user ID
+      final user = FirebaseAuth.instance.currentUser!;
+
+      // Create Firestore document reference (auto-generated ID)
+      final docRef = FirebaseFirestore.instance.collection('posts').doc();
+
+      // Upload image to Cloud Storage
+      String imageUrl = "";
+      if (_image != null) {
+        final storageRef = FirebaseStorage.instance.ref().child(
+          'post_images/${docRef.id}.jpg',
+        );
+        await storageRef.putFile(_image!);
+        imageUrl = await storageRef.getDownloadURL();
+      }
+
+      // Format date as dd/mm/yyyy
+      String formattedDate =
+          "${selectedDate!.day.toString().padLeft(2, '0')}/"
+          "${selectedDate!.month.toString().padLeft(2, '0')}/"
+          "${selectedDate!.year}";
+
+      // Create Firestore document data
+      final postData = {
+        "category": selectedCategory,
+        "claim_status": false,
+        "createdAt": Timestamp.now(),
+        "date": formattedDate,
+        "description": desccontroller.text.trim(),
+        "embedding": [], // Empty array for now
+        "location": selectedlocation,
+        "picture": imageUrl,
+        "postID": docRef.id,
+        "title": titlecontroller.text.trim(),
+        "type": type,
+        "uid": user.uid,
+      };
+
+      // Save post to Firestore
+      await docRef.set(postData);
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Navigate to potential match page
+      Navigator.pushReplacementNamed(context, 'potenialmatchpage');
+
+      // Clear form fields
+      setState(() {
+        titlecontroller.clear();
+        desccontroller.clear();
+        selectedCategory = null;
+        selectedlocation = null;
+        selectedDate = null;
+        _image = null;
+      });
+    } catch (e) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error uploading post: $e")));
     }
   }
 
@@ -542,7 +623,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                           _dateError == null) {
                         // LOGIC AFTER THE FORM IS VALIDATED !!!!!
 
-                        //----------------!!-----------------------
+                        _savePost();
                       }
                     },
                   ),

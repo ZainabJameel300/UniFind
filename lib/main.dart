@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:unifind/Pages/forgotpassword.dart';
 import 'package:unifind/Pages/login.dart';
+import 'package:unifind/Pages/potenialmatch.dart';
 import 'package:unifind/Pages/signup.dart';
 import 'package:unifind/Pages/splash.dart';
 import 'package:unifind/auth/mainPage.dart';
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
         'forgotpasswordpage': (context) => Forgotpassword(),
         'bottomnavBar': (context) => BottomNavBar(),
         'reportitempage': (context) => ReportItemPage(),
+        'potenialmatchpage': (context) => Potenialmatch(),
       },
     );
   }
