@@ -1,62 +1,62 @@
 import 'package:flutter/material.dart';
 
 class FilterProvider extends ChangeNotifier {
-  Set<String> selectedStatuses = {};
-  Set<String> selectedCategories = {};
-  String? postType;
+  String postType = "All";
+  String? selectedCategory;
+  String? selectedDate;
+  String? selectedLocation;
+  bool locationExpanded = false;
 
-  // convert status string to boolean
-  bool? get getBooleanStatus {
-    // user selected only one status
-    if (selectedStatuses.length == 1) {
-      final status = selectedStatuses.first;
-      if (status == 'Claimed') return true;
-      if (status == 'Unclaimed') return false;
-    }
-    // user selected zero or both (all)
-    return null;
-  }
-
-  // filter status
-  void filterStatus(String status) {
-    if (selectedStatuses.contains(status)) {
-      selectedStatuses.remove(status);
-    } else {
-      selectedStatuses.add(status);
-    }
-    notifyListeners();
-  }
-
-  // filter category
-  void filterCategory(String category) {
-    if (selectedCategories.contains(category)) {
-      selectedCategories.remove(category);
-    } else {
-      selectedCategories.add(category);
-    }
-    notifyListeners();
-  }
 
   // set post type
-  void setType(String? type) {
+  void setType(String type) {
     postType = type;
     notifyListeners();
   }
 
-  // clear drawer filters
-  void clearFilters() {
-    selectedStatuses.clear();
-    selectedCategories.clear();
+  // set category
+  void setCategory(String? category) {
+    selectedCategory = category;
     notifyListeners();
   }
 
+  // set date
+  void setDate(String? date) {
+    selectedDate = date;
+    notifyListeners();
+  }
+
+  // set location
+  void setLocation(String? location) {
+    selectedLocation = location;
+    notifyListeners();
+  }
+  void toggleLocationExpanded() {
+    locationExpanded = !locationExpanded;
+  }
+
+  // clear drawer filters
+  void clearFilters() {
+    bool changed = false;
+
+    if (selectedCategory != null) {
+      selectedCategory = null;
+      changed = true;
+    }
+    if (selectedDate != null) {
+      selectedDate = null;
+      changed = true;
+    }
+    if (selectedLocation != null) {
+      selectedLocation = null;
+      changed = true;
+    }
+
+    if (changed) notifyListeners();
+  }
+
   bool get hasAnyFilter{
-    if (postType == null && selectedStatuses.isEmpty && selectedCategories.isEmpty) {
-      return false;
-    }
-    else {
-      return true;
-    }
+    return selectedCategory != null  || selectedDate != null || selectedLocation != null;
   }
 }
 

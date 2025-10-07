@@ -15,7 +15,7 @@ class _FiltersTabsState extends State<FiltersTabs> {
   void changeType(int index) {
     final filterProvider = Provider.of<FilterProvider>(context, listen: false);
     if (index == 0) {
-      filterProvider.setType(null); // All
+      filterProvider.setType("All"); 
     } else if (index == 1) {
       filterProvider.setType("Lost");
     } else if (index == 2) {

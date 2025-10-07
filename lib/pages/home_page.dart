@@ -14,11 +14,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // all posts
-  // final Stream<QuerySnapshot> _postStream = FirebaseFirestore.instance
-  //     .collection('posts')
-  //     .orderBy('createdAt', descending: true)
-  //     .snapshots();
 
   // get filtered posts
   Stream<QuerySnapshot> _getFilteredPosts() {
@@ -29,19 +24,61 @@ class _HomePageState extends State<HomePage> {
         .orderBy('createdAt', descending: true);
 
     // type filter
-    final String? selectedtype = filterProvider.postType;
-    if (selectedtype != null && selectedtype != "All") {
+    final String selectedtype = filterProvider.postType;
+    if (selectedtype != "All") {
       query = query.where('type', isEqualTo: selectedtype);
     }
-    // claim statuses filter
-    final bool? statusBool = filterProvider.getBooleanStatus;
-    if (statusBool != null) {
-      query = query.where('claim_status', isEqualTo: statusBool);
-    }
+
     // categories filter
-    final Set<String> categories = filterProvider.selectedCategories;
-    if (categories.isNotEmpty && categories.length != 7 ) {
-      query = query.where('category', whereIn: categories.toList());
+    final String? selectedCategory = filterProvider.selectedCategory;
+    if (selectedCategory != null) {
+      query = query.where('category', isEqualTo: selectedCategory);
+    }
+
+    // location filter
+    final String? selectedLocation = filterProvider.selectedLocation;
+    if (selectedLocation != null) {
+      query = query.where('location', isEqualTo: selectedLocation);
+    }
+    
+    // date filter
+    final String? selectedDate = filterProvider.selectedDate;
+    if (selectedDate != null) {
+      final now = DateTime.now();
+      DateTime? start;
+      DateTime? end;
+
+      switch (selectedDate) {
+        case "Today":
+          start = DateTime(now.year, now.month, now.day);
+          end = start.add(const Duration(days: 1));
+          break;
+
+        case "This week":
+          int daysSinceSunday = now.weekday % 7; 
+          start = DateTime(now.year, now.month, now.day - daysSinceSunday);
+          end = start.add(const Duration(days: 7));
+          break;
+
+        case "This month":
+          start = DateTime(now.year, now.month, 1);
+          end = DateTime(now.year, now.month + 1, 1);
+          break;
+
+        case "Last 3 months":
+          start = DateTime(now.year, now.month - 3, now.day);
+          end = now;
+          break;
+
+        case "Last 6 months":
+          start = DateTime(now.year, now.month - 6, now.day);
+          end = now;
+          break;
+      }
+
+      query = query
+          .where('date', isGreaterThanOrEqualTo: start)
+          .where('date', isLessThan: end);
     }
 
     return query.snapshots();
@@ -116,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                       // post type toggle ( All, found, lost )
                       const FiltersTabs(),
                       const Spacer(),
-                      // drawer button to filter by status & categorey
+                      // drawer filter for categorey, location, date
                       Builder(
                         builder: (context) {
                           return GestureDetector(
@@ -156,8 +193,7 @@ class _HomePageState extends State<HomePage> {
                   stream: _getFilteredPosts(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return Center(child: const Text("Error", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16,),
-                        ));
+                      return Center(child: const Text("Error", style: TextStyle(fontSize: 16)));
                     }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: const CircularProgressIndicator());
@@ -168,7 +204,7 @@ class _HomePageState extends State<HomePage> {
                       return Center(
                         child: Text(
                           hasAnyFilter ? "No results for current filters" : "No posts yet",
-                          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                          style: TextStyle(fontSize: 16),
                         ),
                       );
                     }
@@ -184,7 +220,7 @@ class _HomePageState extends State<HomePage> {
                           future: publishers.doc(uid).get(),
                           builder: (context, snapshot) {
                             if (snapshot.hasError) {
-                              return Center(child: Text("Error", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16)));
+                              return Center(child: Text("Error", style: TextStyle(fontSize: 16)));
                             }
 
                             if (snapshot.connectionState == ConnectionState.done) {

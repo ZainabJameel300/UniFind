@@ -3,8 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/components/post_detail.dart';
-import 'package:unifind/pages/chat_page.dart';
-import '../helpers/timestamp_format.dart';
+import '../utils/date_formats.dart';
 
 class PostCard extends StatelessWidget {
   final Map<String, dynamic> publisherData;
@@ -18,24 +17,32 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
-    final name = isCurrentUser ? "You" : publisherData["username"];
-    final statusText = postData["claim_status"] ? "Claimed" : "Unclaimed";
-    final statusColor = postData["claim_status"] ? Colors.green[700] : Colors.red[700];
+    final bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
+    final String name = isCurrentUser ? "You" : publisherData["username"];
+    final String avatar = publisherData["avatar"];
+    final String type = postData["type"];
+    final DateTime createdAt = postData["createdAt"].toDate();
+    final String pic = postData["picture"];
+    final String title = postData["title"];
+    final String desc = postData["description"];
+    final Timestamp lostDate = postData["date"];
+    final String location = postData["location"];
+
+    // go to view post page
+    void viewPost(){         
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ViewPost(
+            publisherData: publisherData,
+            postData: postData,
+          ),
+        ),
+      );
+    }
 
     return GestureDetector(
-      onTap: () {
-        // go to view post page
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ViewPost(
-              publisherData: publisherData,
-              postData: postData,
-            ),
-          ),
-        );
-      } ,
+      onTap: () => viewPost(),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -55,40 +62,20 @@ class PostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [     
                 // publisher avatar
-                buildAvatar(publisherData["avatar"]), 
+                buildAvatar(avatar), 
                 const SizedBox(width: 8.0),
       
                 // publisher name & publish time
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          name,
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                        ),
-                        const SizedBox(width: 8),
-                        // chat button
-                        if (!isCurrentUser)
-                          GestureDetector(
-                            onTap: () {
-                              // go to publisher chat page
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ChatPage(receiverID: publisherData["uid"],
-                                    ),
-                                ),
-                              );
-                            },
-                            child: Icon(Icons.chat_rounded, color: Color(0xFFD0B1DB), size: 18),
-                          ),
-                      ],
-                    ),
                     Text(
-                      TimestampFormat.getFormat(postData["createdAt"].toDate()),
+                      name,
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      DateFormats.formatPublishTime(createdAt),
                       style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     ),
                   ],
@@ -105,7 +92,7 @@ class PostCard extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      postData["type"],
+                      type,
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ),
@@ -117,13 +104,13 @@ class PostCard extends StatelessWidget {
             Divider(color: Colors.grey[400], thickness: 1, height: 1),
                     
             // item pic 
-            if (postData["picture"].isNotEmpty)
+            if (pic.isNotEmpty && type == "Found")
             Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: ClipRRect( 
                 borderRadius: BorderRadius.circular(8.0,),
                 child: Image.network(
-                  postData["picture"],
+                  pic,
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 180,
@@ -136,7 +123,7 @@ class PostCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  postData["title"], 
+                  title, 
                   style: TextStyle(
                     fontWeight: FontWeight.bold, 
                     fontSize: 16, 
@@ -148,36 +135,42 @@ class PostCard extends StatelessWidget {
             const SizedBox(height: 5.0),
               
             // description 
-            Text(
-              postData["description"],
-              maxLines: postData["picture"].isNotEmpty ? 2 : 3,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 13.0, height: 1.3),
+            if(type == "Found")
+            Padding(
+              padding: const EdgeInsets.only(bottom: 9),
+              child: Text(
+                desc,
+                maxLines: pic.isNotEmpty ? 2 : 3,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 13.0, height: 1.3),
+              ),
             ),
         
             // details row
             Padding(
-              padding: const EdgeInsets.only(top: 15, right: 10, left: 10, bottom: 6),
+              padding: const EdgeInsets.only(top: 6, right: 10, left: 10, bottom: 6),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // post date
                   PostDetail(
                     icon: Icons.calendar_today_outlined, 
-                    text: postData["date"],
+                    text: DateFormats.formatLostDate(lostDate),
                   ),
                     
                   // item location
                   PostDetail(
                     icon: Icons.location_on_outlined, 
-                    text: postData["location"],
+                    text: location,
                   ),
-                    
-                  // item status
-                  PostDetail(
-                    icon: Icons.task_alt_outlined, 
-                    text: statusText,
-                    textColor: statusColor,
+
+                  GestureDetector(
+                    onTap: () => viewPost(),
+                    child: PostDetail(
+                      icon: Icons.arrow_forward,
+                      text: "View Post",
+                      textColor: const Color.fromARGB(255, 67, 17, 87),
+                    ),
                   ),
                 ],
               ),
