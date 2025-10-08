@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:unifind/Components/show_snackbar.dart';
 
 class ReportItemPage extends StatefulWidget {
   const ReportItemPage({super.key});
@@ -106,7 +107,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
 
   Future<void> _savePost() async {
     try {
-      // This will Show loading dialog
+      // Show loading dialog
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -131,18 +132,24 @@ class _ReportItemPageState extends State<ReportItemPage> {
         imageUrl = await storageRef.getDownloadURL();
       }
 
-      // Format date as dd/mm/yyyy
-      String formattedDate =
-          "${selectedDate!.day.toString().padLeft(2, '0')}/"
-          "${selectedDate!.month.toString().padLeft(2, '0')}/"
-          "${selectedDate!.year}";
+      // This will convert selectedDate to Timestamp (time = 12:00:00 AM)
+      Timestamp dateTimestamp = Timestamp.fromDate(
+        DateTime(
+          selectedDate!.year,
+          selectedDate!.month,
+          selectedDate!.day,
+          0, // hour
+          0, // minute
+          0, // second
+        ),
+      );
 
       // Create Firestore document data
       final postData = {
         "category": selectedCategory,
         "claim_status": false,
         "createdAt": Timestamp.now(),
-        "date": formattedDate,
+        "date": dateTimestamp, // store as Timestamp
         "description": desccontroller.text.trim(),
         "embedding": [], // Empty array for now
         "location": selectedlocation,
@@ -159,8 +166,13 @@ class _ReportItemPageState extends State<ReportItemPage> {
       // Close loading dialog
       Navigator.pop(context);
 
-      // Navigate to potential match page
-      Navigator.pushReplacementNamed(context, 'potenialmatchpage');
+      //if the type is found go to potential match page else direct to home page!
+      if (type == "Lost") {
+        Navigator.pushReplacementNamed(context, 'potenialmatchpage');
+      } else {
+        showSnackBar(context, "Item Reported Successfully!");
+        Navigator.pushReplacementNamed(context, 'bottomnavBar');
+      }
 
       // Clear form fields
       setState(() {
