@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class KeepersContainer extends StatelessWidget {
   final String code;
   final String title;
+  final Color fillColor;
+  final Color borderColor;
   final Color circleColor;
 
   const KeepersContainer({
@@ -10,6 +12,8 @@ class KeepersContainer extends StatelessWidget {
     required this.code,
     required this.title,
     required this.circleColor,
+    required this.fillColor,
+    required this.borderColor,
   });
 
   @override
@@ -21,8 +25,8 @@ class KeepersContainer extends StatelessWidget {
         width: 400,
         padding: EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFFEADDEF),
-          border: Border.all(color: const Color(0xFF771F98), width: 2.5),
+          color: fillColor,
+          border: Border.all(color: borderColor, width: 2.5),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(

@@ -3,9 +3,23 @@ import 'package:unifind/Components/keepers_container.dart';
 import 'package:unifind/Components/keepers_label.dart';
 import 'package:unifind/Components/my_AppBar.dart';
 
+// Sakhir Campus
+const sakhirFill = Color(0xFFEADDEF);
+const sakhirBorder = Color(0xFF771F98);
+const sakhirCircle = Color(0xFF771F98);
+
+// Isa Town Campus
+const isaFill = Color(0xFFF8E6F2);
+const isaBorder = Color(0xFFD13FC6);
+const isaCircle = Color(0xFFD13FC6);
+
+// Salminya Campus
+const salminyaFill = Color(0xFFE5E8FB);
+const salminyaBorder = Color(0xFF4B4AEF);
+const salminyaCircle = Color(0xFF4B4AEF);
+
 class KeepersPage extends StatelessWidget {
   const KeepersPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,57 +41,139 @@ class KeepersPage extends StatelessWidget {
 
               //Skahir Room Containers
               KeepersContainer(
+                code: "S1",
+                title: "College of Business - 1078",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S1",
+                title: "College of Art - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S20",
+                title: "English Language Center - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S20",
+                title: "S20-A - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S20",
+                title: "S20-B - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S20",
+                title: "S20-C - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S22",
+                title: "BTC - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S3",
+                title: "Centeral Library - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S37",
+                title: "Registration - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S39",
+                title: "College of Law - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
+                code: "S4",
+                title: "Food Court- 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
+              ),
+              SizedBox(height: 15),
+              KeepersContainer(
                 code: "S40",
-                title: "College of IT - 1078",
-                circleColor: Color(0xFF771F98),
+                title: "College of IT - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
               ),
               SizedBox(height: 15),
               KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
+                code: "S47",
+                title: "Science and IT Liabrary - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
               ),
               SizedBox(height: 15),
               KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
+                code: "S48",
+                title: "Class Rooms - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
               ),
               SizedBox(height: 15),
               KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
+                code: "S50",
+                title: "Khunji Hall - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
               ),
               SizedBox(height: 15),
               KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
+                code: "S51",
+                title: "Food Court - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
               ),
               SizedBox(height: 15),
               KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
-              ),
-              SizedBox(height: 15),
-              KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
-              ),
-              SizedBox(height: 15),
-              KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
-              ),
-              SizedBox(height: 15),
-              KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
+                code: "S6",
+                title: "Mosuqe - 2017",
+                circleColor: sakhirCircle,
+                fillColor: sakhirFill,
+                borderColor: sakhirBorder,
               ),
 
               //Divider Line
@@ -97,27 +193,35 @@ class KeepersPage extends StatelessWidget {
 
               //Isa Town Room Containers
               KeepersContainer(
-                code: "S40",
-                title: "College of IT - 1078",
-                circleColor: Color(0xFF771F98),
+                code: "S13",
+                title: "College of Engineering - 1078",
+                circleColor: isaCircle,
+                fillColor: isaFill,
+                borderColor: isaBorder,
               ),
               SizedBox(height: 15),
               KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
+                code: "S14",
+                title: "College of Engineering - 2017",
+                circleColor: isaCircle,
+                fillColor: isaFill,
+                borderColor: isaBorder,
               ),
               SizedBox(height: 15),
               KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
+                code: "S15",
+                title: "College of Engineering - 2017",
+                circleColor: isaCircle,
+                fillColor: isaFill,
+                borderColor: isaBorder,
               ),
               SizedBox(height: 15),
               KeepersContainer(
-                code: "S41",
-                title: "College of Science - 2017",
-                circleColor: Color(0xFF771F98),
+                code: "S27",
+                title: "College of Engineering - 2017",
+                circleColor: isaCircle,
+                fillColor: isaFill,
+                borderColor: isaBorder,
               ),
 
               //Divider Line
@@ -137,9 +241,11 @@ class KeepersPage extends StatelessWidget {
 
               //Salminya Room Containers
               KeepersContainer(
-                code: "S40",
-                title: "College of IT - 1078",
-                circleColor: Color(0xFF771F98),
+                code: "X",
+                title: "College of Health and Sciences - 1078",
+                circleColor: salminyaCircle,
+                fillColor: salminyaFill,
+                borderColor: salminyaBorder,
               ),
               SizedBox(height: 100),
             ],
