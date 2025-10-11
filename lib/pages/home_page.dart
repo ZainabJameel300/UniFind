@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unifind/Components/filters_tabs.dart';
+import 'package:unifind/Components/my_search_delegate.dart';
 import 'package:unifind/Components/post_card.dart';
-import 'package:unifind/Components/post_search.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:unifind/providers/filter_provider.dart';
 
@@ -18,67 +18,69 @@ class _HomePageState extends State<HomePage> {
   // get filtered posts
   Stream<QuerySnapshot> _getFilteredPosts() {
     final filterProvider = Provider.of<FilterProvider>(context);
-
+    
     Query query = FirebaseFirestore.instance
         .collection('posts')
         .orderBy('createdAt', descending: true);
 
-    // type filter
-    final String selectedtype = filterProvider.postType;
-    if (selectedtype != "All") {
-      query = query.where('type', isEqualTo: selectedtype);
-    }
+    if (filterProvider.hasAnyFilter) {
 
-    // categories filter
-    final String? selectedCategory = filterProvider.selectedCategory;
-    if (selectedCategory != null) {
-      query = query.where('category', isEqualTo: selectedCategory);
-    }
-
-    // location filter
-    final String? selectedLocation = filterProvider.selectedLocation;
-    if (selectedLocation != null) {
-      query = query.where('location', isEqualTo: selectedLocation);
-    }
-    
-    // date filter
-    final String? selectedDate = filterProvider.selectedDate;
-    if (selectedDate != null) {
-      final now = DateTime.now();
-      DateTime? start;
-      DateTime? end;
-
-      switch (selectedDate) {
-        case "Today":
-          start = DateTime(now.year, now.month, now.day);
-          end = start.add(const Duration(days: 1));
-          break;
-
-        case "This week":
-          int daysSinceSunday = now.weekday % 7; 
-          start = DateTime(now.year, now.month, now.day - daysSinceSunday);
-          end = start.add(const Duration(days: 7));
-          break;
-
-        case "This month":
-          start = DateTime(now.year, now.month, 1);
-          end = DateTime(now.year, now.month + 1, 1);
-          break;
-
-        case "Last 3 months":
-          start = DateTime(now.year, now.month - 3, now.day);
-          end = now;
-          break;
-
-        case "Last 6 months":
-          start = DateTime(now.year, now.month - 6, now.day);
-          end = now;
-          break;
+      // type filter
+      final String selectedtype = filterProvider.postType;
+      if (selectedtype != "All") {
+        query = query.where('type', isEqualTo: selectedtype);
       }
-
-      query = query
-          .where('date', isGreaterThanOrEqualTo: start)
-          .where('date', isLessThan: end);
+      
+      // categories filter
+      final String? selectedCategory = filterProvider.selectedCategory;
+      if (selectedCategory != null) {
+        query = query.where('category', isEqualTo: selectedCategory);
+      }
+      
+      // location filter
+      final String? selectedLocation = filterProvider.selectedLocation;
+      if (selectedLocation != null) {
+        query = query.where('location', isEqualTo: selectedLocation);
+      }
+      
+      // date filter
+      final String? selectedDate = filterProvider.selectedDate;
+      if (selectedDate != null) {
+        final now = DateTime.now();
+        DateTime? start;
+        DateTime? end;
+      
+        switch (selectedDate) {
+          case "Today":
+            start = DateTime(now.year, now.month, now.day); 
+            end = start.add(const Duration(days: 1));
+            break;
+      
+          case "This week":
+            start = DateTime(now.year, now.month, now.day - (now.weekday % 7));
+            end = start.add(const Duration(days: 7));
+            break;
+      
+          case "This month":
+            start = DateTime(now.year, now.month, 1); 
+            end = DateTime(now.year, now.month + 1, 1); 
+            break;
+      
+          case "Last 3 months":
+            start = DateTime(now.year, now.month - 3, now.day);
+            end = now.add(const Duration(days: 1)); 
+            break;
+      
+          case "Last 6 months":
+            start = DateTime(now.year, now.month - 6, now.day); 
+            end = now.add(const Duration(days: 1));
+            break;
+        }
+      
+        query = query
+            .where('date', isGreaterThanOrEqualTo: start)
+            .where('date', isLessThan: end);
+      }
     }
 
     return query.snapshots();
@@ -90,6 +92,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     bool hasAnyFilter = Provider.of<FilterProvider>(context, listen: false).hasAnyFilter;
+    
     return SafeArea(
       child: Center(
         child: Column(
@@ -106,7 +109,7 @@ class _HomePageState extends State<HomePage> {
                           onTap: () {
                             showSearch(
                               context: context,
-                              delegate: PostSearch(),
+                              delegate: MySearchDelegate(),
                             );
                           },
                           child: Container(
@@ -182,61 +185,67 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Divider(color: Color(0xFF8C8C8C), thickness: 1, height: 1,),
+            Divider(color: Color.fromARGB(255, 110, 110, 110), thickness: 1, height: 1,),
       
             // posts
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 15.0, left: 15.0, right: 15.0,),
-                // read posts data
-                child: StreamBuilder(
-                  stream: _getFilteredPosts(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Center(child: const Text("Error", style: TextStyle(fontSize: 16)));
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: const CircularProgressIndicator());
-                    }
-                    // no post found
-                    final posts = snapshot.data!.docs;
-                    if (posts.isEmpty) {
-                      return Center(
-                        child: Text(
-                          hasAnyFilter ? "No results for current filters" : "No posts yet",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      );
-                    }
-
-                    return ListView.builder(
-                      itemCount: snapshot.data!.docs.length,
-                      itemBuilder: (context, index) {
-                        DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
-                        String uid = postData["uid"];
-
-                        // read the publisher data for each post
-                        return FutureBuilder<DocumentSnapshot>(
-                          future: publishers.doc(uid).get(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasError) {
-                              return Center(child: Text("Error", style: TextStyle(fontSize: 16)));
-                            }
-
-                            if (snapshot.connectionState == ConnectionState.done) {
-                              Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
-                              
-                              return PostCard(
-                                publisherData: publisherData,
-                                postData: postData,
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(77, 223, 218, 236),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                  // read posts data
+                  child: StreamBuilder(
+                    stream: _getFilteredPosts(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(child: const Text("Error", style: TextStyle(fontSize: 16)));
+                      }
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: const CircularProgressIndicator());
+                      }
+                      // no post found
+                      final posts = snapshot.data!.docs;
+                      if (posts.isEmpty) {
+                        return Center(
+                          child: Text(
+                            hasAnyFilter ? "No results for current filters" : "No posts yet",
+                            style: TextStyle(fontSize: 16),
+                          ),
                         );
-                      },
-                    );
-                  },
+                      }
+                
+                      return ListView.builder(
+                        physics: const ClampingScrollPhysics(),
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                          DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
+                          String uid = postData["uid"];
+                
+                          // read the publisher data for each post
+                          return FutureBuilder<DocumentSnapshot>(
+                            future: publishers.doc(uid).get(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasError) {
+                                return Center(child: Text("Error", style: TextStyle(fontSize: 16)));
+                              }
+                
+                              if (snapshot.connectionState == ConnectionState.done) {
+                                Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
+                                
+                                return PostCard(
+                                  publisherData: publisherData,
+                                  postData: postData,
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

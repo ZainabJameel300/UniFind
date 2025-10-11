@@ -33,7 +33,7 @@ class ViewPost extends StatelessWidget {
     final String category = postData["category"];
 
     final String statusText = postData["claim_status"] ? "Claimed" : "Unclaimed";
-    final Color? statusColor = postData["claim_status"] ? Colors.green[700] : Colors.red[700];
+    final Color? statusColor = postData["claim_status"] ? Colors.teal[700] : Colors.red[700];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -71,16 +71,16 @@ class ViewPost extends StatelessWidget {
         
                 // post type - lost or found
                 Container(
-                  width: 60,
-                  height: 25,
+                  width: 64,
+                  height: 26,
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: type == "Lost" ? Colors.red[400] : Colors.teal[400],
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Center(
                     child: Text(
                       type,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
                     ),
                   ),
                 ),
@@ -88,12 +88,12 @@ class ViewPost extends StatelessWidget {
             ),
         
             SizedBox(height: 14.0),
-            Divider(color: Colors.grey[400], thickness: 1, height: 1),
+            Divider(color: const Color.fromARGB(255, 230, 230, 230), thickness: 1, height: 1),
         
             // item pic
-            if (pic.isNotEmpty && type == "Found")
+            if (pic.isNotEmpty && type == "Lost")
               Padding(
-                padding: const EdgeInsets.only(top: 12.0),
+                padding: const EdgeInsets.only(top: 14.0),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8.0),
                   child: Image.network(
@@ -122,7 +122,7 @@ class ViewPost extends StatelessWidget {
             const SizedBox(height: 6.0),
         
             // description
-            if (type == "Found" || isCurrentUser)
+            if (type == "Lost" || isCurrentUser)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(

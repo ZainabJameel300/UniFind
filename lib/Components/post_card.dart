@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/components/post_detail.dart';
-import '../utils/date_formats.dart';
+import 'package:unifind/utils/date_formats.dart';
 
 class PostCard extends StatelessWidget {
   final Map<String, dynamic> publisherData;
@@ -27,6 +28,7 @@ class PostCard extends StatelessWidget {
     final String desc = postData["description"];
     final Timestamp lostDate = postData["date"];
     final String location = postData["location"];
+    final String category = postData["category"];
 
     // go to view post page
     void viewPost(){         
@@ -43,18 +45,11 @@ class PostCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => viewPost(),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.0), 
-          border: Border.all(
-            color: const Color(0xFF771F98), 
-            width: 1.5,
-          ),
-        ),
-        margin: const EdgeInsets.symmetric(vertical: 8.0,), 
+      child: Card(
+        color: Colors.white,
+        margin: const EdgeInsets.symmetric(vertical: 10,), 
         child: Padding(
-        padding: const EdgeInsets.all(15.0),
+        padding: const EdgeInsets.all(15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -84,29 +79,37 @@ class PostCard extends StatelessWidget {
       
                 // post type - lost or found
                 Container(
-                  width: 55,
+                  width: 56,
                   height: 22,
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: type == "Lost" ? Colors.red[400] : Colors.teal[400],
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Center(
                     child: Text(
                       type,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
                     ),
                   ),
                 ),
               ],
             ),
-      
-            SizedBox(height: 10.0),
-            Divider(color: Colors.grey[400], thickness: 1, height: 1),
+            SizedBox(height: 8.0),
+          
+            if (type == "Found" || (pic.isEmpty && type == "Lost"))
+            Divider(color: const Color.fromARGB(255, 230, 230, 230), thickness: 1, height: 1),
                     
             // item pic 
-            if (pic.isNotEmpty && type == "Found")
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0),
+            if (pic.isNotEmpty && type == "Lost")
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenImage(imageUrl: pic),
+                  ),
+                );
+              },
               child: ClipRRect( 
                 borderRadius: BorderRadius.circular(8.0,),
                 child: Image.network(
@@ -117,7 +120,7 @@ class PostCard extends StatelessWidget {
                 ),   
               ),
             ),
-            SizedBox(height: 10.0),
+            SizedBox(height: 8.0),
               
             // title
             Row(
@@ -135,7 +138,7 @@ class PostCard extends StatelessWidget {
             const SizedBox(height: 5.0),
               
             // description 
-            if(type == "Found")
+            if(type == "Lost")
             Padding(
               padding: const EdgeInsets.only(bottom: 9),
               child: Text(
@@ -163,14 +166,11 @@ class PostCard extends StatelessWidget {
                     icon: Icons.location_on_outlined, 
                     text: location,
                   ),
-
-                  GestureDetector(
-                    onTap: () => viewPost(),
-                    child: PostDetail(
-                      icon: Icons.arrow_forward,
-                      text: "View Post",
-                      textColor: const Color.fromARGB(255, 67, 17, 87),
-                    ),
+                  
+                  // item category
+                  PostDetail(
+                    icon: Icons.sell_outlined,
+                    text: category,
                   ),
                 ],
               ),
