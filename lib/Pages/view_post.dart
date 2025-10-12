@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:unifind/Components/app_button.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
-import 'package:unifind/Components/my_AppBar.dart';
+import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/utils/date_formats.dart';
 import 'package:unifind/pages/chat_page.dart';
 

@@ -12,7 +12,7 @@ class MyButton extends StatelessWidget {
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
         fixedSize: const Size(320, 60),
-        backgroundColor: const Color.fromARGB(255, 119, 31, 153),
+        backgroundColor: const Color(0xFF771F98),
         foregroundColor: Colors.white,
       ),
       child: Text(

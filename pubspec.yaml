@@ -41,6 +41,9 @@ dependencies:
   intl: ^0.20.2
   provider: ^6.1.5+1
   photo_view: ^0.15.0
+  dotted_border: ^3.1.0
+  firebase_storage: ^13.0.2
+
 
 dev_dependencies:
   flutter_test:

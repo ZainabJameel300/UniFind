@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
-class MyTextField extends StatelessWidget {
+class ReportItemTextfield extends StatelessWidget {
   final String hintText;
   final bool obscureText;
   final TextEditingController controller;
-  final FocusNode? focusNode;
-  final String? Function(String?)? validator; // optional for later validation
+  final String? Function(String?)? validator;
+  final double height;
 
-  const MyTextField({
+  const ReportItemTextfield({
     super.key,
     required this.hintText,
     required this.obscureText,
     required this.controller,
-    this.focusNode,
     this.validator,
+    required this.height,
   });
 
   @override
@@ -22,23 +22,30 @@ class MyTextField extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 25.0),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 241, 241, 241),
+          color: Colors.white,
           border: Border.all(color: const Color(0xFF771F98), width: 2.5),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(25),
         ),
-        height: 55,
+        height: height,
         width: 380,
         child: Padding(
-          padding: const EdgeInsets.only(left: 20),
+          padding: const EdgeInsets.only(left: 20, right: 10),
           child: TextFormField(
             controller: controller,
-            focusNode: focusNode,
             obscureText: obscureText,
+            keyboardType: TextInputType.multiline,
+            minLines: height > 60
+                ? 3
+                : 1, // If height is big, show multiple lines
+            maxLines: height > 60 ? null : 1, // null lets it expand naturally
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: hintText,
+              hintStyle: TextStyle(
+                color: const Color.fromARGB(255, 198, 196, 196),
+              ),
             ),
-            validator: validator, // only used if wrapped in a Form
+            validator: validator,
           ),
         ),
       ),
