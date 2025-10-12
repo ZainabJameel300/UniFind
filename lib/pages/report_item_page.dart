@@ -30,6 +30,12 @@ class _ReportItemPageState extends State<ReportItemPage> {
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = DateTime.now();
+  }
+
   final List<String> categories = [
     "Electronics",
     "Charger",
@@ -73,6 +79,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
   String? _locationError;
   String? _categoryError;
   String? _dateError;
+  String? _imageError;
 
   void _showDatePicker() {
     showDatePicker(
@@ -154,7 +161,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
         "createdAt": Timestamp.now(),
         "date": dateTimestamp, // store as Timestamp
         "description": desccontroller.text.trim(),
-        "embedding": [], // Empty array for now
+        // "embedding": [], // Empty array for now
         "location": selectedlocation,
         "picture": imageUrl,
         "postID": docRef.id,
@@ -200,6 +207,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
       backgroundColor: Colors.white,
       appBar: MyAppbar(
         title: "Report Item",
+        showBack: false,
         onBack: () {
           Navigator.pushReplacementNamed(context, 'bottomnavBar');
         },
@@ -344,61 +352,58 @@ class _ReportItemPageState extends State<ReportItemPage> {
                   //category drop down list
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(
-                              color: const Color(0xFF771F98),
-                              width: 2.5,
-                            ),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          height: 55,
-                          width: 380,
-                          padding: const EdgeInsets.only(left: 20, right: 10),
-                          child: DropdownButtonFormField<String>(
-                            value: selectedCategory,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                            ),
-                            style: TextStyle(
-                              fontWeight: FontWeight.normal,
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
-                            items: categories
-                                .map(
-                                  (category) => DropdownMenuItem(
-                                    value: category,
-                                    child: Text(category),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedCategory = value;
-                                _categoryError = null;
-                              });
-                            },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: const Color(0xFF771F98),
+                          width: 2.5,
+                        ),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      height: 57,
+                      width: 380,
+                      padding: const EdgeInsets.only(left: 20, right: 10),
+                      child: DropdownButtonFormField<String>(
+                        value: selectedCategory,
+                        hint: const Text(
+                          "Select a Category...",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 198, 196, 196),
                           ),
                         ),
-                        if (_categoryError != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5, left: 15),
-                            child: Text(
-                              _categoryError!,
-                              style: const TextStyle(
-                                color: Color(0xFFB71C1C),
-                                fontSize: 13,
-                              ),
-                            ),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          errorText: _categoryError,
+                          errorStyle: const TextStyle(
+                            color: Color(0xFFB71C1C),
+                            fontSize: 13,
                           ),
-                      ],
+                          contentPadding: const EdgeInsets.only(bottom: 5),
+                        ),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                        items: categories
+                            .map(
+                              (category) => DropdownMenuItem(
+                                value: category,
+                                child: Text(category),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedCategory = value;
+                            _categoryError = null;
+                          });
+                        },
+                      ),
                     ),
                   ),
+
                   SizedBox(height: 20),
 
                   //Location Label
@@ -408,58 +413,58 @@ class _ReportItemPageState extends State<ReportItemPage> {
                   //Location DropDownList
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(
-                              color: const Color(0xFF771F98),
-                              width: 2.5,
-                            ),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          height: 55,
-                          width: 380,
-                          padding: const EdgeInsets.only(left: 20, right: 10),
-                          child: DropdownButtonFormField<String>(
-                            value: selectedlocation,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                            ),
-                            style: TextStyle(
-                              fontWeight: FontWeight.normal,
-                              fontSize: 16,
-                              color: Colors.black87,
-                            ),
-                            items: locations
-                                .map(
-                                  (location) => DropdownMenuItem(
-                                    value: location,
-                                    child: Text(location),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedlocation = value;
-                                _locationError = null;
-                              });
-                            },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: const Color(0xFF771F98),
+                          width: 2.5,
+                        ),
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      height: 57,
+                      width: 380,
+                      padding: const EdgeInsets.only(left: 20, right: 10),
+                      child: DropdownButtonFormField<String>(
+                        value: selectedlocation,
+                        hint: const Text(
+                          "Select a Location...",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 198, 196, 196),
                           ),
                         ),
-                        if (_locationError != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 5, left: 15),
-                            child: Text(
-                              _locationError!,
-                              style: const TextStyle(color: Color(0xFFB71C1C)),
-                            ),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          errorText: _locationError,
+                          errorStyle: const TextStyle(
+                            color: Color(0xFFB71C1C),
+                            fontSize: 13,
                           ),
-                      ],
+                          contentPadding: const EdgeInsets.only(bottom: 5),
+                        ),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                        items: locations
+                            .map(
+                              (location) => DropdownMenuItem(
+                                value: location,
+                                child: Text(location),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedlocation = value;
+                            _locationError = null;
+                          });
+                        },
+                      ),
                     ),
                   ),
+
                   SizedBox(height: 20),
 
                   //Date Label
@@ -529,85 +534,55 @@ class _ReportItemPageState extends State<ReportItemPage> {
                   // Upload Photo
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: const Color(0xFF771F98),
-                          width: 2.5,
+                    child: Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              color: const Color(0xFF771F98),
+                              width: 2.5,
+                            ),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          height: 185,
+                          width: 380,
+                          child: GestureDetector(
+                            onTap: _pickImage,
+                            child: _image == null
+                                ? const Center(
+                                    child: Icon(
+                                      Icons.camera_alt_outlined,
+                                      color: Color(0xFF771F98),
+                                      size: 40,
+                                    ),
+                                  )
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(25),
+                                    child: Image.file(
+                                      _image!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    ),
+                                  ),
+                          ),
                         ),
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      height: 185,
-                      width: 380,
-                      child: GestureDetector(
-                        onTap: _pickImage,
-                        child: _image == null
-                            ? const Center(
-                                child: Icon(
-                                  Icons.camera_alt_outlined,
-                                  color: Color(0xFF771F98),
-                                  size: 40,
-                                ),
-                              )
-                            : ClipRRect(
-                                borderRadius: BorderRadius.circular(25),
-                                child: Image.file(
-                                  _image!,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-
-                  // Remove image button
-                  if (_image != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10, right: 35),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton.icon(
-                            style: TextButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                225,
-                                224,
-                                224,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 8,
-                              ),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _image = null;
-                              });
-                            },
-                            icon: Icon(
-                              Icons.clear,
-                              color: Colors.red[700],
-                              size: 22,
-                            ),
-                            label: Text(
-                              "Remove Image",
-                              style: TextStyle(
-                                color: Color(0xFF771F98),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
+                        if (_imageError != null)
+                          Positioned(
+                            bottom: 8,
+                            left: 15,
+                            child: Text(
+                              _imageError!,
+                              style: const TextStyle(
+                                color: Color(0xFFB71C1C),
+                                fontSize: 13,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                      ],
                     ),
+                  ),
 
                   SizedBox(height: 45),
 
@@ -630,14 +605,21 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         } else {
                           _dateError = null;
                         }
+
+                        // Image error logic
+                        if (type == "Found" && _image == null) {
+                          _imageError = "Image is required for Found items!";
+                        } else {
+                          _imageError = null;
+                        }
                       });
 
                       if (isValid &&
                           _categoryError == null &&
                           _locationError == null &&
-                          _dateError == null) {
-                        // LOGIC AFTER THE FORM IS VALIDATED !!!!!
-
+                          _dateError == null &&
+                          _imageError == null) {
+                        // LOGIC AFTER THE FORM IS VALIDATED
                         _savePost();
                       }
                     },

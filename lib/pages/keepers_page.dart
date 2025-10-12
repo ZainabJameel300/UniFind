@@ -24,12 +24,7 @@ class KeepersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: MyAppbar(
-        title: "Keepers",
-        onBack: () {
-          Navigator.pushReplacementNamed(context, 'bottomnavBar');
-        },
-      ),
+      appBar: MyAppbar(title: "Keepers", showBack: false),
       body: ListView(
         children: [
           Column(

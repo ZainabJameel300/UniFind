@@ -22,8 +22,8 @@ class KeepersContainer extends StatelessWidget {
       padding: const EdgeInsets.only(left: 25, right: 25),
       child: Container(
         height: 55,
-        width: 400,
-        padding: EdgeInsets.all(8),
+        width: double.infinity, // Make it responsive
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: fillColor,
           border: Border.all(color: borderColor, width: 2.5),
@@ -49,14 +49,18 @@ class KeepersContainer extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 26),
-            // Title text
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
+            const SizedBox(width: 16),
+            // Title text wrapped in Flexible , this way on smaller screens it will adjust accordingly!
+            Flexible(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+                softWrap: true,
+                overflow: TextOverflow.visible,
               ),
             ),
           ],
