@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:unifind/Components/app_button.dart';
+import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/my_AppBar.dart';
 import 'package:unifind/utils/date_formats.dart';
 import 'package:unifind/pages/chat_page.dart';
@@ -87,24 +88,34 @@ class ViewPost extends StatelessWidget {
               ],
             ),
         
-            SizedBox(height: 14.0),
+            SizedBox(height: 12.0),
             Divider(color: const Color.fromARGB(255, 230, 230, 230), thickness: 1, height: 1),
         
-            // item pic
+            // item pic - only show image for "Lost" type posts
             if (pic.isNotEmpty && type == "Lost")
-              Padding(
-                padding: const EdgeInsets.only(top: 14.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    pic,
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 180,
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FullScreenImage(imageUrl: pic),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      pic,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: 200,
+                    ),
                   ),
                 ),
               ),
-            SizedBox(height: 14.0),
+            SizedBox(height: 12.0),
         
             // title
             Row(
@@ -121,16 +132,16 @@ class ViewPost extends StatelessWidget {
             ),
             const SizedBox(height: 6.0),
         
-            // description
+            // Show description - only for "Lost" type or if current user is the publisher
             if (type == "Lost" || isCurrentUser)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                desc,
-                style: TextStyle(fontSize: 14.0, height: 1.3),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  desc,
+                  style: TextStyle(fontSize: 14.0, height: 1.3),
+                ),
               ),
-            ),
-            const SizedBox(height: 18.0),
+            const SizedBox(height: 16.0),
         
             // details row
             Column(
@@ -162,7 +173,7 @@ class ViewPost extends StatelessWidget {
             Spacer(),
 
             // chat button
-            if(!isCurrentUser && status == false) 
+            if (!isCurrentUser && status == false) 
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: AppButton(

@@ -47,7 +47,7 @@ class PostCard extends StatelessWidget {
       onTap: () => viewPost(),
       child: Card(
         color: Colors.white,
-        margin: const EdgeInsets.symmetric(vertical: 10,), 
+        margin: const EdgeInsets.symmetric(vertical: 10), 
         child: Padding(
         padding: const EdgeInsets.all(15),
         child: Column(
@@ -57,7 +57,7 @@ class PostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [     
                 // publisher avatar
-                buildAvatar(avatar), 
+                _buildAvatar(avatar), 
                 const SizedBox(width: 8.0),
       
                 // publisher name & publish time
@@ -68,7 +68,6 @@ class PostCard extends StatelessWidget {
                       name,
                       style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                     ),
-                    const SizedBox(width: 8),
                     Text(
                       DateFormats.formatPublishTime(createdAt),
                       style: TextStyle(color: Colors.grey[600], fontSize: 12),
@@ -135,7 +134,7 @@ class PostCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 5.0),
+            const SizedBox(height: 4.0),
               
             // description 
             if(type == "Lost")
@@ -151,7 +150,7 @@ class PostCard extends StatelessWidget {
         
             // details row
             Padding(
-              padding: const EdgeInsets.only(top: 6, right: 10, left: 10, bottom: 6),
+              padding: const EdgeInsets.only(top: 4, right: 10, left: 10, bottom: 6),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -180,13 +179,12 @@ class PostCard extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget buildAvatar(String avatar) {
-  if (avatar.isNotEmpty) {
-    return CircleAvatar(radius: 20, backgroundImage: NetworkImage(avatar));
-  } else {
-    return const Icon(Icons.account_circle, size: 20*2, color: Colors.grey);
+  Widget _buildAvatar(String avatar) {
+    if (avatar.isNotEmpty) {
+      return CircleAvatar(radius: 20, backgroundImage: NetworkImage(avatar));
+    } else {
+      return const Icon(Icons.account_circle, size: 20*2, color: Colors.grey);
+    }
   }
 }
 

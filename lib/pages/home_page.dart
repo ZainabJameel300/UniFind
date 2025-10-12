@@ -15,10 +15,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-  // get filtered posts
+  // get filtered posts  
   Stream<QuerySnapshot> _getFilteredPosts() {
-    final filterProvider = Provider.of<FilterProvider>(context);
-    
+    final filterProvider = Provider.of<FilterProvider>(context, listen: false);
     Query query = FirebaseFirestore.instance
         .collection('posts')
         .orderBy('createdAt', descending: true);
@@ -124,7 +123,7 @@ class _HomePageState extends State<HomePage> {
                                 Icon(Icons.search),
                                 SizedBox(width: 5.0),
                                 Text(
-                                  "Search Items",
+                                  "Search",
                                   style: TextStyle(fontSize: 16.0),
                                 ),
                                 Spacer(),
@@ -148,7 +147,6 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-
 
                   // filters 
                   Row(
@@ -185,68 +183,58 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Divider(color: Color.fromARGB(255, 110, 110, 110), thickness: 1, height: 1,),
+            const Divider(color: Color.fromARGB(255, 110, 110, 110), thickness: 1, height: 1,),
       
             // posts
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Color.fromARGB(77, 223, 218, 236),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                  // read posts data
-                  child: StreamBuilder(
-                    stream: _getFilteredPosts(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(child: const Text("Error", style: TextStyle(fontSize: 16)));
-                      }
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: const CircularProgressIndicator());
-                      }
-                      // no post found
-                      final posts = snapshot.data!.docs;
-                      if (posts.isEmpty) {
-                        return Center(
-                          child: Text(
-                            hasAnyFilter ? "No results for current filters" : "No posts yet",
-                            style: TextStyle(fontSize: 16),
-                          ),
+              child: StreamBuilder(
+                stream: _getFilteredPosts(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(child: const Text("Error", style: TextStyle(fontSize: 16)));
+                  }
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: const CircularProgressIndicator());
+                  }
+                  // no post found
+                  final posts = snapshot.data!.docs;
+                  if (posts.isEmpty) {
+                    return Center(
+                      child: Text(
+                        hasAnyFilter ? "No results for current filters" : "No posts yet",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    );
+                  }
+                            
+                  return Container(
+                    color: const Color.fromARGB(77, 223, 218, 236), 
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                      physics: const ClampingScrollPhysics(),
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
+                        String uid = postData["uid"];
+                              
+                        // read the publisher data for each post
+                        return FutureBuilder<DocumentSnapshot>(
+                          future: publishers.doc(uid).get(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) return const SizedBox.shrink();
+                            if (!snapshot.hasData) return const SizedBox.shrink();
+                            
+                            Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
+                            return PostCard(
+                              publisherData: publisherData,
+                              postData: postData,
+                            );
+                          },
                         );
-                      }
-                
-                      return ListView.builder(
-                        physics: const ClampingScrollPhysics(),
-                        itemCount: snapshot.data!.docs.length,
-                        itemBuilder: (context, index) {
-                          DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
-                          String uid = postData["uid"];
-                
-                          // read the publisher data for each post
-                          return FutureBuilder<DocumentSnapshot>(
-                            future: publishers.doc(uid).get(),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasError) {
-                                return Center(child: Text("Error", style: TextStyle(fontSize: 16)));
-                              }
-                
-                              if (snapshot.connectionState == ConnectionState.done) {
-                                Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
-                                
-                                return PostCard(
-                                  publisherData: publisherData,
-                                  postData: postData,
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
+                      },
+                    ),
+                  );
+                },
               ),
             ),
           ],
