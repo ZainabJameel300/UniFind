@@ -5,6 +5,8 @@ import 'package:unifind/pages/chatrooms_page.dart';
 import 'package:unifind/pages/profile_page.dart';
 import 'package:unifind/pages/report_item_page.dart';
 
+import '../Components/filters_drawer.dart';
+
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -14,6 +16,7 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int selectedIndex = 0;
 
   final List<Widget> pages = [
@@ -39,6 +42,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         ),
         child: Icon(
           isSelected ? selectedicon : notselectedicon,
+          color: isSelected ? Colors.black : Colors.black45,
         ),
       ),
     );
@@ -47,6 +51,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
+      endDrawer: const FiltersDrawer(),
       backgroundColor: Colors.white,
       body: pages[selectedIndex],    
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

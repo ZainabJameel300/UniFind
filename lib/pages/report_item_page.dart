@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:unifind/Components/label.dart';
-import 'package:unifind/Components/my_AppBar.dart';
+import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/my_button.dart';
 import 'package:unifind/Components/report_item_textfield.dart';
 import 'package:image_picker/image_picker.dart';

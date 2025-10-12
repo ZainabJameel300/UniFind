@@ -11,9 +11,11 @@ class ChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: Text("Chat"),
+      ),
       body: Center(
-        child: Text('Chat with : $receiverID}')
+        child: Text('Chat with : $receiverID')
       ),
     );
   }

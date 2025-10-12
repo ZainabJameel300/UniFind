@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:unifind/Components/my_AppBar.dart';
+import 'package:unifind/Components/my_appbar.dart';
 
 class Potenialmatch extends StatefulWidget {
   const Potenialmatch({super.key});

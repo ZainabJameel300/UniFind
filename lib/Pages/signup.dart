@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:unifind/Components/my_button.dart';
+import 'package:unifind/components/my_button.dart';
 import 'package:unifind/Components/my_textfield.dart';
 
 class Signup extends StatefulWidget {

@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:unifind/Components/my_AppBar.dart';
+import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/my_textfield.dart';
 
 class Forgotpassword extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:unifind/Components/my_button.dart';
+import 'package:unifind/components/my_button.dart';
 
 class Splash extends StatelessWidget {
   const Splash({super.key});
