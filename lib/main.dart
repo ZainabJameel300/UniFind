@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:unifind/Pages/forgotpassword.dart';
 import 'package:unifind/Pages/login.dart';
+import 'package:unifind/Pages/potenialmatch.dart';
 import 'package:unifind/Pages/signup.dart';
 import 'package:unifind/Pages/splash.dart';
 import 'package:unifind/auth/mainPage.dart';
 import 'package:unifind/firebase_options.dart';
 import 'package:unifind/pages/bottom_navbar.dart';
+import 'package:unifind/pages/report_item_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,9 +25,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Mainpage(),
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Color.fromARGB(255, 86, 69, 139),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF771F98)),
       ),
       routes: {
         'splashpage': (context) => Splash(),
@@ -33,6 +33,8 @@ class MyApp extends StatelessWidget {
         'signuppage': (context) => Signup(),
         'forgotpasswordpage': (context) => Forgotpassword(),
         'bottomnavBar': (context) => BottomNavBar(),
+        'reportitempage': (context) => ReportItemPage(),
+        'potenialmatchpage': (context) => Potenialmatch(),
       },
     );
   }

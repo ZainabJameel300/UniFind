@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:unifind/Components/my_AppBar.dart';
 import 'package:unifind/Components/my_textfield.dart';
 
 class Forgotpassword extends StatefulWidget {
@@ -100,17 +101,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text("Reset Password", style: TextStyle(fontSize: 28)),
-        backgroundColor: Colors.white,
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(20),
-          child: Divider(
-            color: Color.fromARGB(255, 110, 110, 110),
-            height: 1.5,
-          ),
-        ),
-      ),
+      appBar: MyAppbar(title: "Forgot Password"),
       body: Form(
         key: _formKey,
         child: Column(
