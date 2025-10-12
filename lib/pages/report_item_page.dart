@@ -54,7 +54,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
     "S3-Central Library",
     "S37-Registeration",
     "S39-Law College",
-    "S4- Food Court",
+    "S4-Food Court",
     "S40-IT College",
     "S41-Science College",
     "S47-Sciance and IT Library",
@@ -62,6 +62,8 @@ class _ReportItemPageState extends State<ReportItemPage> {
     "S50-Khunji Hall",
     "S51-Food Court",
     "S6-Mosque",
+    "S27-College of Engineering",
+    "College of Health and Sciences",
   ];
 
   String? selectedCategory;

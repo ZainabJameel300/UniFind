@@ -3,17 +3,17 @@ import 'package:unifind/Components/keepers_container.dart';
 import 'package:unifind/Components/keepers_label.dart';
 import 'package:unifind/Components/my_AppBar.dart';
 
-// Sakhir Campus
+// Sakhir Campus Colors
 const sakhirFill = Color(0xFFEADDEF);
 const sakhirBorder = Color(0xFF771F98);
 const sakhirCircle = Color(0xFF771F98);
 
-// Isa Town Campus
+// Isa Town Campus Colors
 const isaFill = Color(0xFFF8E6F2);
 const isaBorder = Color(0xFFD13FC6);
 const isaCircle = Color(0xFFD13FC6);
 
-// Salminya Campus
+// Salminya Campus Colors
 const salminyaFill = Color(0xFFE5E8FB);
 const salminyaBorder = Color(0xFF4B4AEF);
 const salminyaCircle = Color(0xFF4B4AEF);
