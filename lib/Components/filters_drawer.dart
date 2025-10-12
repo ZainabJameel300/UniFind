@@ -12,14 +12,15 @@ class FiltersDrawer extends StatefulWidget {
 }
 
 class _FiltersDrawerState extends State<FiltersDrawer> {
-  final List<String> categories = [
-    "Phones",
-    "Chargers",
+   final List<String> categories = [
     "Electronics",
-    "Wallets",
+    "Charger",
     "Cards",
+    "Wallet",
     "Keys",
+    "Bags",
     "Accessories",
+    "Books",
     "Other",
   ];
 
@@ -27,6 +28,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
     "S1-Buissness College",
     "S1-Art College",
     "S18-All Purpose Hall",
+    "S20-English Language Center",
     "S20-A",
     "S20-B",
     "S20-C",
@@ -41,7 +43,9 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
     "S48-Class Rooms",
     "S50-Khunji Hall",
     "S51-Food Court",
-    "S6-Mosque"
+    "S6-Mosque",
+    "S27-College of Engineering",
+    "College of Health and Sciences",
   ];
 
   final List<String> dates = [
@@ -124,7 +128,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
 
                       // Date filter
                       const Text(
-                        "Lost Date",
+                        "Date of Loss",
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
