@@ -208,9 +208,6 @@ class _ReportItemPageState extends State<ReportItemPage> {
       appBar: MyAppbar(
         title: "Report Item",
         showBack: false,
-        onBack: () {
-          Navigator.pushReplacementNamed(context, 'bottomnavBar');
-        },
       ),
       body: SafeArea(
         child: ListView(

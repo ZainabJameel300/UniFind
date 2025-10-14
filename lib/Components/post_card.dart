@@ -150,7 +150,7 @@ class PostCard extends StatelessWidget {
         
             // details row
             Padding(
-              padding: const EdgeInsets.only(top: 4, right: 10, left: 10, bottom: 6),
+              padding: const EdgeInsets.only(top: 4, right: 6, left: 6, bottom: 6),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

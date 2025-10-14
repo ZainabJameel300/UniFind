@@ -1,9 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/filters_tabs.dart';
 import 'package:unifind/Components/my_search_delegate.dart';
 import 'package:unifind/Components/post_card.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:unifind/Pages/notifications_page.dart';
 import 'package:unifind/providers/filter_provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -92,6 +95,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     bool hasAnyFilter = Provider.of<FilterProvider>(context).hasAnyFilter;
+    String currentUserID = FirebaseAuth.instance.currentUser!.uid;
 
     return SafeArea(
       child: Center(
@@ -138,13 +142,22 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(width: 8.0),
 
                       // notifications
-                      Container(
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15.0),
-                          color: const Color(0xFFF1F1F1),
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                NotificationsPage(uid: currentUserID),
+                          ),
                         ),
-                        child: const Icon(Icons.notifications_outlined),
+                        child: Container(
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15.0),
+                            color: const Color(0xFFF1F1F1),
+                          ),
+                          child: const Icon(Icons.notifications_outlined),
+                        ),
                       ),
                     ],
                   ),
@@ -201,12 +214,7 @@ class _HomePageState extends State<HomePage> {
                 stream: _getFilteredPosts(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Center(
-                      child: const Text(
-                        "Error",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    );
+                    return Center(child: const Text("Error", style: TextStyle(fontSize: 16)));
                   }
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: const CircularProgressIndicator());
@@ -214,13 +222,14 @@ class _HomePageState extends State<HomePage> {
                   // no post found
                   final posts = snapshot.data!.docs;
                   if (posts.isEmpty) {
-                    return Center(
-                      child: Text(
-                        hasAnyFilter
-                            ? "No results for current filters"
-                            : "No posts yet",
-                        style: TextStyle(fontSize: 16),
-                      ),
+                    return EmptyStateWidget(
+                      icon: hasAnyFilter
+                          ? Icons.filter_alt_off
+                          : Icons.post_add_outlined,
+                      title: hasAnyFilter ? "No posts found" : "No posts yet",
+                      subtitle: hasAnyFilter
+                          ? "No items match your current filters."
+                          : "Items will show when other users report new items",
                     );
                   }
 
@@ -234,8 +243,7 @@ class _HomePageState extends State<HomePage> {
                       physics: const ClampingScrollPhysics(),
                       itemCount: snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
-                        DocumentSnapshot postData = snapshot.data!.docs
-                            .elementAt(index);
+                        DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
                         String uid = postData["uid"];
 
                         // read the publisher data for each post

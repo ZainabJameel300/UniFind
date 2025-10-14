@@ -92,7 +92,7 @@ class ViewPost extends StatelessWidget {
             Divider(color: const Color.fromARGB(255, 230, 230, 230), thickness: 1, height: 1),
         
             // item pic - only show image for "Lost" type posts
-            if (pic.isNotEmpty && type == "Lost")
+            if (pic.isNotEmpty && type == "Lost" || isCurrentUser)
               GestureDetector(
                 onTap: () {
                   Navigator.push(

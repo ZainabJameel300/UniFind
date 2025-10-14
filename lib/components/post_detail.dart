@@ -19,13 +19,13 @@ class PostDetail extends StatelessWidget {
         Icon(
           icon, 
           color: const Color(0xFFD0B1DB), 
-          size: 20.0,
+          size: 18.0,
         ),
-        const SizedBox(width: 4.0),
+        const SizedBox(width: 1.0),
         Text(
           text, 
           style: TextStyle(
-            fontSize: 12.0,
+            fontSize: 11,
             color: textColor ?? Colors.grey[800],
           ),
         ),
