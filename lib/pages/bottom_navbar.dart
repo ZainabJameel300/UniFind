@@ -7,7 +7,6 @@ import 'package:unifind/pages/report_item_page.dart';
 
 import '../Components/filters_drawer.dart';
 
-
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
 
@@ -22,24 +21,27 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final List<Widget> pages = [
     const HomePage(),
     const KeepersPage(),
-    const ReportItemPage(), 
-    const ChatroomsPage(),
+    const ReportItemPage(),
+    ChatroomsPage(),
     const ProfilePage(),
   ];
 
   void onTabTapped(int index) {
-      setState(() => selectedIndex = index);
+    setState(() => selectedIndex = index);
   }
 
-  Widget _buildNavItem(IconData selectedicon, IconData notselectedicon, int index) {
+  Widget _buildNavItem(
+    IconData selectedicon,
+    IconData notselectedicon,
+    int index,
+  ) {
     final bool isSelected = selectedIndex == index;
 
     return GestureDetector(
       onTap: () => onTabTapped(index),
       child: Container(
         padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-        ),
+        decoration: BoxDecoration(),
         child: Icon(
           isSelected ? selectedicon : notselectedicon,
           color: isSelected ? Colors.black : Colors.black45,
@@ -54,7 +56,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       key: _scaffoldKey,
       endDrawer: const FiltersDrawer(),
       backgroundColor: Colors.white,
-      body: pages[selectedIndex],    
+      body: pages[selectedIndex],
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF771F98),
@@ -74,10 +76,14 @@ class _BottomNavBarState extends State<BottomNavBar> {
           children: [
             _buildNavItem(Icons.home, Icons.home_outlined, 0),
             _buildNavItem(Icons.location_on, Icons.location_on_outlined, 1),
-        
+
             const SizedBox(width: 40),
-        
-            _buildNavItem(Icons.chat_bubble_rounded, Icons.chat_bubble_outline, 3),
+
+            _buildNavItem(
+              Icons.chat_bubble_rounded,
+              Icons.chat_bubble_outline,
+              3,
+            ),
             _buildNavItem(Icons.person, Icons.person_outlined, 4),
           ],
         ),
