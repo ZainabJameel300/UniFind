@@ -92,10 +92,20 @@ class _HomePageState extends State<HomePage> {
     'users',
   );
 
+  // get notifications count 
+  Stream<int> unreadNotificationsCount() {
+    return FirebaseFirestore.instance
+        .collection('notifications')
+        .where('toUserID', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where('isRead', isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.size);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     bool hasAnyFilter = Provider.of<FilterProvider>(context).hasAnyFilter;
-    String currentUserID = FirebaseAuth.instance.currentUser!.uid;
 
     return SafeArea(
       child: Center(
@@ -133,7 +143,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 Spacer(),
                                 // AI search (camera)
-                                Icon(Icons.photo_camera_outlined),
+                                Icon(Icons.photo_camera_outlined, size: 24),
                               ],
                             ),
                           ),
@@ -142,23 +152,43 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(width: 8.0),
 
                       // notifications
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                NotificationsPage(uid: currentUserID),
-                          ),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15.0),
-                            color: const Color(0xFFF1F1F1),
-                          ),
-                          child: const Icon(Icons.notifications_outlined),
-                        ),
-                      ),
+                      StreamBuilder<int>(
+                        stream: unreadNotificationsCount(),
+                        builder: (context, snapshot) {
+                          final int count = snapshot.data ?? 0;
+
+                          return GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NotificationsPage(),
+                              ),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15.0),
+                                color: const Color(0xFFF1F1F1),
+                              ),
+                              child: Badge(
+                                backgroundColor: const Color(0xFF771F98),
+                                label: Text(
+                                  count.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                isLabelVisible: count > 0,
+                                alignment: Alignment.topRight, 
+                                offset: const Offset(5,-2,), 
+                                child: const Icon(Icons.notifications_outlined, size:24),
+                              ),
+                            ),
+                          );
+                        },
+                      )
+
                     ],
                   ),
 
@@ -252,10 +282,8 @@ class _HomePageState extends State<HomePage> {
                           builder: (context, snapshot) {
                             if (snapshot.hasError) return Text("Error");
 
-                            if (snapshot.connectionState ==
-                                ConnectionState.done) {
-                              Map<String, dynamic> publisherData =
-                                  snapshot.data!.data() as Map<String, dynamic>;
+                            if (snapshot.connectionState == ConnectionState.done) {
+                              Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
                               return PostCard(
                                 publisherData: publisherData,
                                 postData: postData,

@@ -21,6 +21,7 @@ class PostCard extends StatelessWidget {
     final bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
     final String name = isCurrentUser ? "You" : publisherData["username"];
     final String avatar = publisherData["avatar"];
+    final String postID = postData["postID"];
     final String type = postData["type"];
     final DateTime createdAt = postData["createdAt"].toDate();
     final String pic = postData["picture"];
@@ -36,8 +37,7 @@ class PostCard extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (context) => ViewPost(
-            publisherData: publisherData,
-            postData: postData,
+            postID: postID,
           ),
         ),
       );
