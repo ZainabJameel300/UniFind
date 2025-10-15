@@ -205,13 +205,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: MyAppbar(
-        title: "Report Item",
-        showBack: false,
-        onBack: () {
-          Navigator.pushReplacementNamed(context, 'bottomnavBar');
-        },
-      ),
+      appBar: MyAppbar(title: "Report Item", showBack: false),
       body: SafeArea(
         child: ListView(
           children: [
@@ -365,7 +359,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       width: 380,
                       padding: const EdgeInsets.only(left: 20, right: 10),
                       child: DropdownButtonFormField<String>(
-                        value: selectedCategory,
+                        initialValue: selectedCategory,
                         hint: const Text(
                           "Select a Category...",
                           style: TextStyle(
@@ -426,7 +420,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       width: 380,
                       padding: const EdgeInsets.only(left: 20, right: 10),
                       child: DropdownButtonFormField<String>(
-                        value: selectedlocation,
+                        initialValue: selectedlocation,
                         hint: const Text(
                           "Select a Location...",
                           style: TextStyle(
