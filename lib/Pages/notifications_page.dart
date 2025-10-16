@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/notification_tile.dart';
@@ -42,7 +43,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           final notifications = snapshot.data!.docs;
           if (notifications.isEmpty) {
             return const EmptyStateWidget(
-              icon: Icons.notifications_none,
+              icon: Symbols.notifications_none,
               title: "No Notifications",
               subtitle: "We’ll let you know when any of your unclaimed items get matched!",
             );

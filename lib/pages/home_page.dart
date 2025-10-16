@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/filters_tabs.dart';
@@ -135,7 +136,7 @@ class _HomePageState extends State<HomePage> {
                             child: const Row(
                               children: [
                                 // search
-                                Icon(Icons.search),
+                                Icon(Symbols.search),
                                 SizedBox(width: 5.0),
                                 Text(
                                   "Search",
@@ -143,7 +144,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 Spacer(),
                                 // AI search (camera)
-                                Icon(Icons.photo_camera_outlined, size: 24),
+                                Icon(Symbols.photo_camera, size: 24),
                               ],
                             ),
                           ),
@@ -182,7 +183,7 @@ class _HomePageState extends State<HomePage> {
                                 isLabelVisible: count > 0,
                                 alignment: Alignment.topRight, 
                                 offset: const Offset(5,-2,), 
-                                child: const Icon(Icons.notifications_outlined, size:24),
+                                child: const Icon(Symbols.notifications, size: 24),
                               ),
                             ),
                           );
@@ -209,13 +210,13 @@ class _HomePageState extends State<HomePage> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Icon(
-                                  Icons.filter_alt_outlined,
+                                  Symbols.filter_alt,
                                   color: hasAnyFilter
                                       ? const Color(0xFF771F98)
                                       : Colors.black,
                                 ),
                                 Icon(
-                                  Icons.density_medium,
+                                  Symbols.density_medium,
                                   size: 18.0,
                                   color: hasAnyFilter
                                       ? const Color(0xFF771F98)
@@ -254,8 +255,8 @@ class _HomePageState extends State<HomePage> {
                   if (posts.isEmpty) {
                     return EmptyStateWidget(
                       icon: hasAnyFilter
-                          ? Icons.filter_alt_off
-                          : Icons.post_add_outlined,
+                          ? Symbols.filter_alt_off
+                          : Symbols.post_add,
                       title: hasAnyFilter ? "No posts found" : "No posts yet",
                       subtitle: hasAnyFilter
                           ? "No items match your current filters."

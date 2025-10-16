@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/utils/date_formats.dart';
 
@@ -55,7 +56,7 @@ class NotificationTile extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Icon(
-          Icons.notifications,
+          Symbols.notifications,
           color: isRead ? Colors.grey[600] : const Color(0xFF771F98),
           size: 22,
         ),

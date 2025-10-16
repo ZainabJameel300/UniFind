@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Pages/login.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -29,7 +30,7 @@ class ProfilePage extends StatelessWidget {
               ),
             );
           },
-          icon: const Icon(Icons.logout, color: Colors.white),
+          icon: const Icon(Symbols.logout, color: Colors.white),
           label: const Text(
             "Log Out",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

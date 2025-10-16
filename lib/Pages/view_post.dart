@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/app_button.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/my_appbar.dart';
@@ -170,23 +171,23 @@ class ViewPost extends StatelessWidget {
                       children: [
                         // post date
                         buildDetail(
-                          Icons.calendar_today_outlined, 
+                          Symbols.calendar_today, 
                           "Date:", DateFormats.formatLostDate(lostDate),
                         ),
                         // item location
                         buildDetail(
-                          Icons.location_on_outlined, 
+                          Symbols.location_on,
                           "Location:", location,
                         ),
                         // item status
                         buildDetail(
-                          Icons.task_alt_outlined, 
+                          Symbols.task_alt, 
                           "Status:", statusText, 
                           valueColor: statusColor,
                         ),
                         // category
                         buildDetail(
-                          Icons.sell_outlined, "Category:", 
+                          Symbols.sell, "Category:", 
                           category,
                         ),
                       ],
