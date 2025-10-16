@@ -23,7 +23,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const HomePage(),
     const KeepersPage(),
     const ReportItemPage(),
-    ChatroomsPage(),
+    const ChatroomsPage(),
     const ProfilePage(),
   ];
 
@@ -72,17 +72,13 @@ class _BottomNavBarState extends State<BottomNavBar> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(Icons.home, Icons.home_outlined, 0),
-            _buildNavItem(Icons.location_on, Icons.location_on_outlined, 1),
+            _buildNavItem(Symbols.home, 0),
+            _buildNavItem(Symbols.location_on, 1),
 
             const SizedBox(width: 40),
 
-            _buildNavItem(
-              Icons.chat_bubble_rounded,
-              Icons.chat_bubble_outline,
-              3,
-            ),
-            _buildNavItem(Icons.person, Icons.person_outlined, 4),
+            _buildNavItem(Symbols.chat_bubble, 3),
+            _buildNavItem(Symbols.person, 4),
           ],
         ),
       ),
