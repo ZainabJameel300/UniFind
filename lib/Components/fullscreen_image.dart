@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:photo_view/photo_view.dart';
 
 class FullScreenImage extends StatelessWidget {
@@ -23,7 +24,7 @@ class FullScreenImage extends StatelessWidget {
             top: 40,
             left: 10,
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 28),
+              icon: const Icon(Symbols.close, color: Colors.white, size: 28),
               onPressed: () => Navigator.pop(context),
             ),
           ),

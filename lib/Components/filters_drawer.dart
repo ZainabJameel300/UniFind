@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart'; 
 import 'package:unifind/Components/my_choice_chip.dart';
 import 'package:unifind/Components/my_drawer_button.dart';
@@ -86,7 +87,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Symbols.close),
                     onPressed: closeDrawer,
                   ),
                   Expanded(
@@ -159,7 +160,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
                           ),
                           IconButton(
                             icon: Icon(
-                              isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                              isExpanded ? Symbols.keyboard_arrow_up : Symbols.keyboard_arrow_down,
                               size: 20,
                             ),
                             onPressed: () => setState(() {

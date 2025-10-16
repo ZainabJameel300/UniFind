@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/pages/home_page.dart';
 import 'package:unifind/pages/keepers_page.dart';
 import 'package:unifind/pages/chatrooms_page.dart';
@@ -30,11 +31,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     setState(() => selectedIndex = index);
   }
 
-  Widget _buildNavItem(
-    IconData selectedicon,
-    IconData notselectedicon,
-    int index,
-  ) {
+  Widget _buildNavItem(IconData icon, int index) {
     final bool isSelected = selectedIndex == index;
 
     return GestureDetector(
@@ -43,7 +40,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(),
         child: Icon(
-          isSelected ? selectedicon : notselectedicon,
+          icon,
+          fill: isSelected ? 1 : 0,
           color: isSelected ? Colors.black : Colors.black45,
         ),
       ),
@@ -66,7 +64,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         onPressed: () {
           onTabTapped(2);
         },
-        child: const Icon(Icons.add_rounded),
+        child: const Icon(Symbols.add),
       ),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),

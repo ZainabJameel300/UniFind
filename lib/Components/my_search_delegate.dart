@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/components/post_card.dart';
 
 class MySearchDelegate extends SearchDelegate<void> {
@@ -24,14 +25,14 @@ class MySearchDelegate extends SearchDelegate<void> {
   List<Widget>? buildActions(BuildContext context) {
     return [
       if (query.isNotEmpty)
-        IconButton(icon: const Icon(Icons.clear), onPressed: () => query = ''),
+        IconButton(icon: const Icon(Symbols.clear), onPressed: () => query = ''),
     ];
   }
 
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.arrow_back),
+      icon: const Icon(Symbols.arrow_back),
       onPressed: () => close(context, null),
     );
   }

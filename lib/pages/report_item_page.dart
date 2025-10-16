@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/label.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/my_button.dart';
@@ -268,7 +270,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                             message:
                                 "This field will be public, don't reveal any descriptive information!",
                             child: const Icon(
-                              Icons.info_outline,
+                              Symbols.info,
                               color: Colors.red,
                               size: 25,
                             ),
@@ -310,7 +312,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                             message:
                                 "This field is hidden from the public for confidentiality!",
                             child: const Icon(
-                              Icons.info_outline,
+                              Symbols.info,
                               color: Colors.red,
                               size: 25,
                             ),
@@ -359,7 +361,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       width: 380,
                       padding: const EdgeInsets.only(left: 20, right: 10),
                       child: DropdownButtonFormField<String>(
-                        initialValue: selectedCategory,
+                        value: selectedCategory,
                         hint: const Text(
                           "Select a Category...",
                           style: TextStyle(
@@ -379,6 +381,11 @@ class _ReportItemPageState extends State<ReportItemPage> {
                           fontWeight: FontWeight.normal,
                           fontSize: 16,
                           color: Colors.black87,
+                        ),
+                        icon: const Icon(
+                          Symbols.expand_more,
+                          fill: 1,
+                          color: Color(0xFF771F98),
                         ),
                         items: categories
                             .map(
@@ -420,7 +427,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       width: 380,
                       padding: const EdgeInsets.only(left: 20, right: 10),
                       child: DropdownButtonFormField<String>(
-                        initialValue: selectedlocation,
+                        value: selectedlocation,
                         hint: const Text(
                           "Select a Location...",
                           style: TextStyle(
@@ -440,6 +447,11 @@ class _ReportItemPageState extends State<ReportItemPage> {
                           fontWeight: FontWeight.normal,
                           fontSize: 16,
                           color: Colors.black87,
+                        ),
+                        icon: const Icon(
+                          Symbols.expand_more,
+                          fill: 1,
+                          color: Color(0xFF771F98),
                         ),
                         items: locations
                             .map(
@@ -498,7 +510,8 @@ class _ReportItemPageState extends State<ReportItemPage> {
                                 right: 10,
                               ),
                               suffixIcon: Icon(
-                                Icons.calendar_month_rounded,
+                                Symbols.calendar_month,
+                                fill: 1,
                                 color: Color(0xFF771F98),
                               ),
                             ),
@@ -530,36 +543,38 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: Stack(
                       children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: DottedBorder(
+                            options: RoundedRectDottedBorderOptions(
+                              radius: const Radius.circular(25),
+                              padding: const EdgeInsets.all(8),
                               color: const Color(0xFF771F98),
-                              width: 2.5,
+                              strokeWidth: 2.5,
+                              dashPattern: [10, 5],
                             ),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          height: 185,
-                          width: 380,
-                          child: GestureDetector(
-                            onTap: _pickImage,
-                            child: _image == null
-                                ? const Center(
-                                    child: Icon(
-                                      Icons.camera_alt_outlined,
-                                      color: Color(0xFF771F98),
-                                      size: 40,
+                            child: Container(
+                              color: Colors.white,
+                              height: 185,
+                              width: 380,
+                              child: _image == null
+                                  ? const Center(
+                                      child: Icon(
+                                        Symbols.photo_camera,
+                                        color: Color(0xFF771F98),
+                                        size: 40,
+                                      ),
+                                    )
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: Image.file(
+                                        _image!,
+                                        fit: BoxFit.cover,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                      ),
                                     ),
-                                  )
-                                : ClipRRect(
-                                    borderRadius: BorderRadius.circular(25),
-                                    child: Image.file(
-                                      _image!,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    ),
-                                  ),
+                            ),
                           ),
                         ),
                         if (_imageError != null)
