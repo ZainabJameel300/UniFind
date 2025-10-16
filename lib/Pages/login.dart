@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/my_textfield.dart';
 import 'package:unifind/components/my_button.dart';
 
@@ -56,7 +57,7 @@ class _LoginState extends State<Login> {
           ),
           title: Row(
             children: [
-              Icon(Icons.error_outline, color: const Color(0xFF771F98)),
+              Icon(Symbols.error_outline, color: const Color(0xFF771F98)),
               const SizedBox(width: 8),
               const Text(
                 "Login Failed",

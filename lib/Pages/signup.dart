@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/components/my_button.dart';
 import 'package:unifind/Components/my_textfield.dart';
 
@@ -75,7 +76,7 @@ class _SignupState extends State<Signup> {
           ),
           title: Row(
             children: [
-              Icon(Icons.error_outline, color: const Color(0xFF771F98)),
+              Icon(Symbols.error_outline, color: const Color(0xFF771F98)),
               const SizedBox(width: 8),
               const Text(
                 "Sign Up Failed",

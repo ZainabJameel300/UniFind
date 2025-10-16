@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/components/post_detail.dart';
@@ -21,6 +22,7 @@ class PostCard extends StatelessWidget {
     final bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
     final String name = isCurrentUser ? "You" : publisherData["username"];
     final String avatar = publisherData["avatar"];
+    final String postID = postData["postID"];
     final String type = postData["type"];
     final DateTime createdAt = postData["createdAt"].toDate();
     final String pic = postData["picture"];
@@ -36,8 +38,7 @@ class PostCard extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (context) => ViewPost(
-            publisherData: publisherData,
-            postData: postData,
+            postID: postID,
           ),
         ),
       );
@@ -150,25 +151,30 @@ class PostCard extends StatelessWidget {
         
             // details row
             Padding(
-              padding: const EdgeInsets.only(top: 4, right: 10, left: 10, bottom: 6),
+              padding: const EdgeInsets.only(top: 4, right: 6, left: 6, bottom: 6),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // post date
                   PostDetail(
-                    icon: Icons.calendar_today_outlined, 
+                    icon: Symbols.calendar_today,
                     text: DateFormats.formatLostDate(lostDate),
                   ),
-                    
-                  // item location
-                  PostDetail(
-                    icon: Icons.location_on_outlined, 
-                    text: location,
+                  const SizedBox(width: 6),
+
+                  // item location (wraps if long)
+                  Flexible(
+                    child: PostDetail(
+                      icon: Symbols.location_on,
+                      text: location,
+                    ),
                   ),
-                  
+                  const SizedBox(width: 6),
+
                   // item category
                   PostDetail(
-                    icon: Icons.sell_outlined,
+                    icon: Symbols.sell,
                     text: category,
                   ),
                 ],

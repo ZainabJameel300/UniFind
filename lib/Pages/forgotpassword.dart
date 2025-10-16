@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/my_textfield.dart';
 
@@ -65,7 +66,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
           title: Row(
             children: [
               Icon(
-                Icons.error_outline,
+                Symbols.error_outline,
                 color: const Color.fromARGB(255, 119, 31, 153),
               ),
               const SizedBox(width: 8),

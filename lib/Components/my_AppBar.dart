@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class MyAppbar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -20,7 +21,7 @@ class MyAppbar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       leading: showBack
           ? IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: const Icon(Symbols.arrow_back, color: Colors.black),
               onPressed: onBack ?? () => Navigator.pop(context),
             )
           : null,
