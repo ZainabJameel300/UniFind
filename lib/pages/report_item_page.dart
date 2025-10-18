@@ -577,6 +577,31 @@ class _ReportItemPageState extends State<ReportItemPage> {
                             ),
                           ),
                         ),
+                        // Button to remove the image
+                        if (_image != null)
+                          Positioned(
+                            bottom: 20,
+                            right: 20,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _image = null;
+                                });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFF3F3F3),
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(6),
+                                child: Icon(
+                                  Icons.clear,
+                                  color: Colors.red[400],
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                          ),
                         if (_imageError != null)
                           Positioned(
                             bottom: 8,
