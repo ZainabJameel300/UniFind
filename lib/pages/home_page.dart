@@ -93,7 +93,7 @@ class _HomePageState extends State<HomePage> {
     'users',
   );
 
-  // get notifications count 
+  // get notifications count
   Stream<int> unreadNotificationsCount() {
     return FirebaseFirestore.instance
         .collection('notifications')
@@ -102,7 +102,6 @@ class _HomePageState extends State<HomePage> {
         .snapshots()
         .map((snapshot) => snapshot.size);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -181,15 +180,17 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                                 isLabelVisible: count > 0,
-                                alignment: Alignment.topRight, 
-                                offset: const Offset(5,-2,), 
-                                child: const Icon(Symbols.notifications, size: 24),
+                                alignment: Alignment.topRight,
+                                offset: const Offset(5, -2),
+                                child: const Icon(
+                                  Symbols.notifications,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           );
                         },
-                      )
-
+                      ),
                     ],
                   ),
 
@@ -245,7 +246,12 @@ class _HomePageState extends State<HomePage> {
                 stream: _getFilteredPosts(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return Center(child: const Text("Error", style: TextStyle(fontSize: 16)));
+                    return Center(
+                      child: const Text(
+                        "Error",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    );
                   }
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: const CircularProgressIndicator());
@@ -274,7 +280,8 @@ class _HomePageState extends State<HomePage> {
                       physics: const ClampingScrollPhysics(),
                       itemCount: snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
-                        DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
+                        DocumentSnapshot postData = snapshot.data!.docs
+                            .elementAt(index);
                         String uid = postData["uid"];
 
                         // read the publisher data for each post
@@ -283,8 +290,10 @@ class _HomePageState extends State<HomePage> {
                           builder: (context, snapshot) {
                             if (snapshot.hasError) return Text("Error");
 
-                            if (snapshot.connectionState == ConnectionState.done) {
-                              Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
+                            if (snapshot.connectionState ==
+                                ConnectionState.done) {
+                              Map<String, dynamic> publisherData =
+                                  snapshot.data!.data() as Map<String, dynamic>;
                               return PostCard(
                                 publisherData: publisherData,
                                 postData: postData,

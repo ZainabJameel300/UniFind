@@ -16,6 +16,7 @@ from io import BytesIO
 import requests
 from sentence_transformers import SentenceTransformer
 import os
+import numpy as np
 
 # Firebase Admin SDK imports , this will enable us to read from the database
 import firebase_admin
@@ -50,6 +51,11 @@ def download_image(url):
     resp.raise_for_status()
     return Image.open(BytesIO(resp.content)).convert("RGB")
 
+@app.before_request
+def log_request_info():
+    print(f"Incoming request: {request.method} {request.path}")
+
+
 # -------------------------------------------------------
 # Generate embedding route
 # -------------------------------------------------------
@@ -81,23 +87,79 @@ def generate_embedding():
     except Exception as e:
         # return helpful error for debugging
         return jsonify({"error": str(e)}), 500
-
+    
 # -------------------------------------------------------
-#  Test Firestore connection route , this just to test that python can read from the DB!
+# Find matches route
 # -------------------------------------------------------
-@app.route("/test_firestore", methods=["GET"])
-def test_firestore():
+@app.route("/find_matches", methods=["POST"])
+def find_matches():
     """
-    Fetch a few documents from Firestore to confirm connection.
+    Expects JSON:
+    {
+        "embedding": [float, ...],
+        "uid": "current_user_uid",
+        "type": "Lost" or "Found"
+    }
+    Returns: top 3 similar items from Firestore excluding user's own posts and only of the opposite type.
     """
     try:
-        posts_ref = db.collection("posts").limit(3)
+        data = request.get_json()
+        new_emb = np.array(data.get("embedding", []))
+        current_uid = data.get("uid", "")
+        post_type = data.get("type", "")
+
+        if new_emb.size == 0:
+            return jsonify({"error": "Embedding is required"}), 400
+        if not current_uid:
+            return jsonify({"error": "User UID is required"}), 400
+        if post_type not in ("Lost", "Found"):
+            return jsonify({"error": "Post type is required and must be 'Lost' or 'Found'"}), 400
+
+        # Determine opposite type to search
+        target_type = "Lost" if post_type == "Found" else "Found"
+
+        # Query Firestore for posts with the opposite type (avoid inequality queries combination issues)
+        posts_ref = db.collection("posts").where("type", "==", target_type)
         docs = posts_ref.get()
-        results = [doc.to_dict() for doc in docs]
-        return jsonify(results), 200
+
+        candidates = []
+        for doc in docs:
+            post = doc.to_dict()
+            # skip posts without embeddings or posts created by the same user
+            if "embedding" in post and post.get("uid") != current_uid:
+                candidates.append(post)
+
+        if not candidates:
+            return jsonify({"matches": []}), 200
+
+        # Compute cosine similarity
+        def cosine_similarity(a, b):
+            return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
+        for post in candidates:
+            post_emb = np.array(post["embedding"])
+            post["similarity_score"] = cosine_similarity(new_emb, post_emb)
+
+        # Sort descending by similarity and take top 3
+        top_matches = sorted(candidates, key=lambda x: x["similarity_score"], reverse=True)[:3]
+
+        # Return only relevant fields
+        response = [
+            {
+                "postID": m["postID"],
+                "title": m.get("title", ""),
+                "type": m.get("type", ""),
+                "location": m.get("location", ""),
+                "picture": m.get("picture", ""),
+                "similarity_score": round(m["similarity_score"], 4)
+            }
+            for m in top_matches
+        ]
+
+        return jsonify({"matches": response}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 # -------------------------------------------------------
 # Run the Flask app
 # -------------------------------------------------------

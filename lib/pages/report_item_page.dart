@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/label.dart';
 import 'package:unifind/Components/my_appbar.dart';
@@ -11,6 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:unifind/Components/show_snackbar.dart';
+import 'package:unifind/Pages/potenialmatch.dart';
 import 'package:unifind/utils/EmbeddingService.dart';
 
 class ReportItemPage extends StatefulWidget {
@@ -158,7 +161,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
       );
 
       // Create Firestore document data
-      // --- NEW: request embedding from Flask ---
+      //  request embedding from Flask ---
       List<double>? embedding;
       try {
         embedding = await EmbeddingService.fetchEmbeddingFromServer(
@@ -193,13 +196,44 @@ class _ReportItemPageState extends State<ReportItemPage> {
       // Save post to Firestore
       await docRef.set(postData);
 
+      // --- NEW: Send embedding to Flask ---
+      List<MatchItem> matchItems = [];
+      if (embedding != null) {
+        try {
+          final response = await http.post(
+            Uri.parse("http://10.0.2.2:5000/find_matches"),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              "embedding": embedding,
+              "uid": user.uid,
+              "type": type,
+            }),
+          );
+
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            List matches = data['matches'];
+            matchItems = matches.map((m) => MatchItem.fromJson(m)).toList();
+          } else {
+            print("Error fetching matches: ${response.body}");
+          }
+        } catch (e) {
+          print("HTTP request error: $e");
+        }
+      }
+
       // Close loading dialog
       Navigator.pop(context);
 
-      Navigator.pushReplacementNamed(context, 'potenialmatchpage');
+      // Navigate to Potenialmatch page with fetched matches
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Potenialmatch(matchItems: matchItems),
+        ),
+      );
 
       showSnackBar(context, "Item Reported Successfully!");
-      Navigator.pushReplacementNamed(context, 'bottomnavBar');
 
       // Clear form fields
       setState(() {
