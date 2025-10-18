@@ -17,19 +17,42 @@ import requests
 from sentence_transformers import SentenceTransformer
 import os
 
+# Firebase Admin SDK imports , this will enable us to read from the database
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+# -------------------------------------------------------
+# Flask setup
+# -------------------------------------------------------
 app = Flask(__name__)
 CORS(app)
 
-# Load CLIP model (once at startup)
+# -------------------------------------------------------
+# Firebase setup
+# -------------------------------------------------------
+# Initialize Firebase with your service account key
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client() #load our database so we can work on it
+
+# -------------------------------------------------------
+# CLIP model setup
+# -------------------------------------------------------
 print("Loading CLIP model...")
 model = SentenceTransformer('clip-ViT-B-32')  # small & standard CLIP via sentence-transformers
 print("Model loaded.")
 
+# -------------------------------------------------------
+# Helper to download image
+# -------------------------------------------------------
 def download_image(url):
     resp = requests.get(url, timeout=10)
     resp.raise_for_status()
     return Image.open(BytesIO(resp.content)).convert("RGB")
 
+# -------------------------------------------------------
+# Generate embedding route
+# -------------------------------------------------------
 @app.route("/generate_embedding", methods=["POST"])
 def generate_embedding():
     """
@@ -59,6 +82,25 @@ def generate_embedding():
         # return helpful error for debugging
         return jsonify({"error": str(e)}), 500
 
+# -------------------------------------------------------
+#  Test Firestore connection route , this just to test that python can read from the DB!
+# -------------------------------------------------------
+@app.route("/test_firestore", methods=["GET"])
+def test_firestore():
+    """
+    Fetch a few documents from Firestore to confirm connection.
+    """
+    try:
+        posts_ref = db.collection("posts").limit(3)
+        docs = posts_ref.get()
+        results = [doc.to_dict() for doc in docs]
+        return jsonify(results), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# -------------------------------------------------------
+# Run the Flask app
+# -------------------------------------------------------
 if __name__ == "__main__":
     os.makedirs("uploads", exist_ok=True)
     app.run(host="0.0.0.0", port=5000)
