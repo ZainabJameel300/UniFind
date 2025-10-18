@@ -11,6 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:unifind/Components/show_snackbar.dart';
+import 'package:unifind/utils/EmbeddingService.dart';
 
 class ReportItemPage extends StatefulWidget {
   const ReportItemPage({super.key});
@@ -157,19 +158,36 @@ class _ReportItemPageState extends State<ReportItemPage> {
       );
 
       // Create Firestore document data
+      // --- NEW: request embedding from Flask ---
+      List<double>? embedding;
+      try {
+        embedding = await EmbeddingService.fetchEmbeddingFromServer(
+          title: titlecontroller.text.trim(),
+          imageUrl: imageUrl,
+        );
+      } catch (e) {
+        // If embedding fetch fails, you can decide:
+        // - proceed without embedding (set null),
+        // - or show error and stop submission.
+        // I'll proceed without embedding but log the error.
+        print('Embedding fetch error: $e');
+        embedding = null;
+      }
+
+      // Create postData; include embedding if available
       final postData = {
         "category": selectedCategory,
         "claim_status": false,
         "createdAt": Timestamp.now(),
-        "date": dateTimestamp, // store as Timestamp
+        "date": dateTimestamp,
         "description": desccontroller.text.trim(),
-        // "embedding": [], // Empty array for now
         "location": selectedlocation,
         "picture": imageUrl,
         "postID": docRef.id,
         "title": titlecontroller.text.trim(),
         "type": type,
         "uid": user.uid,
+        if (embedding != null) "embedding": embedding,
       };
 
       // Save post to Firestore
@@ -178,13 +196,10 @@ class _ReportItemPageState extends State<ReportItemPage> {
       // Close loading dialog
       Navigator.pop(context);
 
-      //if the type is found go to potential match page else direct to home page!
-      if (type == "Lost") {
-        Navigator.pushReplacementNamed(context, 'potenialmatchpage');
-      } else {
-        showSnackBar(context, "Item Reported Successfully!");
-        Navigator.pushReplacementNamed(context, 'bottomnavBar');
-      }
+      Navigator.pushReplacementNamed(context, 'potenialmatchpage');
+
+      showSnackBar(context, "Item Reported Successfully!");
+      Navigator.pushReplacementNamed(context, 'bottomnavBar');
 
       // Clear form fields
       setState(() {
