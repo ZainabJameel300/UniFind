@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class EmbeddingService {
@@ -8,8 +9,12 @@ class EmbeddingService {
     required String imageUrl,
   }) async {
     try {
-      // For Android emulator use 10.0.2.2, for physical device use your local IP address
-      final uri = Uri.parse('http://10.0.2.2:5000/generate_embedding');
+      // Decide the server URL based on the platform
+      final String baseUrl = Platform.isAndroid
+          ? 'http://10.0.2.2:5001' // Android Emulator
+          : 'http://192.168.1.3:5001'; // IOS Emulator
+
+      final uri = Uri.parse('$baseUrl/generate_embedding');
 
       var request = http.MultipartRequest('POST', uri)
         ..fields['title'] = title

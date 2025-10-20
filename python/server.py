@@ -107,6 +107,8 @@ def find_matches():
         new_emb = np.array(data.get("embedding", []))
         current_uid = data.get("uid", "")
         post_type = data.get("type", "")
+        post_id = data.get("postID", "")
+
 
         if new_emb.size == 0:
             return jsonify({"error": "Embedding is required"}), 400
@@ -143,6 +145,25 @@ def find_matches():
         # Sort descending by similarity and take top 3
         top_matches = sorted(candidates, key=lambda x: x["similarity_score"], reverse=True)[:3]
 
+        # Add notification for each matched post 
+        for match in top_matches:
+            notification_ref = db.collection("notifications").document() 
+
+            notification_data = {
+                "notificationID": notification_ref.id,
+                "toUserID": match["uid"],  
+                "userPostID": match["postID"],  # old post
+                "matchPostID": post_id,  # new post 
+                "matchScore": round(match["similarity_score"], 2),
+                "message": f"Possible match found for your post '{match['title']}'.", 
+                "timestamp": firestore.SERVER_TIMESTAMP,
+                "isRead": False,
+            }
+
+            notification_ref.set(notification_data)
+
+        print(f"{len(top_matches)} notifications added successfully!")
+
         # Return only relevant fields
         response = [
             {
@@ -165,4 +186,4 @@ def find_matches():
 # -------------------------------------------------------
 if __name__ == "__main__":
     os.makedirs("uploads", exist_ok=True)
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port= 5001)

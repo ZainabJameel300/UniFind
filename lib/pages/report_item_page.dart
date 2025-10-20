@@ -200,13 +200,19 @@ class _ReportItemPageState extends State<ReportItemPage> {
       List<MatchItem> matchItems = [];
       if (embedding != null) {
         try {
+          // Decide the server URL based on the platform
+          final String baseUrl = Platform.isAndroid
+              ? 'http://10.0.2.2:5001' // Android Emulator
+              : 'http://192.168.1.3:5001'; // IOS Emulator
+
           final response = await http.post(
-            Uri.parse("http://10.0.2.2:5000/find_matches"),
+            Uri.parse('$baseUrl/find_matches'),
             headers: {"Content-Type": "application/json"},
             body: jsonEncode({
               "embedding": embedding,
               "uid": user.uid,
               "type": type,
+              "postID": docRef.id,
             }),
           );
 
