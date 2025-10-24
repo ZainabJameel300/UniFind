@@ -196,7 +196,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
       // Save post to Firestore
       await docRef.set(postData);
 
-      // --- NEW: Send embedding to Flask ---
+      //  Send embedding to Flask ---
       List<MatchItem> matchItems = [];
       if (embedding != null) {
         try {
@@ -213,6 +213,8 @@ class _ReportItemPageState extends State<ReportItemPage> {
               "uid": user.uid,
               "type": type,
               "postID": docRef.id,
+              "location": selectedlocation,
+              "date": dateTimestamp.millisecondsSinceEpoch,
             }),
           );
 

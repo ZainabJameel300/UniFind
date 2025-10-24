@@ -98,7 +98,9 @@ def find_matches():
     {
         "embedding": [float, ...],
         "uid": "current_user_uid",
-        "type": "Lost" or "Found"
+        "type": "Lost" or "Found",
+        "location": "S4-Food Court",
+        "date": "2025-01-15T00:00:00.000Z"  # client already sends Firestore date
     }
     Returns: top 3 similar items from Firestore excluding user's own posts and only of the opposite type.
     """
@@ -108,7 +110,8 @@ def find_matches():
         current_uid = data.get("uid", "")
         post_type = data.get("type", "")
         post_id = data.get("postID", "")
-
+        selected_location = data.get("location", "")
+        selected_date_raw = data.get("date", None)
 
         if new_emb.size == 0:
             return jsonify({"error": "Embedding is required"}), 400
@@ -124,12 +127,42 @@ def find_matches():
         posts_ref = db.collection("posts").where("type", "==", target_type)
         docs = posts_ref.get()
 
+        # Convert selected date from client if provided
+        selected_date = None
+        if selected_date_raw:
+            try:
+                selected_date = firestore.Timestamp.from_json({"_seconds": selected_date_raw["_seconds"], "_nanoseconds": selected_date_raw["_nanoseconds"]}).to_datetime()
+            except:
+                selected_date = None
+
         candidates = []
+        from datetime import timedelta
+
         for doc in docs:
             post = doc.to_dict()
+
             # skip posts without embeddings or posts created by the same user
-            if "embedding" in post and post.get("uid") != current_uid:
-                candidates.append(post)
+            if "embedding" not in post or post.get("uid") == current_uid:
+                continue
+
+            # skip claimed items
+            if post.get("claim_status") is True:
+                continue
+
+            # filter by SAME location
+            if selected_location and post.get("location") != selected_location:
+                continue
+
+            # filter by DATE (±2 days)
+            if selected_date:
+                post_date = post.get("date")
+                if post_date is None:
+                    continue
+                post_date_dt = post_date.to_datetime()
+                if abs((post_date_dt - selected_date).days) > 2:
+                    continue
+
+            candidates.append(post)
 
         if not candidates:
             return jsonify({"matches": []}), 200
@@ -142,8 +175,8 @@ def find_matches():
             post_emb = np.array(post["embedding"])
             post["similarity_score"] = cosine_similarity(new_emb, post_emb)
 
-        # Sort descending by similarity and take top 3
-        top_matches = sorted(candidates, key=lambda x: x["similarity_score"], reverse=True)[:3]
+        # Sort descending by similarity and take top 4
+        top_matches = sorted(candidates, key=lambda x: x["similarity_score"], reverse=True)[:4]
 
         # Add notification for each matched post 
         for match in top_matches:
@@ -152,8 +185,8 @@ def find_matches():
             notification_data = {
                 "notificationID": notification_ref.id,
                 "toUserID": match["uid"],  
-                "userPostID": match["postID"],  # old post
-                "matchPostID": post_id,  # new post 
+                "userPostID": match["postID"], 
+                "matchPostID": post_id,  
                 "matchScore": round(match["similarity_score"], 2),
                 "message": f"Possible match found for your post '{match['title']}'.", 
                 "timestamp": firestore.SERVER_TIMESTAMP,
@@ -181,6 +214,7 @@ def find_matches():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 # -------------------------------------------------------
 # Run the Flask app
 # -------------------------------------------------------
