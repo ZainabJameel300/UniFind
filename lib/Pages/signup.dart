@@ -19,6 +19,30 @@ class _SignupState extends State<Signup> {
   final TextEditingController confirmpasswordController =
       TextEditingController();
 
+  String password = ""; // For password strenght indicator
+
+  int _passwordScore(String password) {
+    int score = 0;
+    if (password.length >= 8) score++;
+    if (password.contains(RegExp(r'[A-Z]'))) score++;
+    if (password.contains(RegExp(r'[a-z]'))) score++;
+    if (password.contains(RegExp(r'\d'))) score++;
+    if (password.contains(RegExp(r'[@$!%*?&._-]'))) score++;
+    return score; // returns 0–5
+  }
+
+  Color _strengthColor(int score) {
+    if (score <= 2) return Colors.red; // weak
+    if (score == 3) return const Color.fromARGB(255, 243, 119, 81); // medium
+    return Colors.green; // strong
+  }
+
+  String _strengthLabel(int score) {
+    if (score <= 2) return "Weak";
+    if (score == 3) return "Medium";
+    return "Strong";
+  }
+
   @override
   void dispose() {
     usernameController.dispose();
@@ -108,12 +132,27 @@ class _SignupState extends State<Signup> {
 
   final _formKey = GlobalKey<FormState>();
 
-  // UOB email validator method
+  // UOB email validator method for both students and staff/instructors
   bool _isUobEmail(String email) {
     final regex = RegExp(
-      r'^(20(1[0-9]|2[0-5]))\d{5}@((stu\.uob\.edu\.bh)|(uob\.edu\.bh))$',
+      r'^((20(1[0-9]|2[0-5])\d{5}@stu\.uob\.edu\.bh)|([a-zA-Z0-9._-]+@uob\.edu\.bh))$',
+      caseSensitive: false,
     );
-    return regex.hasMatch(email);
+    return regex.hasMatch(email.trim());
+  }
+
+  //This ensures that the password has:
+  //  At least 8 characters
+  //  At least 1 uppercase letter
+  //  At least 1 lowercase letter
+  //  At least 1 number
+  //  At least 1 special character (!@#$%^&* etc.)
+
+  bool _isStrongPassword(String password) {
+    final regex = RegExp(
+      r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{8,}$',
+    );
+    return regex.hasMatch(password);
   }
 
   @override
@@ -159,7 +198,7 @@ class _SignupState extends State<Signup> {
                       if (value == null || value.isEmpty) {
                         return "Username cannot be empty";
                       }
-                      if (value.length > 20) {
+                      if (value.length > 50) {
                         return "Username cannot exceed 20 characters";
                       }
                       return null;
@@ -189,16 +228,108 @@ class _SignupState extends State<Signup> {
                     hintText: 'Password',
                     obscureText: true,
                     controller: passwordController,
+                    onChanged: (value) {
+                      setState(() {
+                        password = value;
+                      });
+                    },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Password cannot be empty";
                       }
-                      if (value.length < 8) {
-                        return "Password must be at least 8 characters";
+                      if (!_isStrongPassword(value)) {
+                        return "Weak password";
                       }
                       return null;
                     },
+                    suffixIcon: _isStrongPassword(password)
+                        ? const Icon(
+                            Icons.check_circle,
+                            color: Color(0xFF771F98),
+                          )
+                        : null,
                   ),
+                  // Password strength indicator
+                  Builder(
+                    builder: (context) {
+                      final score = _passwordScore(password);
+                      if (password.isNotEmpty && !_isStrongPassword(password)) {
+                        return Column(
+                          children: [
+                            const SizedBox(height: 6),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 7,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          child: LinearProgressIndicator(
+                                            value: score / 5,
+                                            minHeight: 6,
+                                            backgroundColor:
+                                                Colors.grey.shade300,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  _strengthColor(score),
+                                                ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Tooltip(
+                                        message:
+                                            "Password must contain:\n• At least 8 characters\n• Uppercase letter (A-Z)\n• Lowercase letter (a-z)\n• Number (0-9)\n• Symbol (@, #, !, etc.)",
+                                        decoration: BoxDecoration(
+                                          color: const Color.fromARGB(
+                                            221,
+                                            161,
+                                            159,
+                                            159,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        textStyle: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                        ),
+                                        child: const Icon(
+                                          Icons.info_outline,
+                                          size: 18,
+                                          color: Color(0xFF771F98),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _strengthLabel(score),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: _strengthColor(score),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+
                   SizedBox(height: 18),
 
                   // Confirm Password Textfield

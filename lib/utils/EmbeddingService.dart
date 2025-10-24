@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class EmbeddingService {
-  /// Sends the title and image URL to the Flask backend and returns an embedding list
+  /// Sends the descreption and image URL to the Flask backend and returns an embedding list
   static Future<List<double>> fetchEmbeddingFromServer({
-    required String title,
+    required String description,
     required String imageUrl,
   }) async {
     try {
@@ -17,7 +17,7 @@ class EmbeddingService {
       final uri = Uri.parse('$baseUrl/generate_embedding');
 
       var request = http.MultipartRequest('POST', uri)
-        ..fields['title'] = title
+        ..fields['description'] = description
         ..fields['image_url'] = imageUrl;
 
       var streamed = await request.send().timeout(const Duration(seconds: 30));

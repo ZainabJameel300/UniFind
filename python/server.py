@@ -67,7 +67,7 @@ def generate_embedding():
       - image_url (string)  <-- URL to the image (Firebase download URL)
     Returns JSON: { "embedding": [float, float, ...] }
     """
-    title = request.form.get("title", "")
+    description = request.form.get("description", "")
     image_url = request.form.get("image_url", "")
 
     if not image_url:
@@ -78,7 +78,7 @@ def generate_embedding():
         img = download_image(image_url)
 
         # encode text and image separately, then combine
-        text_emb = model.encode(title, convert_to_tensor=True, show_progress_bar=False)
+        text_emb = model.encode(description, convert_to_tensor=True, show_progress_bar=False)
         img_emb = model.encode(img, convert_to_tensor=True, show_progress_bar=False)
 
         combined = ((text_emb + img_emb) / 2).cpu().tolist()  # convert to python list
