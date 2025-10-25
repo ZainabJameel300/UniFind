@@ -287,7 +287,7 @@ class _SignupState extends State<Signup> {
                                       const SizedBox(width: 8),
                                       Tooltip(
                                         message:
-                                            "Password must contain:\n• At least 8 characters\n• Uppercase letter (A-Z)\n• Lowercase letter (a-z)\n• Number (0-9)\n• Symbol (@, #, !, etc.)",
+                                            "Password must contain:\n• At least 8 characters\n• Uppercase letter (A-Z)\n• Lowercase letter (a-z)\n• Number (0-9)\n• Symbol (@, #, !, _)",
                                         decoration: BoxDecoration(
                                           color: const Color.fromARGB(
                                             221,

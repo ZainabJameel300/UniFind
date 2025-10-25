@@ -70,18 +70,18 @@ def generate_embedding():
     description = request.form.get("description", "")
     image_url = request.form.get("image_url", "")
 
-    if not image_url:
-        return jsonify({"error": "image_url is required"}), 400
 
     try:
-        # get image (from Firebase Storage link or elsewhere)
-        img = download_image(image_url)
-
-        # encode text and image separately, then combine
+        # Always compute text embedding
         text_emb = model.encode(description, convert_to_tensor=True, show_progress_bar=False)
-        img_emb = model.encode(img, convert_to_tensor=True, show_progress_bar=False)
 
-        combined = ((text_emb + img_emb) / 2).cpu().tolist()  # convert to python list
+        # If image is provided, combine text + image
+        if image_url:
+            img = download_image(image_url)
+            img_emb = model.encode(img, convert_to_tensor=True, show_progress_bar=False)
+            combined = ((text_emb + img_emb) / 2).cpu().tolist()
+        else:
+            combined = text_emb.cpu().tolist()  # if no image is available , then take only the text embedding
 
         return jsonify({"embedding": combined})
     except Exception as e:
@@ -175,8 +175,16 @@ def find_matches():
             post_emb = np.array(post["embedding"])
             post["similarity_score"] = cosine_similarity(new_emb, post_emb)
 
-        # Sort descending by similarity and take top 4
-        top_matches = sorted(candidates, key=lambda x: x["similarity_score"], reverse=True)[:4]
+
+        # Sort candidates by similarity (highest first)
+        sorted_candidates = sorted(candidates, key=lambda x: x["similarity_score"], reverse=True)
+
+        # Keep only matches with similarity >= 0.6
+        filtered_matches = [m for m in sorted_candidates if m["similarity_score"] >= 0.7]
+
+        # Select top 4 AFTER filtering
+        top_matches = filtered_matches[:4]
+
 
         # Add notification for each matched post 
         for match in top_matches:
@@ -197,14 +205,16 @@ def find_matches():
 
         print(f"{len(top_matches)} notifications added successfully!")
 
-        # Return only relevant fields
+        # Return all relvent fields (needed to display in PM page)
         response = [
             {
                 "postID": m["postID"],
+                 "uid": m.get("uid", ""),
                 "title": m.get("title", ""),
                 "type": m.get("type", ""),
                 "location": m.get("location", ""),
                 "picture": m.get("picture", ""),
+                "date": m.get("date").isoformat() if m.get("date") else None,
                 "similarity_score": round(m["similarity_score"], 4)
             }
             for m in top_matches

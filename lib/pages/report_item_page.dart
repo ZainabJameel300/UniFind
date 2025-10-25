@@ -115,6 +115,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
+        _imageError = null;
       });
     }
   }
@@ -190,7 +191,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
         "title": titlecontroller.text.trim(),
         "type": type,
         "uid": user.uid,
-        if (embedding != null) "embedding": embedding,
+        "embedding": embedding,
       };
 
       // Save post to Firestore
@@ -214,7 +215,10 @@ class _ReportItemPageState extends State<ReportItemPage> {
               "type": type,
               "postID": docRef.id,
               "location": selectedlocation,
-              "date": dateTimestamp.millisecondsSinceEpoch,
+              "date": {
+                "_seconds": dateTimestamp.seconds,
+                "_nanoseconds": dateTimestamp.nanoseconds,
+              },
             }),
           );
 
@@ -699,9 +703,13 @@ class _ReportItemPageState extends State<ReportItemPage> {
 
                         // Image error logic
                         if (type == "Found" && _image == null) {
-                          _imageError = "Image is required for Found items!";
+                          setState(() {
+                            _imageError = "Image is required for Found items!";
+                          });
                         } else {
-                          _imageError = null;
+                          setState(() {
+                            _imageError = null;
+                          });
                         }
                       });
 

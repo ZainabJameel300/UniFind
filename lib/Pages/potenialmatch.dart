@@ -8,30 +8,38 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/utils/date_formats.dart';
 
+//this is a model that recives these fields from the report item page, which recived it from flask!!
 class MatchItem {
   final String postID;
+  final String uid;
   final String title;
   final String type;
   final String location;
   final String picture;
+  final String date;
   final double similarity;
 
   MatchItem({
     required this.postID,
+    required this.uid,
     required this.title,
     required this.type,
     required this.location,
     required this.picture,
+    required this.date,
     required this.similarity,
   });
 
+  //convert from json to dart map
   factory MatchItem.fromJson(Map<String, dynamic> json) {
     return MatchItem(
       postID: json['postID'],
+      uid: json['uid'] ?? "",
       title: json['title'],
       type: json['type'],
       location: json['location'] ?? "",
       picture: json['picture'] ?? "",
+      date: json['date']?.toString() ?? "",
       similarity: json['similarity_score']?.toDouble() ?? 0.0,
     );
   }
@@ -46,6 +54,7 @@ class Potenialmatch extends StatefulWidget {
 }
 
 class _PotenialmatchState extends State<Potenialmatch> {
+  //this method takes the uid saved in the post to serach for the matched items posters information(avatar,username)
   Future<Map<String, dynamic>> _getUserData(String uid) async {
     final doc = await FirebaseFirestore.instance
         .collection('users')
@@ -63,6 +72,7 @@ class _PotenialmatchState extends State<Potenialmatch> {
         onBack: () => Navigator.pushReplacementNamed(context, 'bottomnavBar'),
       ),
 
+      //if matchitem map is empty display Empty message else build the grid
       body: widget.matchItems.isEmpty
           ? const EmptyStateWidget(
               icon: Symbols.empty_dashboard,
@@ -83,36 +93,35 @@ class _PotenialmatchState extends State<Potenialmatch> {
                 itemBuilder: (context, index) {
                   final match = widget.matchItems[index];
 
-                  return FutureBuilder<DocumentSnapshot>(
-                    future: FirebaseFirestore.instance
-                        .collection("posts")
-                        .doc(match.postID)
-                        .get(),
-                    builder: (context, postSnapshot) {
-                      if (!postSnapshot.hasData || !postSnapshot.data!.exists) {
+                  return FutureBuilder<Map<String, dynamic>>(
+                    future: _getUserData(match.uid),
+                    builder: (context, userSnapshot) {
+                      if (!userSnapshot.hasData) {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      final postData =
-                          postSnapshot.data!.data() as Map<String, dynamic>;
-                      final uid = postData["uid"];
+                      final user = userSnapshot.data!;
+                      final name = user["username"] ?? "Unknown";
+                      final avatar = user["avatar"] ?? "";
 
-                      return FutureBuilder<Map<String, dynamic>>(
-                        future: _getUserData(uid),
-                        builder: (context, userSnapshot) {
-                          if (!userSnapshot.hasData) {
+                      //  Fetch the real post document to get the true Timestamp date
+                      return FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance
+                            .collection("posts")
+                            .doc(match.postID)
+                            .get(),
+                        builder: (context, postSnapshot) {
+                          if (!postSnapshot.hasData ||
+                              !postSnapshot.data!.exists) {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
                           }
 
-                          final user = userSnapshot.data!;
-                          final name = user["username"] ?? "Unknown";
-                          final avatar = user["avatar"] ?? "";
-                          final date = DateFormats.formatLostDate(
-                            postData["date"],
-                          );
-                          final location = postData["location"] ?? "";
+                          final postData =
+                              postSnapshot.data!.data() as Map<String, dynamic>;
+                          final Timestamp ts = postData["date"];
+                          final formattedDate = DateFormats.formatLostDate(ts);
 
                           return GestureDetector(
                             onTap: () => Navigator.push(
@@ -177,7 +186,8 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                       ],
                                     ),
                                   ),
-                                  // Thin divider under avatar and username
+
+                                  // Divider
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8.0,
@@ -188,35 +198,30 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                       height: 8,
                                     ),
                                   ),
-                                  // Image (clickable to view fullscreen)
+
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 5,
-                                    ),
+                                    padding: const EdgeInsets.all(6),
                                     child: GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                FullScreenImage(
-                                                  imageUrl: match.picture,
-                                                ),
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => FullScreenImage(
+                                            imageUrl: match.picture,
                                           ),
-                                        );
-                                      },
+                                        ),
+                                      ),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(6),
                                         child: Image.network(
                                           match.picture,
                                           width: double.infinity,
-                                          height: 100, // smaller height
+                                          height: 100,
                                           fit: BoxFit.cover,
                                         ),
                                       ),
                                     ),
                                   ),
+
                                   // Title
                                   Padding(
                                     padding: const EdgeInsets.only(
@@ -234,7 +239,8 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                       ),
                                     ),
                                   ),
-                                  // Date & Location side by side
+
+                                  // Date & Location
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(
                                       8,
@@ -248,42 +254,26 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                           Symbols.calendar_today,
                                           size: 14,
                                           color: Color(0xFFD0B1DB),
-                                          weight: 800,
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          date,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: const Color.fromARGB(
-                                              255,
-                                              62,
-                                              62,
-                                              62,
-                                            ),
-                                          ),
+                                          formattedDate,
+                                          style: const TextStyle(fontSize: 12),
                                         ),
                                         const SizedBox(width: 12),
                                         const Icon(
                                           Symbols.location_on,
                                           size: 14,
                                           color: Color(0xFFD0B1DB),
-                                          weight: 800,
                                         ),
                                         const SizedBox(width: 4),
                                         Expanded(
                                           child: Text(
-                                            location,
+                                            match.location,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                               fontSize: 12,
-                                              color: const Color.fromARGB(
-                                                255,
-                                                62,
-                                                62,
-                                                62,
-                                              ),
                                             ),
                                           ),
                                         ),

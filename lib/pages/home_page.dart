@@ -143,7 +143,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 Spacer(),
                                 // AI search (camera)
-                                Icon(Symbols.photo_camera, size: 24),
+                                // Icon(Symbols.photo_camera, size: 24),
                               ],
                             ),
                           ),
