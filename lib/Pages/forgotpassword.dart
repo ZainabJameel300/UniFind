@@ -117,7 +117,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
                 "Enter Email:",
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  // fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
