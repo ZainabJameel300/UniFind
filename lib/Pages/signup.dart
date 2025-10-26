@@ -43,6 +43,8 @@ class _SignupState extends State<Signup> {
     return "Strong";
   }
 
+  bool obscureText = true;
+
   @override
   void dispose() {
     usernameController.dispose();
@@ -226,7 +228,7 @@ class _SignupState extends State<Signup> {
                   // Password TextFiled
                   MyTextField(
                     hintText: 'Password',
-                    obscureText: true,
+                    obscureText: obscureText,
                     controller: passwordController,
                     onChanged: (value) {
                       setState(() {
@@ -242,12 +244,20 @@ class _SignupState extends State<Signup> {
                       }
                       return null;
                     },
-                    suffixIcon: _isStrongPassword(password)
-                        ? const Icon(
-                            Icons.check_circle,
-                            color: Color(0xFF771F98),
-                          )
-                        : null,
+                    suffixIcon: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          obscureText = !obscureText;
+                        });
+                      },
+                      child: Icon(
+                        obscureText
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                        color: Color(0xFF771F98),
+                        size: 28,
+                      ),
+                    ),
                   ),
                   // Password strength indicator
                   Builder(

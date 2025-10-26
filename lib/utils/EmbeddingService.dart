@@ -31,7 +31,7 @@ class EmbeddingService {
         throw Exception("Embedding API returned ${streamed.statusCode}: $body");
       }
     } catch (e) {
-      throw Exception("Embedding fetch failed: $e"); // ✅ show real error
+      throw Exception("Embedding fetch failed: $e"); //  show real error
     }
   }
 }

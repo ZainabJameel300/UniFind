@@ -163,6 +163,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
 
       // Create Firestore document data
       //  request embedding from Flask using descreption + image
+      //send the descreption and the image Url to the EmbeddingService Method
       List<double>? embedding;
       try {
         embedding = await EmbeddingService.fetchEmbeddingFromServer(

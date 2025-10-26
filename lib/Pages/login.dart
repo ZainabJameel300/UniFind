@@ -15,6 +15,8 @@ class _LoginState extends State<Login> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  bool obscureText = true;
+
   @override
   void dispose() {
     emailController.dispose();
@@ -141,7 +143,7 @@ class _LoginState extends State<Login> {
                   // Password TextField
                   MyTextField(
                     hintText: 'Password',
-                    obscureText: true,
+                    obscureText: obscureText,
                     controller: passwordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -149,6 +151,20 @@ class _LoginState extends State<Login> {
                       }
                       return null;
                     },
+                    suffixIcon: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          obscureText = !obscureText;
+                        });
+                      },
+                      child: Icon(
+                        obscureText
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                        color: Color(0xFF771F98),
+                        size: 28,
+                      ),
+                    ),
                   ),
 
                   // Forgot Password? link
