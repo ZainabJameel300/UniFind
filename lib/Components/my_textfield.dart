@@ -6,6 +6,8 @@ class MyTextField extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode? focusNode;
   final String? Function(String?)? validator; // optional for later validation
+  final void Function(String)? onChanged;
+  final Widget? suffixIcon;
 
   const MyTextField({
     super.key,
@@ -14,6 +16,8 @@ class MyTextField extends StatelessWidget {
     required this.controller,
     this.focusNode,
     this.validator,
+    this.onChanged,
+    this.suffixIcon,
   });
 
   @override
@@ -34,9 +38,11 @@ class MyTextField extends StatelessWidget {
             controller: controller,
             focusNode: focusNode,
             obscureText: obscureText,
+            onChanged: onChanged,
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: hintText,
+              suffixIcon: suffixIcon,
             ),
             validator: validator, // only used if wrapped in a Form
           ),

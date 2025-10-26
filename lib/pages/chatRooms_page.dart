@@ -11,7 +11,8 @@ class ChatroomsPage extends StatelessWidget {
       child: EmptyStateWidget(
         icon: Symbols.inbox,
         title: "No chats yet",
-        subtitle: "You haven’t started any conversations. Start a chat to confirm ownership or return an item.",
+        subtitle:
+            "You haven’t started any conversations. Start a chat to confirm ownership or return an item.",
       ),
     );
   }

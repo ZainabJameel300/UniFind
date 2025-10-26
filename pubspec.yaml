@@ -44,6 +44,7 @@ dependencies:
   dotted_border: ^3.1.0
   firebase_storage: ^13.0.2
   material_symbols_icons: ^4.2874.0
+  http: ^1.5.0
 
 
 dev_dependencies:

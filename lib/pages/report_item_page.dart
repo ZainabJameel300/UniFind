@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/label.dart';
 import 'package:unifind/Components/my_appbar.dart';
@@ -11,6 +13,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:unifind/Components/show_snackbar.dart';
+import 'package:unifind/Pages/potenialmatch.dart';
+import 'package:unifind/utils/EmbeddingService.dart';
 
 class ReportItemPage extends StatefulWidget {
   const ReportItemPage({super.key});
@@ -111,6 +115,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
+        _imageError = null;
       });
     }
   }
@@ -157,34 +162,91 @@ class _ReportItemPageState extends State<ReportItemPage> {
       );
 
       // Create Firestore document data
+      //  request embedding from Flask using descreption + image
+      //send the descreption and the image Url to the EmbeddingService Method
+      List<double>? embedding;
+      try {
+        embedding = await EmbeddingService.fetchEmbeddingFromServer(
+          description: desccontroller.text.trim(),
+          imageUrl: imageUrl,
+        );
+      } catch (e) {
+        // If embedding fetch fails, you can decide:
+        // - proceed without embedding (set null),
+        // - or show error and stop submission.
+        // I'll proceed without embedding but log the error.
+        print('Embedding fetch error: $e');
+        embedding = null;
+      }
+
+      // Create postData; include embedding if available
       final postData = {
         "category": selectedCategory,
         "claim_status": false,
         "createdAt": Timestamp.now(),
-        "date": dateTimestamp, // store as Timestamp
+        "date": dateTimestamp,
         "description": desccontroller.text.trim(),
-        // "embedding": [], // Empty array for now
         "location": selectedlocation,
         "picture": imageUrl,
         "postID": docRef.id,
         "title": titlecontroller.text.trim(),
         "type": type,
         "uid": user.uid,
+        "embedding": embedding,
       };
 
       // Save post to Firestore
       await docRef.set(postData);
 
+      //  Send embedding to Flask ---
+      List<MatchItem> matchItems = [];
+      if (embedding != null) {
+        try {
+          // Decide the server URL based on the platform
+          final String baseUrl = Platform.isAndroid
+              ? 'http://10.0.2.2:5001' // Android Emulator
+              : 'http://192.168.1.3:5001'; // IOS Emulator
+
+          final response = await http.post(
+            Uri.parse('$baseUrl/find_matches'),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              "embedding": embedding,
+              "uid": user.uid,
+              "type": type,
+              "postID": docRef.id,
+              "location": selectedlocation,
+              "date": {
+                "_seconds": dateTimestamp.seconds,
+                "_nanoseconds": dateTimestamp.nanoseconds,
+              },
+            }),
+          );
+
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            List matches = data['matches'];
+            matchItems = matches.map((m) => MatchItem.fromJson(m)).toList();
+          } else {
+            print("Error fetching matches: ${response.body}");
+          }
+        } catch (e) {
+          print("HTTP request error: $e");
+        }
+      }
+
       // Close loading dialog
       Navigator.pop(context);
 
-      //if the type is found go to potential match page else direct to home page!
-      if (type == "Lost") {
-        Navigator.pushReplacementNamed(context, 'potenialmatchpage');
-      } else {
-        showSnackBar(context, "Item Reported Successfully!");
-        Navigator.pushReplacementNamed(context, 'bottomnavBar');
-      }
+      // Navigate to Potenialmatch page with fetched matches
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Potenialmatch(matchItems: matchItems),
+        ),
+      );
+
+      showSnackBar(context, "Item Reported Successfully!");
 
       // Clear form fields
       setState(() {
@@ -207,10 +269,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: MyAppbar(
-        title: "Report Item",
-        showBack: false,
-      ),
+      appBar: MyAppbar(title: "Report Item", showBack: false),
       body: SafeArea(
         child: ListView(
           children: [
@@ -387,7 +446,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         ),
                         icon: const Icon(
                           Symbols.expand_more,
-                          fill: 1, 
+                          fill: 1,
                           color: Color(0xFF771F98),
                         ),
                         items: categories
@@ -580,6 +639,31 @@ class _ReportItemPageState extends State<ReportItemPage> {
                             ),
                           ),
                         ),
+                        // Button to remove the image
+                        if (_image != null)
+                          Positioned(
+                            bottom: 20,
+                            right: 20,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _image = null;
+                                });
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFF3F3F3),
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(6),
+                                child: Icon(
+                                  Icons.clear,
+                                  color: Colors.red[400],
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                          ),
                         if (_imageError != null)
                           Positioned(
                             bottom: 8,
@@ -620,9 +704,13 @@ class _ReportItemPageState extends State<ReportItemPage> {
 
                         // Image error logic
                         if (type == "Found" && _image == null) {
-                          _imageError = "Image is required for Found items!";
+                          setState(() {
+                            _imageError = "Image is required for Found items!";
+                          });
                         } else {
-                          _imageError = null;
+                          setState(() {
+                            _imageError = null;
+                          });
                         }
                       });
 

@@ -8,7 +8,6 @@ import 'package:unifind/pages/report_item_page.dart';
 
 import '../Components/filters_drawer.dart';
 
-
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
 
@@ -23,13 +22,13 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final List<Widget> pages = [
     const HomePage(),
     const KeepersPage(),
-    const ReportItemPage(), 
+    const ReportItemPage(),
     const ChatroomsPage(),
     const ProfilePage(),
   ];
 
   void onTabTapped(int index) {
-      setState(() => selectedIndex = index);
+    setState(() => selectedIndex = index);
   }
 
   Widget _buildNavItem(IconData icon, int index) {
@@ -39,8 +38,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       onTap: () => onTabTapped(index),
       child: Container(
         padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-        ),
+        decoration: BoxDecoration(),
         child: Icon(
           icon,
           fill: isSelected ? 1 : 0,
@@ -56,7 +54,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       key: _scaffoldKey,
       endDrawer: const FiltersDrawer(),
       backgroundColor: Colors.white,
-      body: pages[selectedIndex],    
+      body: pages[selectedIndex],
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF771F98),
@@ -76,9 +74,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
           children: [
             _buildNavItem(Symbols.home, 0),
             _buildNavItem(Symbols.location_on, 1),
-        
+
             const SizedBox(width: 40),
-        
+
             _buildNavItem(Symbols.chat_bubble, 3),
             _buildNavItem(Symbols.person, 4),
           ],

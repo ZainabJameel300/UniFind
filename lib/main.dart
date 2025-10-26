@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         'forgotpasswordpage': (context) => Forgotpassword(),
         'bottomnavBar': (context) => BottomNavBar(),
         'reportitempage': (context) => ReportItemPage(),
-        'potenialmatchpage': (context) => Potenialmatch(),
+        'potenialmatchpage': (context) => Potenialmatch(matchItems: []),
       },
     );
   }
