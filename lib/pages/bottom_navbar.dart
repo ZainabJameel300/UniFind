@@ -52,7 +52,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      endDrawer: const FiltersDrawer(),
+      endDrawer: selectedIndex == 0 ? const FiltersDrawer() : null,
       backgroundColor: Colors.white,
       body: pages[selectedIndex],
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
