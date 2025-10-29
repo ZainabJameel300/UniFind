@@ -1,44 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/utils/date_formats.dart';
 
 class NotificationTile extends StatelessWidget {
-  final String notificationID;
   final String message;
-  final String matchPostID;
   final Timestamp timestamp;
   final bool isRead;
+  final Future<void> Function() onTap;
 
   const NotificationTile({
     super.key,
-    required this.notificationID,
     required this.message,
-    required this.matchPostID,
     required this.timestamp,
     required this.isRead,
+    required this.onTap,
   });
-
-  Future<void> markAsReadAndNavigate(context) async {
-    try {
-      // mark as read 
-      await FirebaseFirestore.instance
-          .collection('notifications')
-          .doc(notificationID)
-          .update({'isRead': true});
-
-      // navigate to the matched post details page
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ViewPost(
-          postID: matchPostID
-        )),
-      );
-      } catch (e) {
-      debugPrint('Error marking notification as read: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +63,7 @@ class NotificationTile extends StatelessWidget {
           ],
         ),
       ),
-      onTap: () => markAsReadAndNavigate(context),
+      onTap: onTap,
     );
   }
 }

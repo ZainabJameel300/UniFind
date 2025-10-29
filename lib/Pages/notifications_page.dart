@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/notification_tile.dart';
+import 'package:unifind/Pages/view_post.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -15,6 +16,7 @@ class NotificationsPage extends StatefulWidget {
 
 class _NotificationsPageState extends State<NotificationsPage> {
   final String currentUserID = FirebaseAuth.instance.currentUser!.uid;
+
   // get notifications
   Stream<QuerySnapshot> getNotifications() {
     Query query = FirebaseFirestore.instance
@@ -23,6 +25,25 @@ class _NotificationsPageState extends State<NotificationsPage> {
         .orderBy('timestamp', descending: true);
 
     return query.snapshots();
+  }
+
+  // click on notification -> mark as read and view matched post
+  Future<void> markAsReadAndNavigate(context, notificationID, matchPostID) async {
+    try {
+      // mark as read
+      await FirebaseFirestore.instance
+          .collection('notifications')
+          .doc(notificationID)
+          .update({'isRead': true});
+
+      // navigate to the matched post details page
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ViewPost(postID: matchPostID)),
+      );
+    } catch (e) {
+      debugPrint('Error marking notification as read: $e');
+    }
   }
 
   @override
@@ -54,12 +75,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
             itemCount: notifications.length,
             itemBuilder: (context, index) {
               final notificationData = notifications[index];
+              final matchPostID = notificationData['matchPostID'];
+              final notificationID = notificationData.id;
               return NotificationTile(
-                notificationID: notificationData["notificationID"],
                 message: notificationData['message'],
-                matchPostID: notificationData['matchPostID'],
                 timestamp: notificationData['timestamp'],
                 isRead: notificationData['isRead'],
+                onTap: () => markAsReadAndNavigate(context, notificationID, matchPostID),
               );
             },
           );

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/app_button.dart';
+import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/utils/date_formats.dart';
@@ -30,6 +31,16 @@ class ViewPost extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: const CircularProgressIndicator());
           }
+
+          // post deleted or not found
+          if (snapshot.hasData && !snapshot.data!.exists) {
+            return const EmptyStateWidget(
+              icon: Symbols.error_outline,
+              title: "Post Unavailable",
+              subtitle: "This post has been deleted or no longer exists.",
+            );
+          }
+
           final postData = snapshot.data!;
           final String publisherID = postData['uid'];
 
