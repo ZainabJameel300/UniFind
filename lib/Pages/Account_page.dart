@@ -1,14 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/my_AppBar.dart';
 import 'package:unifind/Pages/login.dart';
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+class AccountPage extends StatelessWidget {
+  const AccountPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: MyAppbar(title: "My Account", showBack: false),
       backgroundColor: Colors.white,
       body: Center(
         child: ElevatedButton.icon(
