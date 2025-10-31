@@ -719,8 +719,63 @@ class _ReportItemPageState extends State<ReportItemPage> {
                           _locationError == null &&
                           _dateError == null &&
                           _imageError == null) {
-                        // LOGIC AFTER THE FORM IS VALIDATED
-                        _savePost();
+                        // Show confirmation dialog before saving
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            title: Row(
+                              children: [
+                                Icon(
+                                  Symbols.help_outline,
+                                  color: Color(0xFF771F98),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  "Submit this report?",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            content: const Text(
+                              "The system will automatically try to find similar items using AI matching.",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            actions: [
+                              // Cancel button
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.black87,
+                                  backgroundColor: const Color(0xFFF3F3F3),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text("Cancel"),
+                              ),
+
+                              // OK button
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context); // close the dialog
+                                  _savePost(); // proceed with saving
+                                },
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: const Color(0xFF771F98),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text("OK"),
+                              ),
+                            ],
+                          ),
+                        );
                       }
                     },
                   ),
