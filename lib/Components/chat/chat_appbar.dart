@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 AppBar chatAppBar(BuildContext context, String name, String avatarUrl) {
   return AppBar(
     backgroundColor: Colors.white,
     elevation: 0,
     leading: IconButton(
-      icon: const Icon(Icons.arrow_back, color: Colors.black),
+      icon: const Icon(Symbols.arrow_back, color: Colors.black),
       onPressed: () => Navigator.pop(context),
     ),
     titleSpacing: 0,

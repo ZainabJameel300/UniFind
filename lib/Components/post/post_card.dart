@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/post/fullscreen_image.dart';
 import 'package:unifind/Pages/view_post.dart';
-import 'package:unifind/components/post_detail.dart';
+import 'package:unifind/components/post/post_detail.dart';
 import 'package:unifind/utils/date_formats.dart';
 
 class PostCard extends StatelessWidget {
