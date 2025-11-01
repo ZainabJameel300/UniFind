@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart'; 
-import 'package:unifind/Components/my_choice_chip.dart';
-import 'package:unifind/Components/my_drawer_button.dart';
+import 'package:unifind/Components/filters/my_choice_chip.dart';
+import 'package:unifind/Components/filters/my_drawer_button.dart';
 import 'package:unifind/providers/filter_provider.dart';
 
 class FiltersDrawer extends StatefulWidget {

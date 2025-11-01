@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/app_button.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
-import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/my_appbar.dart';
+import 'package:unifind/Components/post/fullscreen_image.dart';
 import 'package:unifind/utils/date_formats.dart';
 import 'package:unifind/pages/chat_page.dart';
 

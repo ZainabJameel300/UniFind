@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/filters/filters_drawer.dart';
 import 'package:unifind/pages/home_page.dart';
 import 'package:unifind/pages/keepers_page.dart';
 import 'package:unifind/pages/chatrooms_page.dart';
 import 'package:unifind/pages/profile_page.dart';
 import 'package:unifind/pages/report_item_page.dart';
-
-import '../Components/filters_drawer.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});

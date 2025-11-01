@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
-import 'package:unifind/Components/filters_tabs.dart';
-import 'package:unifind/Components/my_search_delegate.dart';
-import 'package:unifind/Components/post_card.dart';
+import 'package:unifind/Components/filters/filters_tabs.dart';
+import 'package:unifind/Components/filters/my_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:unifind/Pages/notifications_page.dart';
+import 'package:unifind/components/post/post_card.dart';
 import 'package:unifind/providers/filter_provider.dart';
 
 class HomePage extends StatefulWidget {

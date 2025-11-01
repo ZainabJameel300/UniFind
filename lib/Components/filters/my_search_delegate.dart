@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:unifind/components/post_card.dart';
+import 'package:unifind/Components/post/post_card.dart';
 
 class MySearchDelegate extends SearchDelegate<void> {
   @override
