@@ -412,7 +412,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 241, 241, 241),
                         border: Border.all(
                           color: const Color(0xFF771F98),
                           width: 2.5,
@@ -427,7 +427,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         hint: const Text(
                           "Select a Category...",
                           style: TextStyle(
-                            color: Color.fromARGB(255, 198, 196, 196),
+                            color: Color.fromARGB(255, 158, 157, 157),
                           ),
                         ),
                         decoration: InputDecoration(
@@ -478,7 +478,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 241, 241, 241),
                         border: Border.all(
                           color: const Color(0xFF771F98),
                           width: 2.5,
@@ -493,7 +493,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         hint: const Text(
                           "Select a Location...",
                           style: TextStyle(
-                            color: Color.fromARGB(255, 198, 196, 196),
+                            color: Color.fromARGB(255, 158, 157, 157),
                           ),
                         ),
                         decoration: InputDecoration(
@@ -547,7 +547,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Color.fromARGB(255, 241, 241, 241),
                             border: Border.all(
                               color: const Color(0xFF771F98),
                               width: 2.5,
@@ -616,9 +616,12 @@ class _ReportItemPageState extends State<ReportItemPage> {
                               dashPattern: [10, 5],
                             ),
                             child: Container(
-                              color: Colors.white,
                               height: 185,
                               width: 380,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(25),
+                                color: Color.fromARGB(255, 241, 241, 241),
+                              ),
                               child: _image == null
                                   ? const Center(
                                       child: Icon(

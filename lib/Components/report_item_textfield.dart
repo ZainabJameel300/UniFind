@@ -22,7 +22,7 @@ class ReportItemTextfield extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 25.0),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Color.fromARGB(255, 241, 241, 241),
           border: Border.all(color: const Color(0xFF771F98), width: 2.5),
           borderRadius: BorderRadius.circular(25),
         ),
@@ -42,7 +42,7 @@ class ReportItemTextfield extends StatelessWidget {
               border: InputBorder.none,
               hintText: hintText,
               hintStyle: TextStyle(
-                color: const Color.fromARGB(255, 198, 196, 196),
+                color: const Color.fromARGB(255, 158, 157, 157),
               ),
             ),
             validator: validator,
