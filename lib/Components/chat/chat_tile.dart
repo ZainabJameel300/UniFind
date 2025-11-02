@@ -33,7 +33,7 @@ class ChatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chatTime = DateFormats.formatChatTime(lastMsgTime.toDate());
-    final previewText = isLastSender ? "You: $lastMsg" : lastMsg;
+    final previewMsg = isLastSender ? "You: $lastMsg" : lastMsg;
 
     return ListTile(
       onTap: onTap,
@@ -56,8 +56,8 @@ class ChatTile extends StatelessWidget {
             chatTime,
             style: TextStyle(
               fontSize: 12,
-              color: isUnread ? const Color(0xFF771F98) : Colors.grey[600],
-              fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.normal,
             ),
           ),
         ],
@@ -69,7 +69,7 @@ class ChatTile extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                previewText,
+                previewMsg,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

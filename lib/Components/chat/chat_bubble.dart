@@ -5,12 +5,14 @@ class ChatBubble extends StatelessWidget {
   final String message;
   final bool isCurrentUser;
   final DateTime timestamp;
+  final bool isLastAndSeen;
 
   const ChatBubble({
     super.key,
     required this.message,
     required this.isCurrentUser,
     required this.timestamp,
+    required this.isLastAndSeen,
   });
 
   @override
@@ -60,11 +62,13 @@ class ChatBubble extends StatelessWidget {
               ? CrossAxisAlignment.end
               : CrossAxisAlignment.start,
           children: [
+            // message
             Text(
               message,
               style: TextStyle(color: textColor, fontSize: 14.5, height: 1.35),
             ),
             const SizedBox(height: 4),
+            // message time
             Text(
               msgTime,
               style: TextStyle(
@@ -72,6 +76,18 @@ class ChatBubble extends StatelessWidget {
                 fontSize: 11,
               ),
             ),
+            // seen indicator
+            if (isLastAndSeen)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  "Seen",
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isCurrentUser ? Colors.white70 : Colors.grey[600],
+                  ),
+                ),
+              ),
           ],
         ),
       ),

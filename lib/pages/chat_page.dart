@@ -8,7 +8,17 @@ import 'package:unifind/services/chat_service.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverID;
-  const ChatPage({super.key, required this.receiverID});
+  final String name;
+  final String avatar;
+  final String lastReadBy;
+
+  const ChatPage({
+    super.key, 
+    required this.receiverID,                                            
+    required this.name,
+    required this.avatar,
+    required this.lastReadBy,
+  });
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -24,7 +34,6 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    
     myFocusNode.addListener(() {
       if (myFocusNode.hasFocus) {
         WidgetsBinding.instance.addPostFrameCallback((_) => scrollDown());
@@ -74,7 +83,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: chatAppBar(context, "Loading...", ""),
+      appBar: chatAppBar(context, widget.name, widget.avatar),
       body: Column(
         children: [
           // chat messages 
@@ -103,14 +112,21 @@ class _ChatPageState extends State<ChatPage> {
                   padding: const EdgeInsets.only(top: 10, bottom: 10),
                   children: [
                     _buildSystemMessage(),
-                    ...messages.map((doc) {
+                    ...List.generate(messages.length, (i) {
+                      final doc = messages[i];
                       final Map<String, dynamic> msg = doc.data();
-                      final isCurrentUser =  msg['senderId'] == FirebaseAuth.instance.currentUser!.uid;
+                      final isCurrentUser = msg['senderId'] == FirebaseAuth.instance.currentUser!.uid;
+
+                      final isLastAndSeen =
+                          isCurrentUser && // current user msg
+                          i == messages.length - 1 && // last msg
+                          widget.lastReadBy == widget.receiverID; // read by other user
 
                       return ChatBubble(
                         message: msg['content'],
                         isCurrentUser: isCurrentUser,
                         timestamp: msg['timestamp'].toDate(),
+                        isLastAndSeen: isLastAndSeen,
                       );
                     }),
                   ],

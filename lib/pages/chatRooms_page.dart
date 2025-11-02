@@ -14,7 +14,7 @@ class ChatroomsPage extends StatelessWidget {
   final chatService = ChatService();
   final currentUserID = FirebaseAuth.instance.currentUser!.uid;
 
-  void openChat(context, receiverID) async{
+  void openChat(context, receiverID, receiverName, receiverAvatar, lastReadBy) async{
     // mark all chatroom messages as read before opening the chat
     await chatService.markAsRead(receiverID);
 
@@ -22,11 +22,15 @@ class ChatroomsPage extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChatPage(receiverID: receiverID),
+        builder: (context) => ChatPage(
+          receiverID: receiverID,
+          name: receiverName,
+          avatar: receiverAvatar,
+          lastReadBy: lastReadBy,
+        ),
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,6 +72,7 @@ class ChatroomsPage extends StatelessWidget {
               final lastMsgTime = chatData['lastMsgTime'];
               final isLastSender = chatData['lastSender'] == currentUserID;
               final isUnread = chatData['unreadBy'] == currentUserID;
+              final lastReadBy = chatData['lastReadBy'];
 
               // read sender name & avatar
               return FutureBuilder<Map<String, dynamic>?>(
@@ -78,8 +83,8 @@ class ChatroomsPage extends StatelessWidget {
                   }
 
                   final userData = userSnapshot.data ?? {};
-                  final name = userData['name'] ?? "Unknown User";
-                  final avatar = userData['photoUrl'] ?? "";
+                  final name = userData['username'] ?? "Unknown User";
+                  final avatar = userData['avatar'] ?? "";
 
                   return ChatTile(
                     name: name,
@@ -88,7 +93,7 @@ class ChatroomsPage extends StatelessWidget {
                     lastMsgTime: lastMsgTime ?? Timestamp.now(),
                     isLastSender: isLastSender,
                     isUnread: isUnread,
-                    onTap: () => openChat(context, otherUserID),
+                    onTap: () => openChat(context, otherUserID, name, avatar, lastReadBy),
                   );
                 },
               );
