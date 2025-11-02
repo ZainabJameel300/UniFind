@@ -22,7 +22,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const HomePage(),
     const KeepersPage(),
     const ReportItemPage(),
-    const ChatroomsPage(),
+    ChatroomsPage(),
     const ProfilePage(),
   ];
 

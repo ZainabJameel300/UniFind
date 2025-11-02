@@ -1,0 +1,86 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class ChatService {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final String currentUserID = FirebaseAuth.instance.currentUser!.uid;
+
+  // create unique chatroom ID
+  String _getChatroomID(String otherUser) {
+    final ids = [currentUserID, otherUser];
+    ids.sort();
+    return ids.join('_');
+  }
+  
+  // get user info (username & avatar)
+  Future<Map<String, dynamic>?> getUserInfo(String userId) async {
+    final userSnap = await firestore.collection('users').doc(userId).get();
+    return userSnap.data();
+  }
+
+  // send message
+  Future<void> sendMessage(String receiverID, String message, String type) async {
+    final timestamp = Timestamp.now();
+    final chatroomID = _getChatroomID(receiverID);
+
+    final chatRef = firestore.collection("chat_rooms").doc(chatroomID);
+    final msgRef = chatRef.collection("messages");
+
+    // add message
+    await msgRef.add({
+      "senderId": currentUserID,
+      "type": type,
+      "content": message,
+      "timestamp": timestamp,
+    });
+
+    // add or update chatroom info
+    await chatRef.set({
+      "participants": [currentUserID, receiverID],
+      "lastMsg": message,
+      "lastMsgTime": timestamp,
+      "lastSender": currentUserID,
+      "unreadBy": receiverID, // receiver unread new messages
+      "lastReadBy": currentUserID, // sender seen all messages
+    }, SetOptions(merge: true));
+  }
+
+  // get chatrooms for current user
+  Stream<QuerySnapshot<Map<String, dynamic>>> getUserChatrooms() {
+    return firestore
+        .collection("chat_rooms")
+        .where("participants", arrayContains: currentUserID)
+        .orderBy("lastMsgTime", descending: true)
+        .snapshots();
+  }
+
+  // get all chat messages
+  Stream<QuerySnapshot<Map<String, dynamic>>> getMessages(String otherUser) {
+    final chatroomID = _getChatroomID(otherUser);
+
+    return firestore
+        .collection("chat_rooms")
+        .doc(chatroomID)
+        .collection("messages")
+        .orderBy("timestamp", descending: false)
+        .snapshots();
+  }
+
+  // mark messages as read (when user opens chat)
+  Future<void> markAsRead(String otherUser) async {
+    final chatroomID = _getChatroomID(otherUser);
+    final chatRef = firestore.collection("chat_rooms").doc(chatroomID);
+
+    final data = (await chatRef.get()).data()!;
+    final currentUnreadBy = data["unreadBy"];
+
+    // clear unread if current user hadn’t read yet
+    if (currentUnreadBy == currentUserID) {
+      await chatRef.set({
+        "unreadBy": null, 
+        "lastReadBy": currentUserID,
+      }, SetOptions(merge: true));
+    } 
+  }
+
+}

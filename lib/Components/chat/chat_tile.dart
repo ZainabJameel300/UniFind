@@ -7,6 +7,8 @@ class ChatTile extends StatelessWidget {
   final String avatar;
   final String lastMsg;
   final Timestamp lastMsgTime;
+  final bool isLastSender;
+  final bool isUnread;
   final void Function()? onTap;
 
   const ChatTile({
@@ -15,6 +17,8 @@ class ChatTile extends StatelessWidget {
     required this.avatar,
     required this.lastMsg,
     required this.lastMsgTime,
+    required this.isLastSender,
+    required this.isUnread,
     required this.onTap,
   });
 
@@ -29,6 +33,7 @@ class ChatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chatTime = DateFormats.formatChatTime(lastMsgTime.toDate());
+    final previewText = isLastSender ? "You: $lastMsg" : lastMsg;
 
     return ListTile(
       onTap: onTap,
@@ -40,30 +45,51 @@ class ChatTile extends StatelessWidget {
           Expanded(
             child: Text(
               name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
-                fontWeight: FontWeight.w600,
+                fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
                 color: Colors.black,
               ),
             ),
           ),
           Text(
             chatTime,
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 12,
+              color: isUnread ? const Color(0xFF771F98) : Colors.grey[600],
+              fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
+            ),
           ),
         ],
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 8),
-        child: Text(
-          lastMsg,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-            fontWeight: FontWeight.w400,
-          ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                previewText,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isUnread ? Colors.black : Colors.grey,
+                  fontWeight: isUnread ? FontWeight.w500 : FontWeight.w400,
+                ),
+              ),
+            ),
+            if (isUnread)
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(left: 6, bottom: 2),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF771F98),
+                  shape: BoxShape.circle,
+                ),
+              ),
+          ],
         ),
       ),
     );

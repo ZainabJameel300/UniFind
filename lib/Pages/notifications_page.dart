@@ -58,7 +58,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: const Text("Error", style: TextStyle(fontSize: 16)));
+            return Center(child: const Text("Error loading notifications", style: TextStyle(fontSize: 16)));
           }
             
           final notifications = snapshot.data!.docs;
@@ -77,6 +77,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               final notificationData = notifications[index];
               final matchPostID = notificationData['matchPostID'];
               final notificationID = notificationData.id;
+
               return NotificationTile(
                 message: notificationData['message'],
                 timestamp: notificationData['timestamp'],
