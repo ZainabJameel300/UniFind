@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/my_appbar.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -89,22 +90,38 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 50),
 
             // Avatar
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF771F98), width: 2.5),
-              ),
-              child: ClipOval(
-                child: SizedBox(
-                  width: 130,
-                  height: 130,
-                  child: avatarToShow.isNotEmpty
-                      ? Image.network(avatarToShow, fit: BoxFit.cover)
-                      : const Icon(
-                          Icons.account_circle,
-                          size: 130,
-                          color: Colors.grey,
-                        ),
+            GestureDetector(
+              onTap: () {
+                if (avatarToShow.isNotEmpty) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          FullScreenImage(imageUrl: avatarToShow),
+                    ),
+                  );
+                }
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFF771F98),
+                    width: 2.5,
+                  ),
+                ),
+                child: ClipOval(
+                  child: SizedBox(
+                    width: 130,
+                    height: 130,
+                    child: avatarToShow.isNotEmpty
+                        ? Image.network(avatarToShow, fit: BoxFit.cover)
+                        : const Icon(
+                            Icons.account_circle,
+                            size: 130,
+                            color: Colors.grey,
+                          ),
+                  ),
                 ),
               ),
             ),
