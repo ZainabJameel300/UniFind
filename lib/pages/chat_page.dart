@@ -10,14 +10,12 @@ class ChatPage extends StatefulWidget {
   final String receiverID;
   final String name;
   final String avatar;
-  final String lastReadBy;
 
   const ChatPage({
     super.key, 
     required this.receiverID,                                            
     required this.name,
     required this.avatar,
-    required this.lastReadBy,
   });
 
   @override
@@ -26,10 +24,13 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final chatService = ChatService();
+  final currentUserID = FirebaseAuth.instance.currentUser!.uid;
 
   final TextEditingController _messageController = TextEditingController();
   final FocusNode myFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
+
+  bool _isMarkingRead = false; 
 
   @override
   void initState() {
@@ -40,6 +41,17 @@ class _ChatPageState extends State<ChatPage> {
       }
     });
   }
+
+  // mark messages as read
+  void _markRead() {
+    if (_isMarkingRead) return;
+    _isMarkingRead = true;
+
+    chatService.markAsRead(widget.receiverID).then((_) {
+      _isMarkingRead = false;
+    });
+  }
+
 
   @override
   void dispose() {
@@ -70,7 +82,7 @@ class _ChatPageState extends State<ChatPage> {
       _messageController.clear();
 
       // scroll when message is sent
-      Future.delayed(const Duration(milliseconds: 120), () => scrollDown());
+      Future.delayed(const Duration(milliseconds: 300), () => scrollDown());
     }
   }
 
@@ -87,52 +99,75 @@ class _ChatPageState extends State<ChatPage> {
       body: Column(
         children: [
           // chat messages 
-          Expanded(
-            child: StreamBuilder(
-              stream: chatService.getMessages(widget.receiverID),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return const Center(child: Text("Error loading messages"));
-                }
+          StreamBuilder(
+            stream: chatService.getChatroomInfo(widget.receiverID),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return const Center(child: Text("Error loading chat"));
+              }
 
-                final messages = snapshot.data?.docs ?? [];
-                if (messages.isEmpty) {
-                  return ListView(
-                    padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    children: [_buildSystemMessage()],
-                  );
-                }
+              final chatroomData = snapshot.data?.data() ?? {};
+              final lastSenderID = chatroomData['lastSender'];
+              final bool isSeen = chatroomData['isRead'][widget.receiverID] == true;
 
-                return ListView(
-                  controller: _scrollController,
-                  reverse: false, 
-                  padding: const EdgeInsets.only(top: 10, bottom: 10),
-                  children: [
-                    _buildSystemMessage(),
-                    ...List.generate(messages.length, (i) {
-                      final doc = messages[i];
-                      final Map<String, dynamic> msg = doc.data();
-                      final isCurrentUser = msg['senderId'] == FirebaseAuth.instance.currentUser!.uid;
-
-                      final isLastAndSeen =
-                          isCurrentUser && // current user msg
-                          i == messages.length - 1 && // last msg
-                          widget.lastReadBy == widget.receiverID; // read by other user
-
-                      return ChatBubble(
-                        message: msg['content'],
-                        isCurrentUser: isCurrentUser,
-                        timestamp: msg['timestamp'].toDate(),
-                        isLastAndSeen: isLastAndSeen,
+              return Expanded(
+                child: StreamBuilder(
+                  stream: chatService.getMessages(widget.receiverID),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return const Center(child: Text("Error loading messages"));
+                    }
+              
+                    final messages = snapshot.data?.docs ?? [];
+                    if (messages.isEmpty) {
+                      return ListView(
+                        padding: const EdgeInsets.only(top: 10, bottom: 10),
+                        children: [_buildSystemMessage()],
                       );
-                    }),
-                  ],
-                );
-              },
-            ),
+                    }
+              
+                    // mark messages as read while chat is opened
+                    final isFromOtherUser = lastSenderID != currentUserID;
+                    if (isFromOtherUser) {
+                      _markRead();
+                    }
+              
+                    return ListView(
+                      controller: _scrollController,
+                      reverse: false, 
+                      padding: const EdgeInsets.only(top: 10, bottom: 10),
+                      children: [
+                        _buildSystemMessage(),
+                        ...List.generate(messages.length, (i) {
+                          final doc = messages[i];
+                          final Map<String, dynamic> msg = doc.data();
+                          final isCurrentUser = msg['senderId'] == currentUserID;
+              
+                          final bool isLastAndSeen =
+                              isCurrentUser && // current user msg
+                              i == messages.length - 1 && // last msg
+                              isSeen == true; // read by other user
+              
+                          return ChatBubble(
+                            message: msg['content'],
+                            isCurrentUser: isCurrentUser,
+                            timestamp: msg['timestamp'].toDate(),
+                            isLastAndSeen: isLastAndSeen,
+                            type: msg['type'],
+                          );
+                        }),
+                      ],
+                    );
+                  },
+                ),
+              );
+            }
           ),
           // user input
           _buildUserInput(),

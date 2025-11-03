@@ -57,6 +57,7 @@ class ViewPost extends StatelessWidget {
               final publisherData = snapshot.data!.data() as Map<String, dynamic>;
               final bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
               final String pubID = publisherData["uid"];
+              final String pubName = publisherData["username"];
               final String name = isCurrentUser ? "You" : publisherData["username"];
               final String avatar = publisherData["avatar"];
               final String type = postData["type"];
@@ -214,8 +215,11 @@ class ViewPost extends StatelessWidget {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                ChatPage(receiverID: pubID),
+                            builder: (context) => ChatPage(
+                              receiverID: pubID,
+                              name: pubName,
+                              avatar: avatar,
+                            ),
                           ),
                         )
                       ),

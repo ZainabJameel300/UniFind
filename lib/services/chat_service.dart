@@ -6,8 +6,8 @@ class ChatService {
   final String currentUserID = FirebaseAuth.instance.currentUser!.uid;
 
   // create unique chatroom ID
-  String _getChatroomID(String otherUser) {
-    final ids = [currentUserID, otherUser];
+  String _getChatroomID(String otherUserID) {
+    final ids = [currentUserID, otherUserID];
     ids.sort();
     return ids.join('_');
   }
@@ -40,8 +40,10 @@ class ChatService {
       "lastMsg": message,
       "lastMsgTime": timestamp,
       "lastSender": currentUserID,
-      "unreadBy": receiverID, // receiver unread new messages
-      "lastReadBy": currentUserID, // sender seen all messages
+      'isRead': {
+        currentUserID: true, // sender has read
+        receiverID: false, // receiver hasn’t read yet
+      }
     }, SetOptions(merge: true));
   }
 
@@ -53,10 +55,17 @@ class ChatService {
         .orderBy("lastMsgTime", descending: true)
         .snapshots();
   }
+  
+  // get chatroom info for read & seen
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getChatroomInfo(String otherUserID) {
+    final chatroomID = _getChatroomID(otherUserID);
+    return firestore.collection("chat_rooms").doc(chatroomID).snapshots();
+  }
+
 
   // get all chat messages
-  Stream<QuerySnapshot<Map<String, dynamic>>> getMessages(String otherUser) {
-    final chatroomID = _getChatroomID(otherUser);
+  Stream<QuerySnapshot<Map<String, dynamic>>> getMessages(String otherUserID) {
+    final chatroomID = _getChatroomID(otherUserID);
 
     return firestore
         .collection("chat_rooms")
@@ -66,21 +75,15 @@ class ChatService {
         .snapshots();
   }
 
-  // mark messages as read (when user opens chat)
-  Future<void> markAsRead(String otherUser) async {
-    final chatroomID = _getChatroomID(otherUser);
+
+  // mark chat as read while chat is open
+  Future<void> markAsRead(String otherUserID) async {
+    final chatroomID = _getChatroomID(otherUserID);
     final chatRef = firestore.collection("chat_rooms").doc(chatroomID);
 
-    final data = (await chatRef.get()).data()!;
-    final currentUnreadBy = data["unreadBy"];
-
-    // clear unread if current user hadn’t read yet
-    if (currentUnreadBy == currentUserID) {
-      await chatRef.set({
-        "unreadBy": null, 
-        "lastReadBy": currentUserID,
-      }, SetOptions(merge: true));
-    } 
+    await chatRef.set({
+      'isRead': {currentUserID: true},
+    }, SetOptions(merge: true));
   }
 
 }

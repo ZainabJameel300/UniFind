@@ -9,30 +9,13 @@ import 'package:unifind/Pages/chat_page.dart';
 import 'package:unifind/services/chat_service.dart';
 
 class ChatroomsPage extends StatelessWidget {
-  ChatroomsPage({super.key});
+  const ChatroomsPage({super.key});
 
-  final chatService = ChatService();
-  final currentUserID = FirebaseAuth.instance.currentUser!.uid;
-
-  void openChat(context, receiverID, receiverName, receiverAvatar, lastReadBy) async{
-    // mark all chatroom messages as read before opening the chat
-    await chatService.markAsRead(receiverID);
-
-    // navigate to chat page    
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChatPage(
-          receiverID: receiverID,
-          name: receiverName,
-          avatar: receiverAvatar,
-          lastReadBy: lastReadBy,
-        ),
-      ),
-    );
-  }
   @override
   Widget build(BuildContext context) {
+    final chatService = ChatService();
+    final currentUserID = FirebaseAuth.instance.currentUser!.uid;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: MyAppbar(title: "Chats", showBack: false),
@@ -68,11 +51,13 @@ class ChatroomsPage extends StatelessWidget {
               final otherUserID = participants.first;
 
               // chat data
-              final lastMsg = chatData['lastMsg'] ?? '';
-              final lastMsgTime = chatData['lastMsgTime'];
-              final isLastSender = chatData['lastSender'] == currentUserID;
-              final isUnread = chatData['unreadBy'] == currentUserID;
-              final lastReadBy = chatData['lastReadBy'];
+              final String lastMsg = chatData['lastMsg'] ?? '';
+              final DateTime lastMsgTime = chatData['lastMsgTime'].toDate();
+              // final String lastSender = chatData['lastSender'];//delete 
+              final bool isLastSender = chatData['lastSender'] == currentUserID;
+              final bool isReadCurrent = chatData['isRead'][currentUserID] == true;
+              // final bool isReadOther = chatData['isRead'][otherUserID] == true;//delete 
+
 
               // read sender name & avatar
               return FutureBuilder<Map<String, dynamic>?>(
@@ -90,10 +75,25 @@ class ChatroomsPage extends StatelessWidget {
                     name: name,
                     avatar: avatar,
                     lastMsg: lastMsg,
-                    lastMsgTime: lastMsgTime ?? Timestamp.now(),
+                    lastMsgTime: lastMsgTime,
                     isLastSender: isLastSender,
-                    isUnread: isUnread,
-                    onTap: () => openChat(context, otherUserID, name, avatar, lastReadBy),
+                    isRead: isReadCurrent,
+                    onTap: () async {
+                      // mark chat as read 
+                      await chatService.markAsRead(otherUserID);
+
+                      // navigate to chat page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatPage(
+                            receiverID: otherUserID,
+                            name: name,
+                            avatar: avatar,
+                          ),
+                        ),
+                      );
+                    }
                   );
                 },
               );

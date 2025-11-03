@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:unifind/utils/date_formats.dart';
 
@@ -6,9 +5,9 @@ class ChatTile extends StatelessWidget {
   final String name;
   final String avatar;
   final String lastMsg;
-  final Timestamp lastMsgTime;
+  final DateTime lastMsgTime;
   final bool isLastSender;
-  final bool isUnread;
+  final bool isRead;
   final void Function()? onTap;
 
   const ChatTile({
@@ -18,7 +17,7 @@ class ChatTile extends StatelessWidget {
     required this.lastMsg,
     required this.lastMsgTime,
     required this.isLastSender,
-    required this.isUnread,
+    required this.isRead,
     required this.onTap,
   });
 
@@ -32,7 +31,7 @@ class ChatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chatTime = DateFormats.formatChatTime(lastMsgTime.toDate());
+    final chatTime = DateFormats.formatChatTime(lastMsgTime);
     final previewMsg = isLastSender ? "You: $lastMsg" : lastMsg;
 
     return ListTile(
@@ -47,7 +46,7 @@ class ChatTile extends StatelessWidget {
               name,
               style: TextStyle(
                 fontSize: 15,
-                fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                fontWeight: isRead ? FontWeight.w600 : FontWeight.w700,
                 color: Colors.black,
               ),
             ),
@@ -74,12 +73,13 @@ class ChatTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 14,
-                  color: isUnread ? Colors.black : Colors.grey,
-                  fontWeight: isUnread ? FontWeight.w500 : FontWeight.w400,
+                  color: isRead ? Colors.grey :  Colors.black,
+                  fontWeight: isRead ? FontWeight.w400 : FontWeight.w500,
                 ),
               ),
             ),
-            if (isUnread)
+            // not read chat 
+            if (!isRead)
               Container(
                 width: 8,
                 height: 8,
