@@ -31,7 +31,7 @@ void showChangePasswordSheet(BuildContext context) {
       return StatefulBuilder(
         builder: (context, setModalState) {
           return SizedBox(
-            height: MediaQuery.of(context).size.height * 0.58,
+            height: MediaQuery.of(context).size.height * 0.50,
             child: Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -190,7 +190,6 @@ void showChangePasswordSheet(BuildContext context) {
                             );
 
                             Navigator.pop(context);
-                            // use the shared showSnackBar helper instead of ScaffoldMessenger directly
                             showSnackBar(
                               context,
                               "Password updated successfully!",
