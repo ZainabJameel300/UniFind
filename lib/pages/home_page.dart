@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart';
+import 'package:unifind/Components/badge_icon.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/filters/filters_tabs.dart';
 import 'package:unifind/Components/filters/my_search_delegate.dart';
@@ -152,44 +153,28 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(width: 8.0),
 
                       // notifications
-                      StreamBuilder<int>(
-                        stream: unreadNotificationsCount(),
-                        builder: (context, snapshot) {
-                          final int count = snapshot.data ?? 0;
-
-                          return GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NotificationsPage(),
-                              ),
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NotificationsPage(),
+                          ),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15.0),
+                            color: const Color(0xFFF1F1F1),
+                          ),
+                          child: 
+                          BadgeIcon(
+                            badgeStream: unreadNotificationsCount(),
+                            icon: const Icon(
+                              Symbols.notifications,
+                              size: 24,
                             ),
-                            child: Container(
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15.0),
-                                color: const Color(0xFFF1F1F1),
-                              ),
-                              child: Badge(
-                                backgroundColor: const Color(0xFF771F98),
-                                label: Text(
-                                  count.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                                isLabelVisible: count > 0,
-                                alignment: Alignment.topRight,
-                                offset: const Offset(5, -2),
-                                child: const Icon(
-                                  Symbols.notifications,
-                                  size: 24,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -280,8 +265,7 @@ class _HomePageState extends State<HomePage> {
                       physics: const ClampingScrollPhysics(),
                       itemCount: snapshot.data!.docs.length,
                       itemBuilder: (context, index) {
-                        DocumentSnapshot postData = snapshot.data!.docs
-                            .elementAt(index);
+                        DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
                         String uid = postData["uid"];
 
                         // read the publisher data for each post

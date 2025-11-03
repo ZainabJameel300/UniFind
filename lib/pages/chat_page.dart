@@ -102,17 +102,23 @@ class _ChatPageState extends State<ChatPage> {
           StreamBuilder(
             stream: chatService.getChatroomInfo(widget.receiverID),
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
               if (snapshot.hasError) {
-                return const Center(child: Text("Error loading chat"));
+                return Expanded(child: const Center(child: Text("Error loading chat")));
+              }
+              if (!snapshot.hasData || !snapshot.data!.exists){ 
+                return Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.only(top: 10, bottom: 10),
+                    children: [_buildSystemMessage()],
+                  ),
+                );             
               }
 
               final chatroomData = snapshot.data?.data() ?? {};
-              final lastSenderID = chatroomData['lastSender'];
-              final bool isSeen = chatroomData['isRead'][widget.receiverID] == true;
-
+              final lastSenderID = chatroomData['lastSender'] ?? "";
+              final isReadByReciever = (chatroomData['isRead'] ?? {})[widget.receiverID] ?? false;
+              final bool isSeen = isReadByReciever == true;
+              
               return Expanded(
                 child: StreamBuilder(
                   stream: chatService.getMessages(widget.receiverID),
@@ -148,7 +154,6 @@ class _ChatPageState extends State<ChatPage> {
                           final doc = messages[i];
                           final Map<String, dynamic> msg = doc.data();
                           final isCurrentUser = msg['senderId'] == currentUserID;
-              
                           final bool isLastAndSeen =
                               isCurrentUser && // current user msg
                               i == messages.length - 1 && // last msg

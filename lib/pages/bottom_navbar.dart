@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/badge_icon.dart';
 import 'package:unifind/Components/filters/filters_drawer.dart';
 import 'package:unifind/pages/home_page.dart';
 import 'package:unifind/pages/keepers_page.dart';
 import 'package:unifind/pages/chatrooms_page.dart';
 import 'package:unifind/pages/profile_page.dart';
 import 'package:unifind/pages/report_item_page.dart';
+import 'package:unifind/services/chat_service.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -15,6 +17,8 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
+  final chatService = ChatService();
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int selectedIndex = 0;
 
@@ -22,7 +26,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const HomePage(),
     const KeepersPage(),
     const ReportItemPage(),
-    ChatroomsPage(),
+    const ChatroomsPage(),
     const ProfilePage(),
   ];
 
@@ -30,7 +34,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     setState(() => selectedIndex = index);
   }
 
-  Widget _buildNavItem(IconData icon, int index) {
+  Widget _buildNavItem(IconData icon, int index, {Stream<int>? badgeStream}) {
     final bool isSelected = selectedIndex == index;
 
     return GestureDetector(
@@ -38,11 +42,20 @@ class _BottomNavBarState extends State<BottomNavBar> {
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(),
-        child: Icon(
+        child: badgeStream == null 
+        ? Icon(
           icon,
           fill: isSelected ? 1 : 0,
           color: isSelected ? Colors.black : Colors.black45,
-        ),
+        )
+        : BadgeIcon(
+          badgeStream: badgeStream,
+            icon: Icon(
+              icon,
+              fill: isSelected ? 1 : 0,
+              color: isSelected ? Colors.black : Colors.black45,
+            ),        
+          ),
       ),
     );
   }
@@ -76,7 +89,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
             const SizedBox(width: 40),
 
-            _buildNavItem(Symbols.chat_bubble, 3),
+            _buildNavItem(Symbols.chat_bubble, 3, badgeStream: chatService.unreadChatsCount(),
+            ),
             _buildNavItem(Symbols.person, 4),
           ],
         ),

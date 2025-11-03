@@ -75,8 +75,7 @@ class ChatService {
         .snapshots();
   }
 
-
-  // mark chat as read while chat is open
+  // mark chat as read 
   Future<void> markAsRead(String otherUserID) async {
     final chatroomID = _getChatroomID(otherUserID);
     final chatRef = firestore.collection("chat_rooms").doc(chatroomID);
@@ -84,6 +83,24 @@ class ChatService {
     await chatRef.set({
       'isRead': {currentUserID: true},
     }, SetOptions(merge: true));
+  }
+
+  // get unread chats count (for chat tab icon)
+Stream<int> unreadChatsCount() {
+  return FirebaseFirestore.instance
+      .collection('chat_rooms')
+      .where('participants', arrayContains: currentUserID)
+      .snapshots()
+      .map((snapshot) {
+        // count chats where current user didn't read
+        final unreadCount = snapshot.docs.where((doc) {
+          final data = doc.data();
+          final isRead = data['isRead'] ?? {};
+          return isRead[currentUserID] == false;
+        }).length;
+
+        return unreadCount; 
+      });
   }
 
 }
