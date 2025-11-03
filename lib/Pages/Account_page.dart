@@ -56,8 +56,8 @@ class _AccountPageState extends State<AccountPage> {
             children: [
               SizedBox(height: 10),
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ProfilePage(
@@ -67,6 +67,9 @@ class _AccountPageState extends State<AccountPage> {
                       ),
                     ),
                   );
+
+                  //When the user returns from the profile, reload the updated data
+                  _loadUserData();
                 },
                 // User Detail Card
                 child: Container(
