@@ -118,7 +118,7 @@ class MySearchDelegate extends SearchDelegate<void> {
         }
     
         return Container(
-          color: const Color.fromARGB(77, 223, 218, 236),
+          color: const Color(0xFFF7F7F7),
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
             itemCount: matchedPosts.length,

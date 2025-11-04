@@ -39,9 +39,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
 
     return GestureDetector(
       onTap: () => onTabTapped(index),
-      child: Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0), 
         child: badgeStream == null 
         ? Icon(
           icon,
@@ -72,27 +71,35 @@ class _BottomNavBarState extends State<BottomNavBar> {
         backgroundColor: const Color(0xFF771F98),
         foregroundColor: Colors.white,
         shape: const CircleBorder(),
-        elevation: 4,
         onPressed: () {
           onTabTapped(2);
         },
         child: const Icon(Symbols.add),
       ),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        color: const Color(0xFFF1F1F1),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Symbols.home, 0),
-            _buildNavItem(Symbols.location_on, 1),
-
-            const SizedBox(width: 40),
-
-            _buildNavItem(Symbols.chat_bubble, 3, badgeStream: chatService.unreadChatsCount(),
-            ),
-            _buildNavItem(Symbols.person, 4),
-          ],
+      bottomNavigationBar: Container(
+      decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Colors.black.withAlpha(20)),
+          ),
+        ),
+        child: BottomAppBar(
+          shape: const CircularNotchedRectangle(),
+          color: Colors.white,
+          height: 62, 
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(Symbols.home, 0),
+              _buildNavItem(Symbols.location_on, 1),
+        
+              const SizedBox(width: 40),
+        
+              _buildNavItem(Symbols.chat_bubble, 3, badgeStream: chatService.unreadChatsCount(),
+              ),
+              _buildNavItem(Symbols.person, 4),
+            ],
+          ),
         ),
       ),
     );

@@ -130,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                           child: Container(
                             padding: const EdgeInsets.all(10.0),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15.0),
+                              borderRadius: BorderRadius.circular(18.0),
                               color: const Color(0xFFF1F1F1),
                             ),
                             child: const Row(
@@ -163,7 +163,7 @@ class _HomePageState extends State<HomePage> {
                         child: Container(
                           padding: const EdgeInsets.all(10.0),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15.0),
+                            borderRadius: BorderRadius.circular(18.0),
                             color: const Color(0xFFF1F1F1),
                           ),
                           child: 
@@ -256,7 +256,7 @@ class _HomePageState extends State<HomePage> {
                   }
 
                   return Container(
-                    color: const Color.fromARGB(77, 223, 218, 236),
+                    color: const Color(0xFFF7F7F7),
                     child: ListView.builder(
                       padding: const EdgeInsets.symmetric(
                         vertical: 10,
@@ -274,8 +274,7 @@ class _HomePageState extends State<HomePage> {
                           builder: (context, snapshot) {
                             if (snapshot.hasError) return Text("Error");
 
-                            if (snapshot.connectionState ==
-                                ConnectionState.done) {
+                            if (snapshot.connectionState == ConnectionState.done) {
                               Map<String, dynamic> publisherData =
                                   snapshot.data!.data() as Map<String, dynamic>;
                               return PostCard(
