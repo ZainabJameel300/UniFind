@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/chat/chat_appbar.dart';
 import 'package:unifind/Components/chat/chat_bubble.dart';
@@ -31,6 +34,7 @@ class _ChatPageState extends State<ChatPage> {
   final ScrollController _scrollController = ScrollController();
 
   bool _isMarkingRead = false; 
+  File? _selectedImage;
 
   @override
   void initState() {
@@ -52,7 +56,6 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-
   @override
   void dispose() {
     myFocusNode.dispose();
@@ -72,24 +75,39 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   // send message
-  void sendMessage(String type) async {
-    if (_messageController.text.isNotEmpty) {
+  Future<void> sendMessage(String type) async {
+    // send text
+    if (type == "text" && _messageController.text.isNotEmpty) {
       await chatService.sendMessage(
-        widget.receiverID, 
+        widget.receiverID,
         _messageController.text,
-        type,
+        "text",
       );
       _messageController.clear();
+      scrollDown();
+    }
 
-      // scroll when message is sent
-      Future.delayed(const Duration(milliseconds: 300), () => scrollDown());
+    // send image 
+    if (type == "pic" && _selectedImage != null) {
+      final file = _selectedImage!;
+      final int timestamp = DateTime.now().millisecondsSinceEpoch;
+      final String chatroomID = chatService.getChatroomID(widget.receiverID);
+
+      // hide pic preview after pressing send
+      setState(() => _selectedImage = null);
+
+      final ref = FirebaseStorage.instance.ref().child(
+        'chat_images/$chatroomID/$timestamp-$currentUserID.jpg',
+      );
+
+      await ref.putFile(file);
+      final imageUrl = await ref.getDownloadURL();
+      await chatService.sendMessage(widget.receiverID, imageUrl, "pic");
+
+      scrollDown();
     }
   }
 
-  // send image
-  void sendImage() async {
-    
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +123,8 @@ class _ChatPageState extends State<ChatPage> {
               if (snapshot.hasError) {
                 return Expanded(child: const Center(child: Text("Error loading chat")));
               }
+
+              // chat room doesn't exist
               if (!snapshot.hasData || !snapshot.data!.exists){ 
                 return Expanded(
                   child: ListView(
@@ -116,9 +136,8 @@ class _ChatPageState extends State<ChatPage> {
 
               final chatroomData = snapshot.data?.data() ?? {};
               final lastSenderID = chatroomData['lastSender'] ?? "";
-              final isReadByReciever = (chatroomData['isRead'] ?? {})[widget.receiverID] ?? false;
-              final bool isSeen = isReadByReciever == true;
               
+              // show chat room messages
               return Expanded(
                 child: StreamBuilder(
                   stream: chatService.getMessages(widget.receiverID),
@@ -129,21 +148,15 @@ class _ChatPageState extends State<ChatPage> {
                     if (snapshot.hasError) {
                       return const Center(child: Text("Error loading messages"));
                     }
-              
-                    final messages = snapshot.data?.docs ?? [];
-                    if (messages.isEmpty) {
-                      return ListView(
-                        padding: const EdgeInsets.only(top: 10, bottom: 10),
-                        children: [_buildSystemMessage()],
-                      );
-                    }
-              
+
                     // mark messages as read while chat is opened
                     final isFromOtherUser = lastSenderID != currentUserID;
                     if (isFromOtherUser) {
                       _markRead();
                     }
-              
+
+                    final messages = snapshot.data?.docs ?? [];
+
                     return ListView(
                       controller: _scrollController,
                       reverse: false, 
@@ -154,16 +167,11 @@ class _ChatPageState extends State<ChatPage> {
                           final doc = messages[i];
                           final Map<String, dynamic> msg = doc.data();
                           final isCurrentUser = msg['senderId'] == currentUserID;
-                          final bool isLastAndSeen =
-                              isCurrentUser && // current user msg
-                              i == messages.length - 1 && // last msg
-                              isSeen == true; // read by other user
-              
+                          
                           return ChatBubble(
                             message: msg['content'],
                             isCurrentUser: isCurrentUser,
                             timestamp: msg['timestamp'].toDate(),
-                            isLastAndSeen: isLastAndSeen,
                             type: msg['type'],
                           );
                         }),
@@ -217,35 +225,108 @@ class _ChatPageState extends State<ChatPage> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 50, top: 6),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // text feild
+              // input field or image preview
               Expanded(
-                child: ChatTextfield(
-                  hintText: "Type a message",
-                  controller: _messageController,
-                  focusNode: myFocusNode,
-                  onChanged: (value) {
-                    setState(() {
-                      isTyping = value.trim().isNotEmpty; 
-                    });
-                  },
+                child: Container(
+                  height: _selectedImage == null ? 55 : 130,
+                  margin: const EdgeInsets.only(left: 18, right: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F0F0),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: _selectedImage == null
+                      ? ChatTextfield(
+                          hintText: "Type a message",
+                          controller: _messageController,
+                          focusNode: myFocusNode,
+                          onChanged: (value) {
+                            setState(() {
+                              isTyping = value.trim().isNotEmpty;
+                            });
+                          },
+                        )
+                      : Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.all(10),
+                            width: MediaQuery.of(context).size.width * 0.35,
+                            height: 120,
+                            child: Stack(
+                              children: [
+                                // picked image 
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Image.file(
+                                    _selectedImage!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
+                                ),
+
+                                // cancel sending the image 
+                                Positioned(
+                                  top: 6,
+                                  right: 6,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() => _selectedImage = null);
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withAlpha(100),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      padding: const EdgeInsets.all(4),
+                                      child: const Icon(
+                                        Symbols.close,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                 ),
               ),
-        
-              // action button (changes between camera & send)
+
+              // action button (send or camera)
               Container(
                 decoration: BoxDecoration(
-                  color: isTyping
+                  color: (isTyping || _selectedImage != null)
                       ? const Color(0xFF771F98)
                       : Colors.transparent,
                   shape: BoxShape.circle,
                 ),
                 margin: const EdgeInsets.only(right: 25.0),
                 child: IconButton(
-                  onPressed: isTyping ? () => sendMessage("text") : sendImage,              
+                  onPressed: () async {
+                    if (_selectedImage != null) {
+                      await sendMessage("pic");
+                    } else if (isTyping) {
+                      await sendMessage("text");
+                      setState(() => isTyping = false);
+                    } else {
+                      // pick photo 
+                      final ImagePicker picker = ImagePicker();
+                      final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                      if (pickedFile != null) {
+                        setState(() => _selectedImage = File(pickedFile.path));
+                      }
+                    }
+                  },
                   icon: Icon(
-                    isTyping ? Symbols.send : Symbols.photo_camera,
-                    color: isTyping ? Colors.white : Colors.grey[800],
+                    (isTyping || _selectedImage != null)
+                        ? Symbols.send
+                        : Symbols.photo_camera,
+                    color: (isTyping || _selectedImage != null)
+                        ? Colors.white
+                        : Colors.grey[800],
                     fill: 1,
                   ),
                 ),
@@ -253,7 +334,7 @@ class _ChatPageState extends State<ChatPage> {
             ],
           ),
         );
-      }
+      },
     );
   }
 }

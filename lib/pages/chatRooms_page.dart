@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:unifind/Components/chat/chat_tile.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/my_AppBar.dart';
 import 'package:unifind/Pages/chat_page.dart';
 import 'package:unifind/services/chat_service.dart';
+import 'package:unifind/utils/date_formats.dart';
 
 class ChatroomsPage extends StatelessWidget {
   const ChatroomsPage({super.key});
@@ -52,12 +52,10 @@ class ChatroomsPage extends StatelessWidget {
 
               // chat data
               final String lastMsg = chatData['lastMsg'] ?? '';
+              final String lastMsgType = chatData['lastMsgType'] ?? ''; 
               final DateTime lastMsgTime = chatData['lastMsgTime'].toDate();
-              // final String lastSender = chatData['lastSender'];//delete 
               final bool isLastSender = chatData['lastSender'] == currentUserID;
-              final bool isReadCurrent = chatData['isRead'][currentUserID] == true;
-              // final bool isReadOther = chatData['isRead'][otherUserID] == true;//delete 
-
+              final bool isReadCurrent = (chatData['isRead'][currentUserID] ?? false) == true;
 
               // read sender name & avatar
               return FutureBuilder<Map<String, dynamic>?>(
@@ -75,6 +73,7 @@ class ChatroomsPage extends StatelessWidget {
                     name: name,
                     avatar: avatar,
                     lastMsg: lastMsg,
+                    lastMsgType: lastMsgType,
                     lastMsgTime: lastMsgTime,
                     isLastSender: isLastSender,
                     isRead: isReadCurrent,
@@ -105,3 +104,130 @@ class ChatroomsPage extends StatelessWidget {
   }
 }
 
+// chat tile
+class ChatTile extends StatelessWidget {
+  final String name;
+  final String avatar;
+  final String lastMsg;
+  final String lastMsgType;
+  final DateTime lastMsgTime;
+  final bool isLastSender;
+  final bool isRead;
+  final void Function()? onTap;
+
+  const ChatTile({
+    super.key,
+    required this.name,
+    required this.avatar,
+    required this.lastMsg,
+    required this.lastMsgType,
+    required this.lastMsgTime,
+    required this.isLastSender,
+    required this.isRead,
+    required this.onTap,
+  });
+
+  Widget _buildAvatar(String avatar) {
+    if (avatar.isNotEmpty) {
+      return CircleAvatar(radius: 30, backgroundImage: NetworkImage(avatar));
+    } else {
+      return const Icon(Icons.account_circle, size: 30 * 2, color: Colors.grey);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final chatTime = DateFormats.formatChatTime(lastMsgTime);
+
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      leading: _buildAvatar(avatar),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              name,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: isRead ? FontWeight.w600 : FontWeight.w700,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Text(
+            chatTime,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // show "You:" if current user is last sender  
+            if (isLastSender)
+              Text(
+                "You: ",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isRead ? Colors.grey : Colors.black,
+                  fontWeight: isRead ? FontWeight.w400 : FontWeight.w500,
+                ),
+              ),
+
+            // show preview depend on last message type
+            if (lastMsgType == "image") ...[
+              Icon(
+                Symbols.photo_camera,
+                fill: 1,
+                size: 16,
+                color: isRead ? Colors.grey : Colors.black87,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                "Photo",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isRead ? Colors.grey : Colors.black87,
+                  fontWeight: isRead ? FontWeight.w400 : FontWeight.w500,
+                ),
+              ),
+            ] else ...[
+              // text message
+              Expanded(
+                child: Text(
+                  lastMsg,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isRead ? Colors.grey : Colors.black,
+                    fontWeight: isRead ? FontWeight.w400 : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+            // unread chat indicator
+            if (!isRead)
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(left: 6, bottom: 2),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF771F98),
+                  shape: BoxShape.circle,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:unifind/Components/post/fullscreen_image.dart';
 import 'package:unifind/utils/date_formats.dart';
-import 'package:material_symbols_icons/symbols.dart';
 
 class ChatBubble extends StatelessWidget {
   final String message;
   final bool isCurrentUser;
   final DateTime timestamp;
-  final bool isLastAndSeen;
   final String type;
 
   const ChatBubble({
@@ -14,7 +13,6 @@ class ChatBubble extends StatelessWidget {
     required this.message,
     required this.isCurrentUser,
     required this.timestamp,
-    required this.isLastAndSeen,
     required this.type,
   });
 
@@ -25,21 +23,18 @@ class ChatBubble extends StatelessWidget {
     final bgColor = isCurrentUser
         ? const Color(0xFF771F98)
         : const Color(0xFFF0F0F0);
-    final textColor = isCurrentUser ? Colors.white : Colors.black87;
 
     return Container(
-      margin: isLastAndSeen 
+      margin: (type == "text")
       ? EdgeInsets.only(
-        left: isCurrentUser ? 80 : 1,
-        right: isCurrentUser ? 1 : 80,
+        left: isCurrentUser ? 80 : 20,
+        right: isCurrentUser ? 20 : 80,
         top: 6,
         bottom: 6,
       )
       : EdgeInsets.only(
         left: isCurrentUser ? 80 : 20,
         right: isCurrentUser ? 20 : 80,
-        top: 6,
-        bottom: 6,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -48,14 +43,15 @@ class ChatBubble extends StatelessWidget {
             : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // bubble
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: (type == "text") 
+                  ? EdgeInsets.all(10)
+                  : EdgeInsets.symmetric(vertical: 8),
               constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.75,
               ),
-              decoration: BoxDecoration(
+              decoration: type == "text" ? BoxDecoration(
                 color: bgColor,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
@@ -74,43 +70,88 @@ class ChatBubble extends StatelessWidget {
                     offset: const Offset(0, 1),
                   ),
                 ],
-              ),
+              )
+              :  BoxDecoration(),
               child: Column(
                 crossAxisAlignment: isCurrentUser
                     ? CrossAxisAlignment.end
                     : CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 14.5,
-                      height: 1.35,
+                  if (type == "text") 
+                    Text(
+                      message,
+                      style: TextStyle(
+                        color: isCurrentUser ? Colors.white : Colors.black87,
+                        fontSize: 15,
+                        height: 1.3,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
+
+                  if (type == "pic") 
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FullScreenImage(imageUrl: message),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(10),
+                              blurRadius: 3,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            message,
+                            fit: BoxFit.cover,
+                            width: MediaQuery.of(context).size.width * 0.6,
+                            height: 220,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child; // image loaded 
+                              
+                              // while loading, show placeholder container
+                              return Container(
+                                width: MediaQuery.of(context).size.width * 0.6,
+                                height: 220,
+                                color: Colors.grey[300],
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 26,
+                                    height: 26,
+                                    child: CircularProgressIndicator(
+                                      color: Color(0xFF771F98),
+                                      strokeWidth: 2.5,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },                            
+                          ),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 2),
                   Text(
                     msgTime,
                     style: TextStyle(
-                      color: isCurrentUser ? Colors.white70 : Colors.grey[600],
-                      fontSize: 11,
+                      color: type == "text"
+                          ? (isCurrentUser ? Colors.white70 : Colors.grey[600])
+                          : Colors.grey[600],
+                      fontSize: 10.5,
                     ),
                   ),
                 ],
               ),
             ),
           ),
-
-          // seen 
-          if (isLastAndSeen)
-            Padding(
-              padding: const EdgeInsets.only(left: 3, right: 3, bottom: 2),
-              child: Icon(
-                Symbols.check_circle,
-                size: 15,
-                color: const Color(0xFF6C3FA8),
-              ),
-            ),
         ],
       ),
     );
