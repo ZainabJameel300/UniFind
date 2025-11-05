@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/post/fullscreen_image.dart';
+import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/components/post/post_detail.dart';
 import 'package:unifind/utils/date_formats.dart';
@@ -21,7 +22,7 @@ class PostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
     final String name = isCurrentUser ? "You" : publisherData["username"];
-    final String avatar = publisherData["avatar"];
+    final String avatarUrl = publisherData["avatar"];
     final String postID = postData["postID"];
     final String type = postData["type"];
     final DateTime createdAt = postData["createdAt"].toDate();
@@ -58,7 +59,7 @@ class PostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [     
                 // publisher avatar
-                _buildAvatar(avatar), 
+                UserAvatar(avatarUrl: avatarUrl, radius: 20),
                 const SizedBox(width: 8.0),
       
                 // publisher name & publish time
@@ -184,13 +185,6 @@ class PostCard extends StatelessWidget {
         ),),
       ),
     );
-  }
-  Widget _buildAvatar(String avatar) {
-    if (avatar.isNotEmpty) {
-      return CircleAvatar(radius: 20, backgroundImage: NetworkImage(avatar));
-    } else {
-      return const Icon(Icons.account_circle, size: 20*2, color: Colors.grey);
-    }
   }
 }
 

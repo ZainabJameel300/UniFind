@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/my_AppBar.dart';
+import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/chat_page.dart';
 import 'package:unifind/services/chat_service.dart';
 import 'package:unifind/utils/date_formats.dart';
@@ -127,14 +128,6 @@ class ChatTile extends StatelessWidget {
     required this.onTap,
   });
 
-  Widget _buildAvatar(String avatar) {
-    if (avatar.isNotEmpty) {
-      return CircleAvatar(radius: 30, backgroundImage: NetworkImage(avatar));
-    } else {
-      return const Icon(Icons.account_circle, size: 30 * 2, color: Colors.grey);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final chatTime = DateFormats.formatChatTime(lastMsgTime);
@@ -142,7 +135,7 @@ class ChatTile extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      leading: _buildAvatar(avatar),
+      leading: UserAvatar(avatarUrl: avatar, radius: 30),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

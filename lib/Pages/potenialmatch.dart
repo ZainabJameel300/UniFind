@@ -4,6 +4,7 @@ import 'package:unifind/Components/my_appbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/post/fullscreen_image.dart';
+import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/utils/date_formats.dart';
 
@@ -159,18 +160,7 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                     ),
                                     child: Row(
                                       children: [
-                                        avatar.isNotEmpty
-                                            ? CircleAvatar(
-                                                radius: 16,
-                                                backgroundImage: NetworkImage(
-                                                  avatar,
-                                                ),
-                                              )
-                                            : const Icon(
-                                                Icons.account_circle,
-                                                size: 32,
-                                                color: Colors.grey,
-                                              ),
+                                        UserAvatar(avatarUrl: avatar, radius: 16),
                                         const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(

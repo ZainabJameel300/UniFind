@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/user_avatar.dart';
 
 AppBar chatAppBar(BuildContext context, String name, String avatarUrl) {
   return AppBar(
@@ -12,7 +13,7 @@ AppBar chatAppBar(BuildContext context, String name, String avatarUrl) {
     titleSpacing: 0,
     title: Row(
       children: [
-        _buildAvatar(avatarUrl),
+        UserAvatar(avatarUrl: avatarUrl, radius: 20),
         const SizedBox(width: 12),
         Text(
           name,
@@ -29,12 +30,4 @@ AppBar chatAppBar(BuildContext context, String name, String avatarUrl) {
       child: Divider(color: Color.fromARGB(255, 110, 110, 110), height: 1.5),
     ),
   );
-}
-
-Widget _buildAvatar(String avatar) {
-  if (avatar.isNotEmpty) {
-    return CircleAvatar(radius: 22, backgroundImage: NetworkImage(avatar));
-  } else {
-    return const Icon(Icons.account_circle, size: 22 * 2, color: Colors.grey);
-  }
 }
