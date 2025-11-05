@@ -8,6 +8,7 @@ import 'package:unifind/Components/chat/chat_appbar.dart';
 import 'package:unifind/Components/chat/chat_bubble.dart';
 import 'package:unifind/Components/chat/chat_textfeild.dart';
 import 'package:unifind/services/chat_service.dart';
+import 'package:unifind/utils/date_formats.dart';
 
 class ChatPage extends StatefulWidget {
   final String receiverID;
@@ -78,12 +79,14 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> sendMessage(String type) async {
     // send text
     if (type == "text" && _messageController.text.isNotEmpty) {
+      final text = _messageController.text;
+      _messageController.clear();
+
       await chatService.sendMessage(
         widget.receiverID,
-        _messageController.text,
+        text,
         "text",
       );
-      _messageController.clear();
       scrollDown();
     }
 
@@ -129,7 +132,9 @@ class _ChatPageState extends State<ChatPage> {
                 return Expanded(
                   child: ListView(
                     padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    children: [_buildSystemMessage()],
+                    children: [
+                      _buildSystemMessage()
+                    ],
                   ),
                 );             
               }
@@ -157,24 +162,55 @@ class _ChatPageState extends State<ChatPage> {
 
                     final messages = snapshot.data?.docs ?? [];
 
+                    List<Widget> messagesList = [];
+                    DateTime? lastDay;
+
+                    // insert day headers between messages
+                    for (var doc in messages) {
+                      final msg = doc.data();
+                      final DateTime time = msg['timestamp'].toDate();
+                      final DateTime messageDay = DateTime(time.year, time.month, time.day);
+                      final dayLabel = DateFormats.formatDayHeader(time);
+                      final isCurrentUser = msg['senderId'] == currentUserID;
+
+                      if (lastDay == null || messageDay != lastDay) {
+                        messagesList.add(
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                dayLabel,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+
+                        lastDay = messageDay;
+                      }
+
+                      messagesList.add(
+                        ChatBubble(
+                          message: msg['content'],
+                          isCurrentUser: isCurrentUser,
+                          timestamp: time,
+                          type: msg['type'],
+                        ),
+                      );
+                    }
+
+                    // show messages
                     return ListView(
                       controller: _scrollController,
                       reverse: false, 
                       padding: const EdgeInsets.only(top: 10, bottom: 10),
                       children: [
                         _buildSystemMessage(),
-                        ...List.generate(messages.length, (i) {
-                          final doc = messages[i];
-                          final Map<String, dynamic> msg = doc.data();
-                          final isCurrentUser = msg['senderId'] == currentUserID;
-                          
-                          return ChatBubble(
-                            message: msg['content'],
-                            isCurrentUser: isCurrentUser,
-                            timestamp: msg['timestamp'].toDate(),
-                            type: msg['type'],
-                          );
-                        }),
+                        ...messagesList,
                       ],
                     );
                   },
