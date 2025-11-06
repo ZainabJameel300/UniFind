@@ -19,7 +19,6 @@ class BadgeIcon extends StatelessWidget {
 
         return Badge(
           backgroundColor: Colors.transparent,
-          // backgroundColor: const Color(0xFF771F98),
           label: Container(
             padding: const EdgeInsets.all(2), 
             decoration: const BoxDecoration(

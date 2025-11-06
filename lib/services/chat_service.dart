@@ -21,39 +21,31 @@ class ChatService {
   // send message
   Future<void> sendMessage(String receiverID, String message, String type) async {
     final timestamp = Timestamp.now();
-    final chatroomID = getChatroomID(receiverID);
+    final String chatroomID = getChatroomID(receiverID);
+    final String lastMsg = (type == "pic") ? "Photo" : message;
 
     final chatRef = firestore.collection("chat_rooms").doc(chatroomID);
     final msgRef = chatRef.collection("messages");
 
-    // add message
+    // update chatroom info
+    await chatRef.set({
+      "participants": [currentUserID, receiverID],
+      "lastMsg": lastMsg,
+      "lastMsgType": type,
+      "lastMsgTime": timestamp,
+      "lastSender": currentUserID,
+      "lastReadTime": {
+        currentUserID: timestamp
+      },
+    }, SetOptions(merge: true));
+
+    // add message 
     await msgRef.add({
       "senderId": currentUserID,
       "type": type,
       "content": message,
       "timestamp": timestamp,
     });
-
-    // change last message to text if pic
-    String lastMsg;
-    if (type == "pic") {
-      lastMsg = "Photo";
-    } else {
-      lastMsg = message;
-    }
-
-    // add or update chatroom info
-    await chatRef.set({
-      "participants": [currentUserID, receiverID],
-      "lastMsg": lastMsg,
-      "lastMsgType": type, 
-      "lastMsgTime": timestamp,
-      "lastSender": currentUserID,
-      'isRead': {
-        currentUserID: true, // sender has read
-        receiverID: false, // receiver hasn’t read yet
-      }
-    }, SetOptions(merge: true));
   }
 
   // get chatrooms for current user
@@ -63,12 +55,6 @@ class ChatService {
         .where("participants", arrayContains: currentUserID)
         .orderBy("lastMsgTime", descending: true)
         .snapshots();
-  }
-  
-  // get one chatroom info 
-  Stream<DocumentSnapshot<Map<String, dynamic>>> getChatroomInfo(String otherUserID) {
-    final chatroomID = getChatroomID(otherUserID);
-    return firestore.collection("chat_rooms").doc(chatroomID).snapshots();
   }
 
   // get all chat messages
@@ -89,9 +75,11 @@ class ChatService {
     final chatRef = firestore.collection("chat_rooms").doc(chatroomID);
 
     await chatRef.set({
-      'isRead': {currentUserID: true},
+      "lastReadTime": {
+        currentUserID: FieldValue.serverTimestamp(),
+      },
     }, SetOptions(merge: true));
-  }
+  }      
 
   // get unread chats count
   Stream<int> unreadChatsCount() {
@@ -100,14 +88,20 @@ class ChatService {
         .where('participants', arrayContains: currentUserID)
         .snapshots()
         .map((snapshot) {
-          // count chats where current user didn't read
-          final unreadCount = snapshot.docs.where((doc) {
-            final data = doc.data();
-            final isRead = data['isRead'] ?? {};
-            return (isRead[currentUserID] ?? false) == false;
-          }).length;
+          int unread = 0;
 
-          return unreadCount; 
+          for (var doc in snapshot.docs) {
+            final chatroom = doc.data();
+            final Timestamp lastMsg = chatroom['lastMsgTime'];
+            final Timestamp? lastRead = (chatroom['lastReadTime'] ?? {})[currentUserID];
+
+            // if never read or message newer than last read -> unread
+            if (lastRead == null || lastMsg.toDate().isAfter(lastRead.toDate())) {
+              unread++;
+            }
+          }
+
+          return unread;
         });
   }
 

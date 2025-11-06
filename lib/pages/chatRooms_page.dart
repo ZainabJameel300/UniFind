@@ -49,14 +49,20 @@ class ChatroomsPage extends StatelessWidget {
               // other user data
               final participants = List<String>.from(chatData['participants']);
               participants.remove(currentUserID);
-              final otherUserID = participants.first;
+              final String otherUserID = participants.first;
+
+              // check if chat is read
+              final Timestamp? lastReadTime = (chatData['lastReadTime'] ?? {})[currentUserID];
+              final Timestamp lastMsgTimeStamp = chatData['lastMsgTime'];
+              final bool isReadCurrent =
+                  chatData['lastSender'] == currentUserID ||
+                  (lastReadTime != null && !lastReadTime.toDate().isBefore(lastMsgTimeStamp.toDate()));
 
               // chat data
               final String lastMsg = chatData['lastMsg'] ?? '';
-              final String lastMsgType = chatData['lastMsgType'] ?? ''; 
-              final DateTime lastMsgTime = chatData['lastMsgTime'].toDate();
+              final String lastMsgType = chatData['lastMsgType'] ?? '';
+              final DateTime lastMsgTime = lastMsgTimeStamp.toDate();
               final bool isLastSender = chatData['lastSender'] == currentUserID;
-              final bool isReadCurrent = (chatData['isRead'][currentUserID] ?? false) == true;
 
               // read sender name & avatar
               return FutureBuilder<Map<String, dynamic>?>(
@@ -79,9 +85,6 @@ class ChatroomsPage extends StatelessWidget {
                     isLastSender: isLastSender,
                     isRead: isReadCurrent,
                     onTap: () async {
-                      // mark chat as read 
-                      await chatService.markAsRead(otherUserID);
-
                       // navigate to chat page
                       Navigator.push(
                         context,
