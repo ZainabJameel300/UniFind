@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:unifind/Components/post/fullscreen_image.dart';
+import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/components/post/post_detail.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:unifind/Components/post/fullscreen_image.dart';
+import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/utils/date_formats.dart';
 
 class ChatBubble extends StatelessWidget {
