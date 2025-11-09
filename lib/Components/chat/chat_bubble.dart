@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/post/fullscreen_image.dart';
 import 'package:unifind/utils/date_formats.dart';
 
@@ -7,6 +8,7 @@ class ChatBubble extends StatelessWidget {
   final bool isCurrentUser;
   final DateTime timestamp;
   final String type;
+  final bool isLastSeen; 
 
   const ChatBubble({
     super.key,
@@ -14,6 +16,7 @@ class ChatBubble extends StatelessWidget {
     required this.isCurrentUser,
     required this.timestamp,
     required this.type,
+    required this.isLastSeen,
   });
 
   @override
@@ -26,16 +29,28 @@ class ChatBubble extends StatelessWidget {
 
     return Container(
       margin: (type == "text")
-      ? EdgeInsets.only(
+      ?  isLastSeen 
+        ? EdgeInsets.only(
+          left: isCurrentUser ? 80 : 1,
+          right: isCurrentUser ? 1 : 80,
+          top: 6,
+          bottom: 6,
+        ) 
+        : EdgeInsets.only(
+          left: isCurrentUser ? 80 : 20,
+          right: isCurrentUser ? 20 : 80,
+          top: 6,
+          bottom: 6,
+        )
+      : isLastSeen 
+        ? EdgeInsets.only(
+          left: isCurrentUser ? 80 : 1,
+          right: isCurrentUser ? 1 : 80,
+        ) 
+        : EdgeInsets.only(
         left: isCurrentUser ? 80 : 20,
         right: isCurrentUser ? 20 : 80,
-        top: 6,
-        bottom: 6,
-      )
-      : EdgeInsets.only(
-        left: isCurrentUser ? 80 : 20,
-        right: isCurrentUser ? 20 : 80,
-      ),
+        ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: isCurrentUser
@@ -152,6 +167,16 @@ class ChatBubble extends StatelessWidget {
               ),
             ),
           ),
+          // seen 
+          if (isLastSeen)
+            Padding(
+              padding: const EdgeInsets.only(left: 3, right: 3, bottom: 2),
+              child: Icon(
+                Symbols.check_circle,
+                size: 15,
+                color: const Color(0xFF6C3FA8),
+              ),
+            ),
         ],
       ),
     );

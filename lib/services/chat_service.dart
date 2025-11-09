@@ -25,27 +25,34 @@ class ChatService {
     final String lastMsg = (type == "pic") ? "Photo" : message;
 
     final chatRef = firestore.collection("chat_rooms").doc(chatroomID);
-    final msgRef = chatRef.collection("messages");
+    final msgRef = chatRef.collection("messages").doc(); 
 
-    // update chatroom info
-    await chatRef.set({
-      "participants": [currentUserID, receiverID],
-      "lastMsg": lastMsg,
-      "lastMsgType": type,
-      "lastMsgTime": timestamp,
-      "lastSender": currentUserID,
-      "lastReadTime": {
-        currentUserID: timestamp
-      },
-    }, SetOptions(merge: true));
+    WriteBatch batch = firestore.batch();
 
-    // add message 
-    await msgRef.add({
+    // add message
+    batch.set(msgRef, {
       "senderId": currentUserID,
       "type": type,
       "content": message,
       "timestamp": timestamp,
     });
+
+    // update chatroom info
+    batch.set(chatRef, {
+      "participants": [currentUserID, receiverID],
+      "lastMsg": lastMsg,
+      "lastMsgType": type,
+      "lastMsgTime": timestamp,
+      "lastSender": currentUserID,
+      "lastReadTime": {currentUserID: timestamp},
+    }, SetOptions(merge: true));
+
+    try {
+      await batch.commit();
+      print('Sent new message');
+    } catch (e) {
+      print('Batch failed: $e');
+    }
   }
 
   // get chatrooms for current user
@@ -54,6 +61,15 @@ class ChatService {
         .collection("chat_rooms")
         .where("participants", arrayContains: currentUserID)
         .orderBy("lastMsgTime", descending: true)
+        .snapshots();
+  }
+
+  // get one chatroom info 
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getChatroomInfo(String otherUserID) {
+    final chatroomID = getChatroomID(otherUserID);
+    return firestore
+        .collection("chat_rooms")
+        .doc(chatroomID)
         .snapshots();
   }
 
@@ -69,17 +85,15 @@ class ChatService {
         .snapshots();
   }
 
-  // mark chat as read 
-  Future<void> markAsRead(String otherUserID) async {
+  // mark new messages as read (update last read time with last message time)
+  Future<void> markAsReadUpTo(String otherUserID, Timestamp upTo) async {
     final chatroomID = getChatroomID(otherUserID);
     final chatRef = firestore.collection("chat_rooms").doc(chatroomID);
 
     await chatRef.set({
-      "lastReadTime": {
-        currentUserID: FieldValue.serverTimestamp(),
-      },
+      "lastReadTime": {currentUserID: upTo},
     }, SetOptions(merge: true));
-  }      
+  }
 
   // get unread chats count
   Stream<int> unreadChatsCount() {
@@ -92,11 +106,11 @@ class ChatService {
 
           for (var doc in snapshot.docs) {
             final chatroom = doc.data();
-            final Timestamp lastMsg = chatroom['lastMsgTime'];
-            final Timestamp? lastRead = (chatroom['lastReadTime'] ?? {})[currentUserID];
+            final Timestamp lastMsgTime = chatroom['lastMsgTime'];
+            final Timestamp? myReadTime = (chatroom['lastReadTime'] ?? {})[currentUserID];
 
             // if never read or message newer than last read -> unread
-            if (lastRead == null || lastMsg.toDate().isAfter(lastRead.toDate())) {
+            if (myReadTime == null || lastMsgTime.toDate().isAfter(myReadTime.toDate())) {
               unread++;
             }
           }
