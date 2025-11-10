@@ -36,6 +36,8 @@ class _ChatPageState extends State<ChatPage> {
   final ScrollController _scrollController = ScrollController();
 
   File? _selectedImage;
+  bool _isUploading = false;
+
   bool _isMarkingRead = false;
   int _lastMarkedTimestamp = 0;
 
@@ -80,12 +82,14 @@ class _ChatPageState extends State<ChatPage> {
 
   // send image
   Future<void> _sendImageMessage() async {
+
+    if (_selectedImage == null) return;
+
     final file = _selectedImage!;
     final int timestamp = DateTime.now().millisecondsSinceEpoch;
     final String chatroomID = chatService.getChatroomID(widget.receiverID);
-
-    // hide pic preview after pressing send
-    setState(() => _selectedImage = null);
+    
+    setState(() => _isUploading = true); // start loading
 
     final ref = FirebaseStorage.instance.ref().child(
       'chat_images/$chatroomID/$timestamp-$currentUserID.jpg',
@@ -94,6 +98,11 @@ class _ChatPageState extends State<ChatPage> {
     await ref.putFile(file);
     final imageUrl = await ref.getDownloadURL();
     await chatService.sendMessage(widget.receiverID, imageUrl, "pic");
+
+    setState(() {
+      _isUploading = false;
+      _selectedImage = null; // remove preview after send
+    });
 
     scrollDown();
   }
@@ -161,9 +170,6 @@ class _ChatPageState extends State<ChatPage> {
                 child: StreamBuilder(
                   stream: chatService.getMessages(widget.receiverID),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
                     if (snapshot.hasError) {
                       return const Center(child: Text("Error loading messages"));
                     }
@@ -191,7 +197,7 @@ class _ChatPageState extends State<ChatPage> {
               
                     for (int i = 0; i < messages.length; i++) {
                       final msg = messages[i].data();
-                      final DateTime time = msg['timestamp'].toDate();
+                      final DateTime time = msg['timestamp'].toDate() ?? DateTime.now();
                       final bool isCurrentUser = msg['senderId'] == currentUserID;
                       final bool isLastSeen = (i == lastSeenIndex);
 
@@ -250,7 +256,7 @@ class _ChatPageState extends State<ChatPage> {
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Text(
-          "Chat started for a potential match. Please verify ownership before collection.",
+          "Chat for a potential match. Please verify ownership before collection.",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13.5,
@@ -301,7 +307,8 @@ class _ChatPageState extends State<ChatPage> {
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: _selectedImage == null
-                      ? ChatTextfield(
+                      ? // text input
+                      ChatTextfield(
                           hintText: "Type a message",
                           controller: _messageController,
                           focusNode: myFocusNode,
@@ -311,7 +318,8 @@ class _ChatPageState extends State<ChatPage> {
                             });
                           },
                         )
-                      : Align(
+                      : // image input
+                      Align(
                           alignment: Alignment.centerLeft,
                           child: Container(
                             margin: const EdgeInsets.all(10),
@@ -319,7 +327,7 @@ class _ChatPageState extends State<ChatPage> {
                             height: 120,
                             child: Stack(
                               children: [
-                                // picked image 
+                                // picked pic
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(14),
                                   child: Image.file(
@@ -330,60 +338,86 @@ class _ChatPageState extends State<ChatPage> {
                                   ),
                                 ),
 
-                                // cancel sending the image 
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() => _selectedImage = null);
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withAlpha(100),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      padding: const EdgeInsets.all(4),
-                                      child: const Icon(
-                                        Symbols.close,
-                                        color: Colors.white,
-                                        size: 16,
+                                // show loading while uploading the pic
+                                if (_isUploading)
+                                  Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withAlpha(100),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 30,
+                                        height: 30,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white70,
+                                          strokeWidth: 2.5,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+
+                                // cancel only if not uploading
+                                if (!_isUploading)
+                                  Positioned(
+                                    top: 6,
+                                    right: 6,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() => _selectedImage = null);
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withAlpha(100),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        padding: const EdgeInsets.all(4),
+                                        child: const Icon(
+                                          Symbols.close,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
+
                           ),
                         ),
                 ),
               ),
 
-              // action button (send or camera)
+              // action button (send or pick image)
               Container(
                 decoration: BoxDecoration(
-                  color: (isTyping || _selectedImage != null)
-                      ? const Color(0xFF771F98)
-                      : Colors.transparent,
+                  color: _isUploading
+                      ? const Color(0xFF771F98).withAlpha(120)
+                      : (isTyping || _selectedImage != null)
+                          ? const Color(0xFF771F98)
+                          : Colors.transparent,
                   shape: BoxShape.circle,
                 ),
                 margin: const EdgeInsets.only(right: 25.0),
                 child: IconButton(
-                  onPressed: () async {
-                    if (_selectedImage != null) {
-                      await _sendImageMessage();
-                    } else if (isTyping) {
-                      _sendTextMessage();
-                      setState(() => isTyping = false);
-                    } else {
-                      // pick photo 
-                      final ImagePicker picker = ImagePicker();
-                      final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
-                      if (pickedFile != null) {
-                        setState(() => _selectedImage = File(pickedFile.path));
-                      }
-                    }
-                  },
+                  onPressed: _isUploading
+                    ? null
+                    : () async {
+                        if (_selectedImage != null) {
+                          await _sendImageMessage();
+                        } else if (isTyping) {
+                          _sendTextMessage();
+                          setState(() => isTyping = false);
+                        } else {
+                          final ImagePicker picker = ImagePicker();
+                          final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                          if (pickedFile != null) {
+                            setState(() => _selectedImage = File(pickedFile.path));
+                          }
+                        }
+                      },
                   icon: Icon(
                     (isTyping || _selectedImage != null)
                         ? Symbols.send

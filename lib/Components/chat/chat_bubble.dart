@@ -29,10 +29,11 @@ class ChatBubble extends StatelessWidget {
 
     return Container(
       margin: (type == "text")
+      //text
       ?  isLastSeen 
         ? EdgeInsets.only(
-          left: isCurrentUser ? 80 : 1,
-          right: isCurrentUser ? 1 : 80,
+          left: isCurrentUser ? 80 : 0,
+          right: isCurrentUser ? 0 : 80,
           top: 6,
           bottom: 6,
         ) 
@@ -42,10 +43,11 @@ class ChatBubble extends StatelessWidget {
           top: 6,
           bottom: 6,
         )
+        //pic
       : isLastSeen 
         ? EdgeInsets.only(
-          left: isCurrentUser ? 80 : 1,
-          right: isCurrentUser ? 1 : 80,
+          left: isCurrentUser ? 80 : 0,
+          right: isCurrentUser ? 0 : 80,
         ) 
         : EdgeInsets.only(
         left: isCurrentUser ? 80 : 20,
@@ -167,10 +169,14 @@ class ChatBubble extends StatelessWidget {
               ),
             ),
           ),
-          // seen 
+          // seen for text
           if (isLastSeen)
             Padding(
-              padding: const EdgeInsets.only(left: 3, right: 3, bottom: 2),
+              padding: EdgeInsets.only(
+                left: 3, 
+                right: 3, 
+                bottom: (type == "pic") ? 9 : 2,
+              ),
               child: Icon(
                 Symbols.check_circle,
                 size: 15,

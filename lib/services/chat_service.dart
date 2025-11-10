@@ -22,6 +22,7 @@ class ChatService {
   Future<void> sendMessage(String receiverID, String message, String type) async {
     final timestamp = Timestamp.now();
     final String chatroomID = getChatroomID(receiverID);
+    final participants = [currentUserID, receiverID]..sort();
     final String lastMsg = (type == "pic") ? "Photo" : message;
 
     final chatRef = firestore.collection("chat_rooms").doc(chatroomID);
@@ -39,7 +40,7 @@ class ChatService {
 
     // update chatroom info
     batch.set(chatRef, {
-      "participants": [currentUserID, receiverID],
+      "participants": participants,
       "lastMsg": lastMsg,
       "lastMsgType": type,
       "lastMsgTime": timestamp,
