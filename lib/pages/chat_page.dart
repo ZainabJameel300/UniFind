@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/chat/chat_appbar.dart';
 import 'package:unifind/Components/chat/chat_bubble.dart';
-import 'package:unifind/Components/chat/chat_textfeild.dart';
+import 'package:unifind/Components/my_textfield.dart';
 import 'package:unifind/services/chat_service.dart';
 import 'package:unifind/utils/date_formats.dart';
 
@@ -308,8 +308,9 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                   child: _selectedImage == null
                       ? // text input
-                      ChatTextfield(
+                      MyTextField(
                           hintText: "Type a message",
+                          obscureText: false,
                           controller: _messageController,
                           focusNode: myFocusNode,
                           onChanged: (value) {
@@ -317,6 +318,7 @@ class _ChatPageState extends State<ChatPage> {
                               isTyping = value.trim().isNotEmpty;
                             });
                           },
+                          chatField: true,
                         )
                       : // image input
                       Align(
