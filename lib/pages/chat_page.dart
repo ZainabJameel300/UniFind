@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -249,14 +251,14 @@ class _ChatPageState extends State<ChatPage> {
       child: Container(
         constraints: const BoxConstraints(maxWidth: 310),
         margin: const EdgeInsets.symmetric(vertical: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
         decoration: BoxDecoration(
           color: basePurple.withAlpha(20), 
           border: Border.all(color: basePurple.withAlpha(60)),
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Text(
-          "Chat for a potential match. Please verify ownership before collection.",
+          "Chat for a potential match to verify ownership. Mark item as claimed if collection will happen.",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13.5,
@@ -292,8 +294,8 @@ class _ChatPageState extends State<ChatPage> {
 
     return StatefulBuilder(
       builder: (context, setState) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 50, top: 6),
+        return SafeArea(
+          minimum: EdgeInsets.symmetric(vertical: 6, horizontal: 18),          
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -301,7 +303,7 @@ class _ChatPageState extends State<ChatPage> {
               Expanded(
                 child: Container(
                   height: _selectedImage == null ? 55 : 130,
-                  margin: const EdgeInsets.only(left: 18, right: 10),
+                  margin: const EdgeInsets.only(right: 10),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF0F0F0),
                     borderRadius: BorderRadius.circular(25),
@@ -322,76 +324,75 @@ class _ChatPageState extends State<ChatPage> {
                         )
                       : // image input
                       Align(
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.all(10),
-                            width: MediaQuery.of(context).size.width * 0.35,
-                            height: 120,
-                            child: Stack(
-                              children: [
-                                // picked pic
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: Image.file(
-                                    _selectedImage!,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: double.infinity,
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.all(10),
+                          width: MediaQuery.of(context).size.width * 0.35,
+                          height: 120,
+                          child: Stack(
+                            children: [
+                              // picked pic
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image.file(
+                                  _selectedImage!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                ),
+                              ),
+          
+                              // show loading while uploading the pic
+                              if (_isUploading)
+                                Container(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withAlpha(100),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 30,
+                                      height: 30,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white70,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    ),
                                   ),
                                 ),
-
-                                // show loading while uploading the pic
-                                if (_isUploading)
-                                  Container(
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withAlpha(100),
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    child: const Center(
-                                      child: SizedBox(
-                                        width: 30,
-                                        height: 30,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white70,
-                                          strokeWidth: 2.5,
-                                        ),
+          
+                              // cancel only if not uploading
+                              if (!_isUploading)
+                                Positioned(
+                                  top: 6,
+                                  right: 6,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setState(() => _selectedImage = null);
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withAlpha(100),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      padding: const EdgeInsets.all(4),
+                                      child: const Icon(
+                                        Symbols.close,
+                                        color: Colors.white,
+                                        size: 16,
                                       ),
                                     ),
                                   ),
-
-                                // cancel only if not uploading
-                                if (!_isUploading)
-                                  Positioned(
-                                    top: 6,
-                                    right: 6,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        setState(() => _selectedImage = null);
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withAlpha(100),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        padding: const EdgeInsets.all(4),
-                                        child: const Icon(
-                                          Symbols.close,
-                                          color: Colors.white,
-                                          size: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-
+                                ),
+                            ],
                           ),
                         ),
+                      ),
                 ),
               ),
-
+          
               // action button (send or pick image)
               Container(
                 decoration: BoxDecoration(
@@ -402,7 +403,6 @@ class _ChatPageState extends State<ChatPage> {
                           : Colors.transparent,
                   shape: BoxShape.circle,
                 ),
-                margin: const EdgeInsets.only(right: 25.0),
                 child: IconButton(
                   onPressed: _isUploading
                     ? null
@@ -413,17 +413,11 @@ class _ChatPageState extends State<ChatPage> {
                           _sendTextMessage();
                           setState(() => isTyping = false);
                         } else {
-                          final ImagePicker picker = ImagePicker();
-                          final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
-                          if (pickedFile != null) {
-                            setState(() => _selectedImage = File(pickedFile.path));
-                          }
+                          _showImagePickerMenu(context);
                         }
                       },
                   icon: Icon(
-                    (isTyping || _selectedImage != null)
-                        ? Symbols.send
-                        : Symbols.image,
+                    (isTyping || _selectedImage != null) ? Symbols.send : Symbols.add,
                     color: (isTyping || _selectedImage != null)
                         ? Colors.white
                         : Colors.grey[800],
@@ -437,4 +431,70 @@ class _ChatPageState extends State<ChatPage> {
       },
     );
   }
+
+  // pick image menu (camera / gallery)
+  void _showImagePickerMenu(BuildContext context) async {
+    FocusScope.of(context).unfocus();
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final position = renderBox.localToGlobal(Offset.zero);
+ 
+    // options
+    final options = [
+      {
+        "icon": Symbols.photo_camera,
+        "label": "Camera",
+        "source": ImageSource.camera,
+      },
+      {
+        "icon": Symbols.image,
+        "label": "Gallery",
+        "source": ImageSource.gallery,
+      },
+    ];
+
+    final ImagePicker picker = ImagePicker();
+
+    // Show popup
+    await showMenu(
+      context: context,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      elevation: 1,
+      position: RelativeRect.fromLTRB(position.dx + 40, position.dy - 120, 20, 0),
+      items: options.map((opt) {
+        return PopupMenuItem(
+          onTap: () async {
+            final XFile? picked = await picker.pickImage(
+              source: opt["source"] as ImageSource,
+            );
+            if (picked != null) {
+              setState(() => _selectedImage = File(picked.path));
+            }          
+          },
+          child: Row(
+            children: [
+              Icon(
+                opt["icon"] as IconData,
+                color: const Color(0xFF771F98),
+                size: 22,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                opt["label"] as String,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
 }
+
