@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class ChatService {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -50,9 +51,9 @@ class ChatService {
 
     try {
       await batch.commit();
-      print('Sent new message');
+      debugPrint('Sent new message');
     } catch (e) {
-      print('Batch failed: $e');
+      debugPrint('Batch failed: $e');
     }
   }
 

@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -30,8 +28,8 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final chatService = ChatService();
-  final currentUserID = FirebaseAuth.instance.currentUser!.uid;
+  final ChatService chatService = ChatService();
+  final String currentUserID = FirebaseAuth.instance.currentUser!.uid;
 
   final TextEditingController _messageController = TextEditingController();
   final FocusNode myFocusNode = FocusNode();
@@ -46,11 +44,33 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
+
+    // scroll when keyboard opens
     myFocusNode.addListener(() {
       if (myFocusNode.hasFocus) {
-        WidgetsBinding.instance.addPostFrameCallback((_) => scrollDown());
+        Future.delayed(const Duration(milliseconds: 500), () {
+          scrollDown();
+        });
       }
     });
+
+    // show recent messages when chat is opened
+    Future.delayed(const Duration(milliseconds: 350), () async {
+      if (!_scrollController.hasClients) return;
+
+      await _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutQuad,
+      );
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        }
+      });
+    });
+
   }
 
   @override
@@ -63,11 +83,10 @@ class _ChatPageState extends State<ChatPage> {
 
   void scrollDown() {
     if (!_scrollController.hasClients) return;
-
     _scrollController.animateTo(
       _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.fastOutSlowIn,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
     );
   }
 
@@ -84,7 +103,6 @@ class _ChatPageState extends State<ChatPage> {
 
   // send image
   Future<void> _sendImageMessage() async {
-
     if (_selectedImage == null) return;
 
     final file = _selectedImage!;
@@ -139,107 +157,130 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: chatAppBar(context, widget.name, widget.avatar),
-      body: Column(
-        children: [
-          StreamBuilder(
-            stream: chatService.getChatroomInfo(widget.receiverID),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return Expanded(child: const Center(child: Text("Error loading chat")));
-              }
-
-              // chat room doesn't exist
-              if (!snapshot.hasData || !snapshot.data!.exists){ 
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Column(
+          children: [
+            StreamBuilder(
+              stream: chatService.getChatroomInfo(widget.receiverID),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Expanded(child: const Center(child: Text("Error loading chat")));
+                }
+        
+                // chat room doesn't exist
+                if (!snapshot.hasData || !snapshot.data!.exists){ 
+                  return Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.only(top: 10, bottom: 10),
+                      children: [_buildSystemMessage()],
+                    ),
+                  );             
+                }
+        
+                final chatroomData = snapshot.data?.data() ?? {};
+                final lastSenderID = chatroomData['lastSender'] ?? "";
+                final Timestamp lastMsgTime = chatroomData['lastMsgTime'] ?? Timestamp.now();
+                final lastReadMap = chatroomData['lastReadTime'] ?? {};
+                final Timestamp? receiverReadTime = lastReadMap[widget.receiverID];
+                final Timestamp? myLastReadTime = lastReadMap[currentUserID];
+        
+                // mark as read when chatroom info update
+                _markAsReadIfNeeded(lastSenderID, lastMsgTime, myLastReadTime);
+        
                 return Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.only(top: 10, bottom: 10),
-                    children: [_buildSystemMessage()],
-                  ),
-                );             
-              }
-
-              final chatroomData = snapshot.data?.data() ?? {};
-              final lastSenderID = chatroomData['lastSender'] ?? "";
-              final Timestamp lastMsgTime = chatroomData['lastMsgTime'] ?? Timestamp.now();
-              final lastReadMap = chatroomData['lastReadTime'] ?? {};
-              final Timestamp? receiverReadTime = lastReadMap[widget.receiverID];
-              final Timestamp? myLastReadTime = lastReadMap[currentUserID];
-
-              // mark as read when chatroom info update
-              _markAsReadIfNeeded(lastSenderID, lastMsgTime, myLastReadTime);
-
-              return Expanded(
-                child: StreamBuilder(
-                  stream: chatService.getMessages(widget.receiverID),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return const Center(child: Text("Error loading messages"));
-                    }
-              
-                    final messages = snapshot.data?.docs ?? [];
-
-                    // find current user last message read by other user
-                    int? lastSeenIndex;
-                    if (receiverReadTime != null) {
-                      for (int i = messages.length - 1; i >= 0; i--) {
-                        final msg = messages[i].data();
-                        if (msg['senderId'] == currentUserID) {
-                          final msgTime = (msg['timestamp'] as Timestamp).toDate();
-                          if (!msgTime.isAfter(receiverReadTime.toDate())) {
-                            lastSeenIndex = i;
-                            break;
+                  child: StreamBuilder(
+                    stream: chatService.getMessages(widget.receiverID),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return const Center(child: Text("Error loading messages"));
+                      }
+                
+                      final messages = snapshot.data?.docs ?? [];
+        
+                      // find current user last message read by other user
+                      int? lastSeenIndex;
+                      if (receiverReadTime != null) {
+                        for (int i = messages.length - 1; i >= 0; i--) {
+                          final msg = messages[i].data();
+                          if (msg['senderId'] == currentUserID) {
+                            final msgTime = (msg['timestamp'] as Timestamp).toDate();
+                            if (!msgTime.isAfter(receiverReadTime.toDate())) {
+                              lastSeenIndex = i;
+                              break;
+                            }
                           }
                         }
                       }
-                    }
-
-                    // Build messages list 
-                    List<Widget> messagesList = [];
-                    DateTime? lastDay;
-              
-                    for (int i = 0; i < messages.length; i++) {
-                      final msg = messages[i].data();
-                      final DateTime time = msg['timestamp'].toDate() ?? DateTime.now();
-                      final bool isCurrentUser = msg['senderId'] == currentUserID;
-                      final bool isLastSeen = (i == lastSeenIndex);
-
-                      // day header
-                      final DateTime messageDay = DateTime(time.year, time.month, time.day);
-                      final String dayLabel = DateFormats.formatDayHeader(time);
-                      if (lastDay == null || messageDay != lastDay) {
-                        messagesList.add(_buildDateHeader(dayLabel));
-                        lastDay = messageDay;
+        
+                      // Build messages list 
+                      List<Widget> messagesList = [];
+                      DateTime? lastDay;
+                
+                      for (int i = 0; i < messages.length; i++) {
+                        final msg = messages[i].data();
+                        final DateTime time = msg['timestamp'].toDate() ?? DateTime.now();
+                        final bool isCurrentUser = msg['senderId'] == currentUserID;
+                        final bool isLastSeen = (i == lastSeenIndex);
+        
+                        // day header
+                        final DateTime messageDay = DateTime(time.year, time.month, time.day);
+                        final String dayLabel = DateFormats.formatDayHeader(time);
+                        if (lastDay == null || messageDay != lastDay) {
+                          messagesList.add(_buildDateHeader(dayLabel));
+                          lastDay = messageDay;
+                        }
+        
+                        messagesList.add(
+                          ChatBubble(
+                            message: msg['content'],
+                            isCurrentUser: isCurrentUser,
+                            timestamp: time,
+                            type: msg['type'],
+                            isLastSeen: isLastSeen,
+                          ),
+                        );
                       }
 
-                      messagesList.add(
-                        ChatBubble(
-                          message: msg['content'],
-                          isCurrentUser: isCurrentUser,
-                          timestamp: time,
-                          type: msg['type'],
-                          isLastSeen: isLastSeen,
-                        ),
+                      // auto scroll if:
+                      // 1. user is already near bottom
+                      // 2. message was sent by the other user
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!_scrollController.hasClients || messages.isEmpty) return;
+
+                        final position = _scrollController.position;
+                        final atBottom = position.pixels >= position.maxScrollExtent - 100; 
+                        final lastMessage = messages.last.data();
+                        final isFromOtherUser = lastMessage['senderId'] != currentUserID;
+
+                        if (atBottom || isFromOtherUser) {
+                          _scrollController.animateTo(
+                            position.maxScrollExtent,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOut,
+                          );
+                        }
+                      });
+                
+                      // show messages
+                      return ListView(
+                        controller: _scrollController,
+                        reverse: false, 
+                        padding: const EdgeInsets.only(top: 10, bottom: 10),
+                        children: [
+                          _buildSystemMessage(),
+                          ...messagesList,
+                        ],
                       );
-                    }
-              
-                    // show messages
-                    return ListView(
-                      controller: _scrollController,
-                      reverse: false, 
-                      padding: const EdgeInsets.only(top: 10, bottom: 10),
-                      children: [
-                        _buildSystemMessage(),
-                        ...messagesList,
-                      ],
-                    );
-                  },
-                ),
-              );
-            }
-          ),
-          // user input
-          _buildUserInput(),
-        ],
+                    },
+                  ),
+                );
+              }
+            ),
+            // user input
+            _buildUserInput(),
+          ],
+        ),
       ),
     );
   }
@@ -258,7 +299,7 @@ class _ChatPageState extends State<ChatPage> {
           borderRadius: BorderRadius.circular(14),
         ),
         child: const Text(
-          "Chat for a potential match to verify ownership. Mark item as claimed if collection will happen.",
+          "Chat to confirm item ownership. Mark it as claimed once collection is arranged.",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 13.5,
@@ -290,10 +331,14 @@ class _ChatPageState extends State<ChatPage> {
 
   // user input 
   Widget _buildUserInput() {
-    bool isTyping = false;
-
     return StatefulBuilder(
       builder: (context, setState) {
+        bool hasText = _messageController.text.trim().isNotEmpty;
+
+        _messageController.addListener(() {
+          setState(() {}); 
+        });
+
         return SafeArea(
           minimum: EdgeInsets.symmetric(vertical: 6, horizontal: 18),          
           child: Row(
@@ -315,11 +360,6 @@ class _ChatPageState extends State<ChatPage> {
                           obscureText: false,
                           controller: _messageController,
                           focusNode: myFocusNode,
-                          onChanged: (value) {
-                            setState(() {
-                              isTyping = value.trim().isNotEmpty;
-                            });
-                          },
                           chatField: true,
                         )
                       : // image input
@@ -398,7 +438,7 @@ class _ChatPageState extends State<ChatPage> {
                 decoration: BoxDecoration(
                   color: _isUploading
                       ? const Color(0xFF771F98).withAlpha(120)
-                      : (isTyping || _selectedImage != null)
+                      : (hasText || _selectedImage != null)
                           ? const Color(0xFF771F98)
                           : Colors.transparent,
                   shape: BoxShape.circle,
@@ -409,16 +449,16 @@ class _ChatPageState extends State<ChatPage> {
                     : () async {
                         if (_selectedImage != null) {
                           await _sendImageMessage();
-                        } else if (isTyping) {
+                        } else if (hasText) {
                           _sendTextMessage();
-                          setState(() => isTyping = false);
+                          setState(() => hasText = false);
                         } else {
                           _showImagePickerMenu(context);
                         }
                       },
                   icon: Icon(
-                    (isTyping || _selectedImage != null) ? Symbols.send : Symbols.add,
-                    color: (isTyping || _selectedImage != null)
+                    (hasText || _selectedImage != null) ? Symbols.send : Symbols.add,
+                    color: (hasText || _selectedImage != null)
                         ? Colors.white
                         : Colors.grey[800],
                     fill: 1,
@@ -439,6 +479,7 @@ class _ChatPageState extends State<ChatPage> {
 
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final position = renderBox.localToGlobal(Offset.zero);
+    final ImagePicker picker = ImagePicker();
  
     // options
     final options = [
@@ -453,8 +494,6 @@ class _ChatPageState extends State<ChatPage> {
         "source": ImageSource.gallery,
       },
     ];
-
-    final ImagePicker picker = ImagePicker();
 
     // Show popup
     await showMenu(
