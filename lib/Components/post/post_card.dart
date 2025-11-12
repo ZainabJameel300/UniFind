@@ -40,6 +40,8 @@ class PostCard extends StatelessWidget {
         MaterialPageRoute(
           builder: (context) => ViewPost(
             postID: postID,
+            publisherDataFromHome: publisherData,
+            postDataFromHome: postData,
           ),
         ),
       );
@@ -164,7 +166,7 @@ class PostCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
 
-                  // item location (wraps if long)
+                  // item location
                   Flexible(
                     child: PostDetail(
                       icon: Symbols.location_on,
