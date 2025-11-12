@@ -37,31 +37,33 @@ class ViewPost extends StatelessWidget {
     }
 
     // otherwise fetch normally
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: MyAppbar(title: "View Post"),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: postService.getPostByID(postID),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text("Error"));
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          // post deleted or not found
-          if (snapshot.hasData && !snapshot.data!.exists) {
-            return const EmptyStateWidget(
-              icon: Symbols.error_outline,
-              title: "Post Unavailable",
-              subtitle: "This post has been deleted or no longer exists.",
-            );
-          }
-
-          final postData = snapshot.data!.data() as Map<String, dynamic>;
-          return _buildView(context, postData, null);
-        },
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: MyAppbar(title: "View Post"),
+        body: StreamBuilder<DocumentSnapshot>(
+          stream: postService.getPostByID(postID),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return const Center(child: Text("Error"));
+            }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+      
+            // post deleted or not found
+            if (snapshot.hasData && !snapshot.data!.exists) {
+              return const EmptyStateWidget(
+                icon: Symbols.error_outline,
+                title: "Post Unavailable",
+                subtitle: "This post has been deleted or no longer exists.",
+              );
+            }
+      
+            final postData = snapshot.data!.data() as Map<String, dynamic>;
+            return _buildView(context, postData, null);
+          },
+        ),
       ),
     );
   }
@@ -235,8 +237,9 @@ class ViewPost extends StatelessWidget {
             children: [
               buildDetail(Symbols.calendar_today, DateFormats.formatLostDate(lostDate)),
               buildDetail(Symbols.location_on, location),
-              buildDetail(Symbols.task_alt, statusText, valueColor: statusColor),
               buildDetail(Symbols.sell, category),
+              buildDetail(Symbols.task_alt, statusText, valueColor: statusColor),
+
             ],
           ),
           const Spacer(),
@@ -244,9 +247,10 @@ class ViewPost extends StatelessWidget {
           // chat button
           if (!isCurrentUser && status == false)
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: AppButton(
-                text: "Chat",
+                text: type == "Lost" ? "Return Item" : "Claim Item",
+                icon: Symbols.chat_bubble,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -259,6 +263,7 @@ class ViewPost extends StatelessWidget {
                 ),
               ),
             ),
+
         ],
       ),
     );
@@ -267,19 +272,32 @@ class ViewPost extends StatelessWidget {
 
 Widget buildDetail(IconData icon, String value, {Color? valueColor}) {
   return Padding(
-    padding: const EdgeInsets.only(bottom: 18),
+    padding: const EdgeInsets.only(bottom: 14),
     child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(icon, color: const Color(0xFFD0B1DB), size: 24.0),
-        const SizedBox(width: 8.0),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14.0,
-            color: valueColor ?? Colors.grey[800],
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            shape: BoxShape.circle,
+          ),
+          padding: const EdgeInsets.all(7), 
+          child: Icon(icon, color: const Color(0xFF771F98), size: 20),
+        ),
+        const SizedBox(width: 10),
+        Flexible(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 15, 
+              color: valueColor ??  Colors.grey.shade800,
+              fontWeight: FontWeight.w500,
+              height: 1.2,
+            ),
           ),
         ),
       ],
     ),
   );
 }
+

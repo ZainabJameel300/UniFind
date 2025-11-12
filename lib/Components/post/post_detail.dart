@@ -17,13 +17,13 @@ class PostDetail extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(icon, color: const Color(0xFFD0B1DB), size: 18.0),
+        Icon(icon, color: const Color(0xFF9B7FBF), size: 18.0),
         const SizedBox(width: 2.0),
         Flexible(
           child: Text(
             text,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 12,
               color: textColor ?? Colors.grey[800],
               height: 1.2,
             ),

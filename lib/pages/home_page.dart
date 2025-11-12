@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage> {
                                 Icon(Symbols.search),
                                 SizedBox(width: 5.0),
                                 Text(
-                                  "Search",
+                                  "Search items",
                                   style: TextStyle(fontSize: 16.0),
                                 ),
                                 Spacer(),
