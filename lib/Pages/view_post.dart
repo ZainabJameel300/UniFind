@@ -37,33 +37,31 @@ class ViewPost extends StatelessWidget {
     }
 
     // otherwise fetch normally
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: MyAppbar(title: "View Post"),
-        body: StreamBuilder<DocumentSnapshot>(
-          stream: postService.getPostByID(postID),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return const Center(child: Text("Error"));
-            }
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-      
-            // post deleted or not found
-            if (snapshot.hasData && !snapshot.data!.exists) {
-              return const EmptyStateWidget(
-                icon: Symbols.error_outline,
-                title: "Post Unavailable",
-                subtitle: "This post has been deleted or no longer exists.",
-              );
-            }
-      
-            final postData = snapshot.data!.data() as Map<String, dynamic>;
-            return _buildView(context, postData, null);
-          },
-        ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: MyAppbar(title: "View Post"),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: postService.getPostByID(postID),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text("Error"));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+    
+          // post deleted or not found
+          if (snapshot.hasData && !snapshot.data!.exists) {
+            return const EmptyStateWidget(
+              icon: Symbols.error_outline,
+              title: "Post Unavailable",
+              subtitle: "This post has been deleted or no longer exists.",
+            );
+          }
+    
+          final postDoc = snapshot.data!;
+          return _buildView(context, postDoc, null);
+        },
       ),
     );
   }
