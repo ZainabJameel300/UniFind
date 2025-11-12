@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/post/post_card.dart';
+import 'package:unifind/services/post_service.dart';
 
 class MySearchDelegate extends SearchDelegate<void> {
+  MySearchDelegate() : super(searchFieldLabel: 'Search items');
+  final PostService postService = PostService();
+
   @override
   ThemeData appBarTheme(BuildContext context) {
     final theme = Theme.of(context);
@@ -41,10 +45,7 @@ class MySearchDelegate extends SearchDelegate<void> {
   @override
   Widget buildSuggestions(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('posts')
-          .orderBy('createdAt', descending: true)
-          .snapshots(),
+      stream: PostService().getAllPosts(limit: 7),
 
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -87,13 +88,8 @@ class MySearchDelegate extends SearchDelegate<void> {
       return buildSuggestions(context);
     }
     
-    final postsStream = FirebaseFirestore.instance
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .snapshots();
-
     return StreamBuilder(
-      stream: postsStream,
+      stream: PostService().getAllPosts(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Center(child: Text('Error loading results'));

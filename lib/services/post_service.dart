@@ -87,6 +87,22 @@ class PostService {
     return firestore.collection('users').doc(uid).get();
   }
 
+  // get all post for search suggestions and results
+  Stream<QuerySnapshot> getAllPosts({int? limit}) {
+    var query = firestore
+        .collection('posts')
+        .orderBy('createdAt', descending: true);
+
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+
+    return query.snapshots();
+  }
+
+
+  
+
   /// get unread notifications count
   Stream<int> unreadNotificationsCount() {
     return firestore
