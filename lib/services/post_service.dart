@@ -20,6 +20,7 @@ class PostService {
 
     Query query = firestore
         .collection('posts')
+        .where('claim_status', isEqualTo: false)
         .orderBy('createdAt', descending: true);
 
     // type filter
@@ -98,18 +99,5 @@ class PostService {
     }
 
     return query.snapshots();
-  }
-
-
-  
-
-  /// get unread notifications count
-  Stream<int> unreadNotificationsCount() {
-    return firestore
-        .collection('notifications')
-        .where('toUserID', isEqualTo: currentUser)
-        .where('isRead', isEqualTo: false)
-        .snapshots()
-        .map((snapshot) => snapshot.size);
   }
 }

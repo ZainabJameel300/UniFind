@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:unifind/Pages/notifications_page.dart';
 import 'package:unifind/components/post/post_card.dart';
 import 'package:unifind/providers/filter_provider.dart';
+import 'package:unifind/services/notifications_service.dart';
 import 'package:unifind/services/post_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -20,6 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final PostService _postService = PostService();
+  final NotificationService notificationService = NotificationService();
   late Future<Map<String, Map<String, dynamic>>> _usersFuture;
 
   @override
@@ -41,7 +43,7 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
               child: Column(
                 children: [
-                  // search & notifications
+                  // search 
                   Row(
                     children: [
                       Expanded(
@@ -59,17 +61,14 @@ class _HomePageState extends State<HomePage> {
                               color: const Color(0xFFF1F1F1),
                             ),
                             child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                // search
                                 Icon(Symbols.search),
                                 SizedBox(width: 5.0),
                                 Text(
                                   "Search items",
                                   style: TextStyle(fontSize: 16.0),
                                 ),
-                                Spacer(),
-                                // AI search (camera)
-                                // Icon(Symbols.photo_camera, size: 24),
                               ],
                             ),
                           ),
@@ -93,7 +92,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           child: 
                           BadgeIcon(
-                            badgeStream: _postService.unreadNotificationsCount(),
+                            badgeStream: notificationService.unreadNotificationsCount(),
                             icon: const Icon(Symbols.notifications, size: 24),
                           ),
                         ),
