@@ -20,8 +20,7 @@ class PostService {
 
     Query query = firestore
         .collection('posts')
-        .where('claim_status', isEqualTo: false)
-        .orderBy('createdAt', descending: true);
+        .where('claim_status', isEqualTo: false);
 
     // type filter
     if (filterProvider.postType != "All") {
@@ -72,9 +71,10 @@ class PostService {
         query = query
             .where('date', isGreaterThanOrEqualTo: start)
             .where('date', isLessThan: end);
-      }
+      } 
     }
 
+    query = query.orderBy('createdAt', descending: true);
     return query.snapshots();
   }
 
@@ -88,10 +88,11 @@ class PostService {
     return firestore.collection('users').doc(uid).get();
   }
 
-  // get all post for search suggestions and results
+  // get all post for search (only unclaimed)
   Stream<QuerySnapshot> getAllPosts({int? limit}) {
     var query = firestore
         .collection('posts')
+        .where('claim_status', isEqualTo: false)
         .orderBy('createdAt', descending: true);
 
     if (limit != null) {
