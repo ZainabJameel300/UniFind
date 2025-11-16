@@ -3,11 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/change_password_sheet.dart';
 import 'package:unifind/Components/edit_bottom_sheet.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
+import 'package:unifind/Components/image_bottomsheet.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Pages/login.dart';
 
@@ -40,32 +40,43 @@ class _ProfilePageState extends State<ProfilePage> {
     currentEmail = widget.email;
   }
 
-  // this will pick image from gallery, upload it to Firebase Storage, and then update Firestore
-  Future<void> _pickAndUploadImage() async {
+  // this will open the Imagebottomsheet and enable user to  pick image from gallery or camera, upload it to Firebase Storage, and then update Firestore
+  Future<void> _openImagePickerSheet() async {
+    final File? pickedFile = await ImageBottomSheet.show(
+      title: "Profile Photo",
+      context: context,
+      showDelete: currentAvatar != null && currentAvatar!.isNotEmpty,
+      onDelete: () async {
+        final user = FirebaseAuth.instance.currentUser!;
+
+        // Reset to default avatar
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({'avatar': ''});
+
+        setState(() {
+          currentAvatar = "";
+        });
+      },
+    );
+
+    if (pickedFile != null) {
+      await _uploadProfileImage(pickedFile);
+    }
+  }
+
+  //Actually uploads and saves the avatr to database firestore ans storage
+  Future<void> _uploadProfileImage(File imageFile) async {
     try {
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 800,
-        maxHeight: 800,
-      );
-
-      if (pickedFile == null) return; // User cancelled image picker
-
       final user = FirebaseAuth.instance.currentUser!;
-      final File imageFile = File(pickedFile.path);
-
-      //  Upload to Firebase Storage
       final storageRef = FirebaseStorage.instance.ref().child(
         'avatar/${user.uid}.jpg',
       );
 
       await storageRef.putFile(imageFile);
-
-      //  Get the uploaded image URL
       final imageUrl = await storageRef.getDownloadURL();
 
-      //  Update Firestore 'users' document
       await FirebaseFirestore.instance.collection('users').doc(user.uid).update(
         {'avatar': imageUrl},
       );
@@ -113,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             const SizedBox(height: 11),
 
-            // Avatar (kept same as before)
+            // Avatar
             Center(
               child: GestureDetector(
                 onTap: () {
@@ -157,7 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // Edit button
             Center(
               child: TextButton(
-                onPressed: _pickAndUploadImage,
+                onPressed: _openImagePickerSheet,
                 child: const Text(
                   "Edit",
                   style: TextStyle(
@@ -171,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
             const SizedBox(height: 30),
 
-            // User Info Card Container (same as before)
+            // User Info Card Container
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
               child: Container(
@@ -184,7 +195,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.09),
+                      color: Colors.black.withValues(alpha: 0.09),
                       blurRadius: 6,
                       offset: const Offset(0, 3),
                     ),
@@ -198,254 +209,323 @@ class _ProfilePageState extends State<ProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Username
-                    Row(
-                      children: [
-                        const Icon(
-                          Symbols.person,
-                          color: Color(0xFF771F98),
-                          size: 30,
-                          weight: 450,
-                        ),
-                        const SizedBox(width: 25),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Username",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                currentUsername ?? "",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // edit icon
-                        IconButton(
-                          icon: Icon(
-                            Icons.edit,
-                            color: Color(0xFF771F98),
-                            size: 25,
-                          ),
-                          onPressed: () {
-                            showEditFieldSheet(
-                              context: context,
-                              title: "Edit Username",
-                              label: "Username",
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Username cannot be empty";
-                                }
-                                if (value.length > 50) {
-                                  return "Username cannot exceed 20 characters";
-                                }
-                                return null;
-                              },
-                              currentValue: currentUsername ?? "",
-                              onSave: (newValue) async {
-                                final user = FirebaseAuth.instance.currentUser!;
-                                await FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(user.uid)
-                                    .update({'username': newValue});
-
-                                setState(() {
-                                  currentUsername = newValue;
-                                });
-                              },
-                            );
+                    InkWell(
+                      onTap: () {
+                        showEditFieldSheet(
+                          context: context,
+                          title: "Edit Username",
+                          label: "Username",
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Username cannot be empty";
+                            }
+                            if (value.length > 50) {
+                              return "Username cannot exceed 20 characters";
+                            }
+                            return null;
                           },
+                          currentValue: currentUsername ?? "",
+                          onSave: (newValue) async {
+                            final user = FirebaseAuth.instance.currentUser!;
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(user.uid)
+                                .update({'username': newValue});
+
+                            setState(() {
+                              currentUsername = newValue;
+                            });
+                          },
+                        );
+                      },
+                      child: Container(
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Symbols.person,
+                              color: Color(0xFF771F98),
+                              size: 30,
+                              weight: 450,
+                            ),
+                            const SizedBox(width: 25),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Username",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    currentUsername ?? "",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // edit icon
+                            Icon(
+                              Icons.edit,
+                              color: Color(0xFF771F98),
+                              size: 25,
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
 
                     const SizedBox(height: 50),
 
                     // Email
-                    Row(
-                      children: [
-                        const Icon(
-                          Symbols.email,
-                          color: Color(0xFF771F98),
-                          size: 28,
-                          weight: 450,
-                        ),
-                        const SizedBox(width: 25),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Email",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                currentEmail ?? "",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        //Arrow icon
-                        IconButton(
-                          icon: Icon(
-                            Icons.edit,
-                            color: Color(0xFF771F98),
-                            size: 25,
-                            weight: 450,
-                          ),
-                          onPressed: () {
-                            showEditFieldSheet(
-                              context: context,
-                              title: "Edit Email",
-                              label: "Email",
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Email cannot be empty";
-                                }
-                                if (!_isUobEmail(value)) {
-                                  return "Enter a valid UOB email";
-                                }
-                                return null;
-                              },
-                              currentValue: currentEmail ?? "",
-                              onSave: (newValue) async {
-                                final user = FirebaseAuth.instance.currentUser!;
-                                await FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(user.uid)
-                                    .update({'email': newValue});
-
-                                setState(() {
-                                  currentEmail = newValue;
-                                });
-                              },
-                            );
+                    InkWell(
+                      onTap: () {
+                        showEditFieldSheet(
+                          context: context,
+                          title: "Edit Email",
+                          label: "Email",
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Email cannot be empty";
+                            }
+                            if (!_isUobEmail(value)) {
+                              return "Enter a valid UOB email";
+                            }
+                            return null;
                           },
+                          currentValue: currentEmail ?? "",
+                          onSave: (newValue) async {
+                            final user = FirebaseAuth.instance.currentUser!;
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(user.uid)
+                                .update({'email': newValue});
+
+                            setState(() {
+                              currentEmail = newValue;
+                            });
+                          },
+                        );
+                      },
+                      child: Container(
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Symbols.email,
+                              color: Color(0xFF771F98),
+                              size: 28,
+                              weight: 450,
+                            ),
+                            const SizedBox(width: 25),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    "Email",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    currentEmail ?? "",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            //edit icon
+                            Icon(
+                              Icons.edit,
+                              color: Color(0xFF771F98),
+                              size: 25,
+                              weight: 450,
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
 
                     SizedBox(height: 50),
                     // Password
-                    Row(
-                      children: [
-                        Icon(
-                          Symbols.lock,
-                          color: Color(0xFF771F98),
-                          size: 30,
-                          weight: 450,
-                        ),
-                        SizedBox(width: 25),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Password",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black,
-                                ),
+                    InkWell(
+                      onTap: () {
+                        showChangePasswordSheet(context);
+                      },
+                      child: Container(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Symbols.lock,
+                              color: Color(0xFF771F98),
+                              size: 30,
+                              weight: 450,
+                            ),
+                            SizedBox(width: 25),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Password",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  SizedBox(height: 3),
+                                  Text(
+                                    "Change your password",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 3),
-                              Text(
-                                "Change your password",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                            // edit icon
+                            Icon(
+                              Icons.edit,
+                              color: Color(0xFF771F98),
+                              size: 25,
+                              weight: 450,
+                            ),
+                          ],
                         ),
-                        // edit icon
-                        IconButton(
-                          icon: Icon(
-                            Icons.edit,
-                            color: Color(0xFF771F98),
-                            size: 25,
-                            weight: 450,
-                          ),
-                          onPressed: () {
-                            showChangePasswordSheet(context);
-                          },
-                        ),
-                      ],
+                      ),
                     ),
 
                     SizedBox(height: 50),
                     // Log out
-                    GestureDetector(
+                    InkWell(
                       onTap: () async {
-                        // Sign out the user
-                        await FirebaseAuth.instance.signOut();
-
-                        // Navigate to Splash
-                        Navigator.pushReplacement(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    const Login(),
-                            transitionsBuilder:
-                                (
-                                  context,
-                                  animation,
-                                  secondaryAnimation,
-                                  child,
-                                ) {
-                                  return FadeTransition(
-                                    opacity: animation,
-                                    child: child,
-                                  );
-                                },
-                            transitionDuration: const Duration(
-                              milliseconds: 400,
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
+                            title: Row(
+                              children: [
+                                Icon(
+                                  Symbols.help_outline,
+                                  color: Color(0xFF771F98),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  "Log out of your account?",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Cancel button
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.black87,
+                                      backgroundColor: const Color(0xFFF3F3F3),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  SizedBox(width: 15),
+                                  // OK button
+                                  TextButton(
+                                    onPressed: () async {
+                                      Navigator.pop(
+                                        context,
+                                      ); // closes the dialog
+                                      // Sign out the user
+                                      await FirebaseAuth.instance.signOut();
+
+                                      // Navigate to Splash
+                                      Navigator.pushReplacement(
+                                        context,
+                                        PageRouteBuilder(
+                                          pageBuilder:
+                                              (
+                                                context,
+                                                animation,
+                                                secondaryAnimation,
+                                              ) => const Login(),
+                                          transitionsBuilder:
+                                              (
+                                                context,
+                                                animation,
+                                                secondaryAnimation,
+                                                child,
+                                              ) {
+                                                return FadeTransition(
+                                                  opacity: animation,
+                                                  child: child,
+                                                );
+                                              },
+                                          transitionDuration: const Duration(
+                                            milliseconds: 400,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      backgroundColor: const Color(0xFF771F98),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Text("OK"),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         );
                       },
-                      child: Row(
-                        children: [
-                          Icon(
-                            Symbols.logout,
-                            color: Color(0xFF771F98),
-                            size: 30,
-                            weight: 450,
-                          ),
-                          SizedBox(width: 25),
-                          Text(
-                            "Log Out",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
+                      child: Container(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Symbols.logout,
+                              color: Color(0xFF771F98),
+                              size: 30,
+                              weight: 450,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 25),
+                            Text(
+                              "Log Out",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     SizedBox(height: 10),

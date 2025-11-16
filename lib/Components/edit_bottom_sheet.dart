@@ -108,12 +108,8 @@ void showEditFieldSheet({
                     width: 105,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          134,
-                          134,
-                          134,
-                        ),
+                        foregroundColor: Colors.black87,
+                        backgroundColor: const Color(0xFFF3F3F3),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -126,7 +122,6 @@ void showEditFieldSheet({
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
                         ),
                       ),
                     ),
