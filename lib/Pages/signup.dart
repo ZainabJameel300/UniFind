@@ -44,6 +44,7 @@ class _SignupState extends State<Signup> {
   }
 
   bool obscureText = true;
+  bool obscureConfirm = true;
 
   @override
   void dispose() {
@@ -345,7 +346,7 @@ class _SignupState extends State<Signup> {
                   // Confirm Password Textfield
                   MyTextField(
                     hintText: 'Confirm Password',
-                    obscureText: true,
+                    obscureText: obscureConfirm,
                     controller: confirmpasswordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -356,6 +357,20 @@ class _SignupState extends State<Signup> {
                       }
                       return null;
                     },
+                    suffixIcon: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          obscureConfirm = !obscureConfirm;
+                        });
+                      },
+                      child: Icon(
+                        obscureConfirm
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                        color: const Color(0xFF771F98),
+                        size: 28,
+                      ),
+                    ),
                   ),
                   SizedBox(height: 40),
 

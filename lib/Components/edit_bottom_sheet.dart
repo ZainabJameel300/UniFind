@@ -46,7 +46,7 @@ void showEditFieldSheet({
                 ),
               ),
               //Title
-              SizedBox(height: 65),
+              SizedBox(height: 40),
               Text(
                 title,
                 style: const TextStyle(
@@ -55,7 +55,7 @@ void showEditFieldSheet({
                 ),
               ),
               //TextField
-              SizedBox(height: 25),
+              SizedBox(height: 50),
               Form(
                 key: formKey,
                 child: TextFormField(
@@ -69,32 +69,69 @@ void showEditFieldSheet({
                   ),
                 ),
               ),
-              SizedBox(height: 32),
-              //Save Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF771F98),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              SizedBox(height: 45),
+              //Save and Cancel buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  //Save Button
+                  SizedBox(
+                    width: 100,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF771F98),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        if (formKey.currentState!.validate()) {
+                          onSave(controller.text.trim());
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Text(
+                        "Save",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
-                  onPressed: () {
-                    if (formKey.currentState!.validate()) {
-                      onSave(controller.text.trim());
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: Text(
-                    "Save",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+
+                  SizedBox(width: 15),
+
+                  //Cancel Button
+                  SizedBox(
+                    width: 105,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          134,
+                          134,
+                          134,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        "Cancel",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
               SizedBox(height: 20),
             ],

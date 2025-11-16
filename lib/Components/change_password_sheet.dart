@@ -161,92 +161,130 @@ void showChangePasswordSheet(BuildContext context) {
 
                     const SizedBox(height: 32),
 
-                    // Save Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF771F98),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () async {
-                          if (!formKey.currentState!.validate()) return;
-
-                          try {
-                            final user = FirebaseAuth.instance.currentUser!;
-                            final cred = EmailAuthProvider.credential(
-                              email: user.email!,
-                              password: oldPasswordController.text.trim(),
-                            );
-
-                            // Re-authenticate
-                            await user.reauthenticateWithCredential(cred);
-
-                            // Update password
-                            await user.updatePassword(
-                              newPasswordController.text.trim(),
-                            );
-
-                            Navigator.pop(context);
-                            showSnackBar(
-                              context,
-                              "Password updated successfully!",
-                            );
-                          } on FirebaseAuthException catch (e) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                title: Row(
-                                  children: [
-                                    const Icon(
-                                      Symbols.error_outline,
-                                      color: Color(0xFF771F98),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      "Password Change Failed",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                content: Text(
-                                  "Error: ${e.code}",
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor: const Color(0xFF771F98),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: const Text("OK"),
-                                  ),
-                                ],
+                    // Save and Cancel Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 100,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF771F98),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            );
-                          }
-                        },
-                        child: const Text(
-                          "Save",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            ),
+                            onPressed: () async {
+                              if (!formKey.currentState!.validate()) return;
+
+                              try {
+                                final user = FirebaseAuth.instance.currentUser!;
+                                final cred = EmailAuthProvider.credential(
+                                  email: user.email!,
+                                  password: oldPasswordController.text.trim(),
+                                );
+
+                                // Re-authenticate
+                                await user.reauthenticateWithCredential(cred);
+
+                                // Update password
+                                await user.updatePassword(
+                                  newPasswordController.text.trim(),
+                                );
+
+                                Navigator.pop(context);
+                                showSnackBar(
+                                  context,
+                                  "Password updated successfully!",
+                                );
+                              } on FirebaseAuthException catch (e) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        const Icon(
+                                          Symbols.error_outline,
+                                          color: Color(0xFF771F98),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          "Password Change Failed",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    content: Text(
+                                      "Error: ${e.code}",
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          backgroundColor: const Color(
+                                            0xFF771F98,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                        ),
+                                        child: const Text("OK"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text(
+                              "Save",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        SizedBox(width: 15),
+                        //Cancel Button
+                        SizedBox(
+                          width: 105,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                134,
+                                134,
+                                134,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
                   ],
