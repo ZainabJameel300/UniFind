@@ -18,52 +18,59 @@ class KeepersContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 25, right: 25),
-      child: Container(
-        height: 55,
-        width: double.infinity, // Make it responsive
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: fillColor,
-          border: Border.all(color: borderColor, width: 2.5),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            // College Code
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: circleColor,
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                code,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          height: 55,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: fillColor,
+            border: Border.all(color: borderColor, width: 2.2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+
+              // College Code Circle
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: circleColor,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  code,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 16),
-            // Title text wrapped in Flexible , this way on smaller screens it will adjust accordingly!
-            Flexible(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
+
+              const SizedBox(width: 14),
+
+              // Colleges and their offices
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                softWrap: true,
-                overflow: TextOverflow.visible,
               ),
-            ),
-          ],
+
+              const SizedBox(width: 8),
+            ],
+          ),
         ),
       ),
     );

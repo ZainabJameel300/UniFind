@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/app_button.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/my_textfield.dart';
 
@@ -22,12 +23,12 @@ class _ForgotpasswordState extends State<Forgotpassword> {
   }
 
   // UOB email validator method
-  // bool _isUobEmail(String email) {
-  //   final regex = RegExp(
-  //     r'^(20(1[0-9]|2[0-5]))\d{5}@((stu\.uob\.edu\.bh)|(uob\.edu\.bh))$',
-  //   );
-  //   return regex.hasMatch(email);
-  // }
+  bool _isUobEmail(String email) {
+    final regex = RegExp(
+      r'^(20(1[0-9]|2[0-5]))\d{5}@((stu\.uob\.edu\.bh)|(uob\.edu\.bh))$',
+    );
+    return regex.hasMatch(email);
+  }
 
   //password reset function
   Future passwordReset() async {
@@ -133,30 +134,25 @@ class _ForgotpasswordState extends State<Forgotpassword> {
                 if (value == null || value.isEmpty) {
                   return "Email cannot be empty";
                 }
-                // if (!_isUobEmail(value)) {
-                //   return "Enter a valid UOB email";
-                // }
+                if (!_isUobEmail(value)) {
+                  return "Enter a valid UOB email";
+                }
                 return null;
               },
             ),
             const SizedBox(height: 50),
 
-            //Reset Link Button
+            // Reset Link Button
             Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    passwordReset();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  fixedSize: const Size(200, 45),
-                  backgroundColor: const Color.fromARGB(255, 119, 31, 153),
-                  foregroundColor: Colors.white,
-                ),
-                child: const Text(
-                  'Send Reset Link',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              child: SizedBox(
+                width: 180,
+                child: AppButton(
+                  text: "Send Reset Link",
+                  onTap: () {
+                    if (_formKey.currentState!.validate()) {
+                      passwordReset();
+                    }
+                  },
                 ),
               ),
             ),

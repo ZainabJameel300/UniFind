@@ -4,11 +4,11 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/image_bottomsheet.dart';
 import 'package:unifind/Components/label.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/my_button.dart';
 import 'package:unifind/Components/report_item_textfield.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -88,34 +88,47 @@ class _ReportItemPageState extends State<ReportItemPage> {
   String? _imageError;
 
   void _showDatePicker() {
+    final today = DateTime.now();
+
     showDatePicker(
       context: context,
+      initialDate: selectedDate ?? today,
       firstDate: DateTime(2010),
-      lastDate: DateTime(2030),
+      lastDate: DateTime(today.year, today.month, today.day),
+      helpText: "Select date",
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(primary: Color(0xFF771F98)),
+          ),
+          child: child!,
+        );
+      },
     ).then((value) {
-      setState(() {
-        selectedDate = value;
-        _dateError = null;
-      });
+      if (value != null) {
+        setState(() {
+          selectedDate = value;
+          _dateError = null;
+        });
+      }
     });
   }
 
   File? _image;
 
-  final ImagePicker _picker =
-      ImagePicker(); // this line baiscally builds an instance of the image picker
+  // final ImagePicker _picker =
+  //     ImagePicker(); // this line baiscally builds an instance of the image picker
 
-  Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery, // or ImageSource.camera
-      maxWidth: 800,
-      maxHeight: 800,
+  Future<void> _pickImageFromSheet() async {
+    final File? pickedFile = await ImageBottomSheet.show(
+      context: context,
+      title: "Upload Photo",
+      showDelete: false,
     );
 
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
-        _imageError = null;
+        _image = pickedFile;
       });
     }
   }
@@ -424,6 +437,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       padding: const EdgeInsets.only(left: 20, right: 10),
                       child: DropdownButtonFormField<String>(
                         value: selectedCategory,
+                        dropdownColor: Colors.white,
                         hint: const Text(
                           "Select a Category...",
                           style: TextStyle(
@@ -490,6 +504,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       padding: const EdgeInsets.only(left: 20, right: 10),
                       child: DropdownButtonFormField<String>(
                         value: selectedlocation,
+                        dropdownColor: Colors.white,
                         hint: const Text(
                           "Select a Location...",
                           style: TextStyle(
@@ -606,11 +621,10 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     child: Stack(
                       children: [
                         GestureDetector(
-                          onTap: _pickImage,
+                          onTap: _pickImageFromSheet,
                           child: DottedBorder(
                             options: RoundedRectDottedBorderOptions(
                               radius: const Radius.circular(25),
-                              padding: const EdgeInsets.all(8),
                               color: const Color(0xFF771F98),
                               strokeWidth: 2.5,
                               dashPattern: [10, 5],
@@ -699,8 +713,6 @@ class _ReportItemPageState extends State<ReportItemPage> {
                             : null;
                         if (selectedDate == null) {
                           _dateError = "Date is required!";
-                        } else if (selectedDate!.isAfter(DateTime.now())) {
-                          _dateError = "The Date cannot be in the future!";
                         } else {
                           _dateError = null;
                         }

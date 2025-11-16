@@ -160,16 +160,6 @@ class _AccountPageState extends State<AccountPage> {
                 ),
               ),
 
-              // const SizedBox(height: 45),
-              // //Dvider line
-              // Padding(
-              //   padding: const EdgeInsets.symmetric(horizontal: 60),
-              //   child: Divider(
-              //     color: Color.fromARGB(255, 215, 214, 214),
-              //     height: 1,
-              //   ),
-              // ),
-
               //My Reported Item Text
               SizedBox(height: 45),
               Text(
