@@ -8,13 +8,7 @@ class PostService {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final String currentUser = FirebaseAuth.instance.currentUser!.uid;
 
-  /// get all users 
-  Future<Map<String, Map<String, dynamic>>> loadAllUsers() async {
-    final snap = await firestore.collection('users').get();
-    return {for (var doc in snap.docs) doc.id: doc.data()};
-  }
-
-  /// get filtered posts 
+  /// get filtered unclaimed posts 
   Stream<QuerySnapshot> getFilteredPosts(BuildContext context) {
     final filterProvider = Provider.of<FilterProvider>(context, listen: false);
 
@@ -88,8 +82,8 @@ class PostService {
     return firestore.collection('users').doc(uid).get();
   }
 
-  // get all post for search (only unclaimed)
-  Stream<QuerySnapshot> getAllPosts({int? limit}) {
+  // get unclaimed posts for search 
+  Stream<QuerySnapshot> searchPosts({int? limit}) {
     var query = firestore
         .collection('posts')
         .where('claim_status', isEqualTo: false)

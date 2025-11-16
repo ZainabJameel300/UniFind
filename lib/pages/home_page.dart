@@ -6,6 +6,7 @@ import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/filters/filters_tabs.dart';
 import 'package:unifind/Components/filters/my_search_delegate.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:unifind/Components/post/post_card_loading.dart';
 import 'package:unifind/Pages/notifications_page.dart';
 import 'package:unifind/components/post/post_card.dart';
 import 'package:unifind/providers/filter_provider.dart';
@@ -22,13 +23,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final PostService _postService = PostService();
   final NotificationService notificationService = NotificationService();
-  late Future<Map<String, Map<String, dynamic>>> _usersFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _usersFuture = _postService.loadAllUsers();
-  }
   
   @override
   Widget build(BuildContext context) {
@@ -148,68 +142,69 @@ class _HomePageState extends State<HomePage> {
 
             // posts
             Expanded(
-              child: FutureBuilder<Map<String, Map<String, dynamic>>>(
-                future: _usersFuture,
-                builder: (context, asyncSnapshot) {
-                  if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+              child: StreamBuilder(
+                stream: _postService.getFilteredPosts(context),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(child: const Text("Error"));
                   }
-                  if (asyncSnapshot.hasError || !asyncSnapshot.hasData) {
-                    return const Center(child: Text("Error loading users"));
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(15),
+                      itemCount: 5,
+                      itemBuilder: (context, _) => const PostCardLoading(),
+                    );
                   }
 
-                  final usersData = asyncSnapshot.data!;
+                  // no post found
+                  final posts = snapshot.data!.docs;
+                  if (posts.isEmpty) {
+                    return EmptyStateWidget(
+                      icon: hasAnyFilter
+                          ? Symbols.filter_alt_off
+                          : Symbols.post_add,
+                      title: hasAnyFilter ? "No posts found" : "No posts yet",
+                      subtitle: hasAnyFilter
+                          ? "No items match your current filters."
+                          : "Items will show when other users report new items",
+                    );
+                  }
 
-                  return StreamBuilder(
-                    stream: _postService.getFilteredPosts(context),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(child: const Text("Error"));
-                      }
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: const CircularProgressIndicator());
-                      }
+                  return Container(
+                    color: const Color(0xFFF7F7F7),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 15,
+                      ),
+                      physics: const ClampingScrollPhysics(),
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
+                        String uid = postData["uid"];
 
-                      final posts = snapshot.data!.docs;
+                        // read the publisher data for each post
+                        return FutureBuilder<DocumentSnapshot>(
+                          future: _postService.getPublisherByID(uid),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) return Text("Error");
 
-                      // no post found
-                      if (posts.isEmpty) {
-                        return EmptyStateWidget(
-                          icon: hasAnyFilter
-                              ? Symbols.filter_alt_off
-                              : Symbols.post_add,
-                          title: hasAnyFilter ? "No posts found" : "No posts yet",
-                          subtitle: hasAnyFilter
-                              ? "No items match your current filters."
-                              : "Items will show when other users report new items",
-                        );
-                      }
-                  
-                      return Container(
-                        color: const Color(0xFFF7F7F7),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                          physics: const ClampingScrollPhysics(),
-                          itemCount: posts.length,
-                          itemBuilder: (context, index) {
-                            final DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
-                            final String uid = postData["uid"];
-                            final publisherData = usersData[uid];
-
-                            if (publisherData == null) {
-                              return const SizedBox.shrink();
+                            if (snapshot.connectionState == ConnectionState.done) {
+                              Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
+                              
+                              return PostCard(
+                                publisherData: publisherData,
+                                postData: postData,
+                              );
                             }
 
-                            return PostCard(
-                              publisherData: publisherData,
-                              postData: postData,
-                            );
+                            return const PostCardLoading();
                           },
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   );
-                }
+                },
               ),
             ),
           ],

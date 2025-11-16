@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/post/post_card.dart';
+import 'package:unifind/Components/post/post_card_loading.dart';
 import 'package:unifind/services/post_service.dart';
 
 class MySearchDelegate extends SearchDelegate<void> {
   MySearchDelegate() : super(searchFieldLabel: 'Search items');
-  final PostService postService = PostService();
+  final PostService _postService = PostService();
 
   @override
   ThemeData appBarTheme(BuildContext context) {
@@ -45,7 +46,7 @@ class MySearchDelegate extends SearchDelegate<void> {
   @override
   Widget buildSuggestions(BuildContext context) {
     return StreamBuilder(
-      stream: PostService().getAllPosts(limit: 7),
+      stream: _postService.searchPosts(limit: 7),
 
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -89,13 +90,17 @@ class MySearchDelegate extends SearchDelegate<void> {
     }
     
     return StreamBuilder(
-      stream: PostService().getAllPosts(),
+      stream: _postService.searchPosts(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Center(child: Text('Error loading results'));
         }
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return ListView.builder(
+            padding: const EdgeInsets.all(15),
+            itemCount: 5,
+            itemBuilder: (context, _) => const PostCardLoading(),
+          );
         }
 
         // match only whole words in description
@@ -120,21 +125,23 @@ class MySearchDelegate extends SearchDelegate<void> {
             itemCount: matchedPosts.length,
             itemBuilder: (context, index) {
               DocumentSnapshot postData = matchedPosts[index];
+              String uid = postData["uid"];
 
               return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(postData['uid'])
-                    .get(),
+                future: _postService.getPublisherByID(uid),
                 builder: (context, snapshot) {
-                  if (snapshot.hasError) return const SizedBox.shrink();
-                  if (!snapshot.hasData) return const SizedBox.shrink();
-                      
-                  Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
-                  return PostCard(
-                    publisherData: publisherData,
-                    postData: postData,
-                  );
+                  if (snapshot.hasError) return Text("Error");
+
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
+
+                    return PostCard(
+                      publisherData: publisherData,
+                      postData: postData,
+                    );
+                  }
+
+                  return const PostCardLoading();
                 },
               );
             },
