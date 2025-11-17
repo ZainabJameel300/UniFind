@@ -75,7 +75,6 @@ class _PotenialmatchState extends State<Potenialmatch> {
       // Wrap body with a Stack so we can overlay the floating message
       body: Stack(
         children: [
-          // existing body content (empty state or grid)
           widget.matchItems.isEmpty
               ? const EmptyStateWidget(
                   icon: Symbols.empty_dashboard,
@@ -317,35 +316,54 @@ class _PotenialmatchState extends State<Potenialmatch> {
                 ),
 
           //Message "Not what you're looking for?"
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 180,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5ECFA),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(1, 2),
-                  ),
-                ],
-              ),
-              child: const Text(
-                "Not what you're looking for?\nYou'll get notified when any of your items get matched!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF771F98),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  height: 2,
+          if (widget.matchItems.isNotEmpty)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 180,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F7F7),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Color(0xFFE5E5E5)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: .05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Not what you're looking for?",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Color(0xFF771F98),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Text(
+                      "You'll get notified when new matches are found.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

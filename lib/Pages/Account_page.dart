@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/item_card.dart';
 import 'package:unifind/Components/my_AppBar.dart';
 import 'package:unifind/Pages/profile_page.dart';
 
@@ -24,7 +25,6 @@ class _AccountPageState extends State<AccountPage> {
 
   Future<void> _loadUserData() async {
     currentUser = FirebaseAuth.instance.currentUser;
-
     if (currentUser != null) {
       final snapshot = await FirebaseFirestore.instance
           .collection("users")
@@ -37,6 +37,28 @@ class _AccountPageState extends State<AccountPage> {
         });
       }
     }
+  }
+
+  //Stream for user posts of type lost
+  Stream<QuerySnapshot> getLostPosts() {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    return FirebaseFirestore.instance
+        .collection('posts')
+        .where('uid', isEqualTo: uid)
+        .where('type', isEqualTo: "Lost")
+        // .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
+
+  //Stream for user posts of type found
+  Stream<QuerySnapshot> getFoundPosts() {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    return FirebaseFirestore.instance
+        .collection('posts')
+        .where('uid', isEqualTo: uid)
+        .where('type', isEqualTo: "Found")
+        // .orderBy('createdAt', descending: true)
+        .snapshots();
   }
 
   @override
@@ -165,6 +187,80 @@ class _AccountPageState extends State<AccountPage> {
               Text(
                 "My Reported Items",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w300),
+              ),
+              SizedBox(height: 20),
+              //Lost Items
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Text(
+                  "Lost",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                ),
+              ),
+              SizedBox(height: 8),
+
+              StreamBuilder<QuerySnapshot>(
+                stream: getLostPosts(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text("Error: ${snapshot.error}"),
+                    );
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Text("No lost items reported yet."),
+                    );
+                  }
+
+                  final docs = snapshot.data!.docs;
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.73,
+                        ),
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      final data = docs[index].data() as Map<String, dynamic>;
+
+                      final imageUrl = (data['picture'] ?? "").toString();
+                      final title = data['title'] ?? "";
+
+                      final bool claimStatus =
+                          (data['claim_status'] ?? false) == true;
+                      final statusText = claimStatus ? "Claimed" : "Unclaimed";
+
+                      DateTime createdAt;
+                      if (data['createdAt'] is Timestamp) {
+                        createdAt = (data['createdAt'] as Timestamp).toDate();
+                      } else {
+                        createdAt = DateTime.now();
+                      }
+                      final formattedDate =
+                          "${createdAt.day}/${createdAt.month}/${createdAt.year}";
+
+                      return ItemCard(
+                        imageUrl: imageUrl,
+                        title: title,
+                        date: formattedDate,
+                        status: statusText,
+                      );
+                    },
+                  );
+                },
               ),
             ],
           ),
