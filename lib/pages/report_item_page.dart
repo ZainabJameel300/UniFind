@@ -269,8 +269,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: MyAppbar(title: "Report Item", showBack: false),
-      body: SafeArea(
+      appBar: MyAppbar(title: "Report Item"),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
         child: ListView(
           children: [
             Form(
@@ -278,7 +279,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
               child: Column(
                 children: [
                   SizedBox(height: 30),
-
+                
                   //The toggle buttons
                   Center(
                     child: ToggleButtons(
@@ -318,7 +319,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     ),
                   ),
                   SizedBox(height: 25),
-
+                
                   // title label + red info icon for the found items only
                   Stack(
                     clipBehavior: Clip.none,
@@ -340,9 +341,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         ),
                     ],
                   ),
-
+                
                   SizedBox(height: 5),
-
+                
                   //title textfield
                   ReportItemTextfield(
                     hintText: "Enter a short title (e.g. Lost student ID card)",
@@ -360,7 +361,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     },
                   ),
                   SizedBox(height: 20),
-
+                
                   // Descreption label + red info icon for the found items only
                   Stack(
                     clipBehavior: Clip.none,
@@ -382,9 +383,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         ),
                     ],
                   ),
-
+                
                   SizedBox(height: 5),
-
+                
                   //description textfield
                   ReportItemTextfield(
                     hintText: "Describe the item (e.g. color, size, brand..)",
@@ -402,11 +403,11 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     },
                   ),
                   SizedBox(height: 20),
-
+                
                   //category label
                   Label(text: "Category :"),
                   SizedBox(height: 5),
-
+                
                   //category drop down list
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -466,13 +467,13 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       ),
                     ),
                   ),
-
+                
                   SizedBox(height: 20),
-
+                
                   //Location Label
                   Label(text: "Location :"),
                   SizedBox(height: 5),
-
+                
                   //Location DropDownList
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -532,13 +533,13 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       ),
                     ),
                   ),
-
+                
                   SizedBox(height: 20),
-
+                
                   //Date Label
                   Label(text: "Date :"),
                   SizedBox(height: 5),
-
+                
                   //Date Picker
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -595,11 +596,11 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     ),
                   ),
                   SizedBox(height: 20),
-
+                
                   //Upload a photo label
                   Label(text: "Uplaod a Photo :"),
                   SizedBox(height: 5),
-
+                
                   // Upload Photo
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -679,9 +680,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       ],
                     ),
                   ),
-
+                
                   SizedBox(height: 45),
-
+                
                   //Submit Button
                   MyButton(
                     text: "Submit",
@@ -701,7 +702,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         } else {
                           _dateError = null;
                         }
-
+                
                         // Image error logic
                         if (type == "Found" && _image == null) {
                           setState(() {
@@ -713,7 +714,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                           });
                         }
                       });
-
+                
                       if (isValid &&
                           _categoryError == null &&
                           _locationError == null &&
@@ -724,7 +725,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       }
                     },
                   ),
-
+                
                   SizedBox(height: 50),
                 ],
               ),

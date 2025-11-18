@@ -120,6 +120,16 @@ class PostCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   width: double.infinity,
                   height: 180,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child; // image loaded
+
+                    // while loading, show placeholder container
+                    return Container(
+                      width: double.infinity,
+                      height: 180,
+                      color: Colors.grey[300],
+                    );
+                  },   
                 ),   
               ),
             ),

@@ -25,12 +25,22 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final List<Widget> pages = [
     const HomePage(),
     const KeepersPage(),
-    const ReportItemPage(),
+    Container(),
     const ChatroomsPage(),
     const ProfilePage(),
   ];
 
   void onTabTapped(int index) {
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ReportItemPage(),
+        ),
+      );
+      return; 
+    }
+
     setState(() => selectedIndex = index);
   }
 
