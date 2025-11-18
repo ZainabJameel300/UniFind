@@ -1,10 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
-import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/fullscreen_image.dart';
+import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/view_post.dart';
 import 'package:unifind/utils/date_formats.dart';
 
@@ -135,76 +135,58 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                 ts,
                               );
 
-                              return GestureDetector(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ViewPost(postID: match.postID),
-                                  ),
+                          return GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ViewPost(postID: match.postID),
+                              ),
+                            ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: const Color(0xFFE0D9E6),
+                                  width: 1.5,
                                 ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    border: Border.all(
-                                      color: const Color.fromARGB(
-                                        255,
-                                        161,
-                                        158,
-                                        163,
-                                      ),
-                                      width: 1.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Color(
-                                          0xFF771F98,
-                                        ).withValues(alpha: 0.1),
-                                        blurRadius: 20,
-                                        offset: const Offset(1, 2),
-                                      ),
-                                    ],
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 2),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Top bar: avatar + name
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          8,
-                                          8,
-                                          8,
-                                          0,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            avatar.isNotEmpty
-                                                ? CircleAvatar(
-                                                    radius: 16,
-                                                    backgroundImage:
-                                                        NetworkImage(avatar),
-                                                  )
-                                                : const Icon(
-                                                    Icons.account_circle,
-                                                    size: 32,
-                                                    color: Colors.grey,
-                                                  ),
-                                            const SizedBox(width: 6),
-                                            Expanded(
-                                              child: Text(
-                                                name,
-                                                style: const TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Top bar: avatar + name
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      8,
+                                      8,
+                                      8,
+                                      0,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        UserAvatar(avatarUrl: avatar, radius: 16),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            name,
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
                                             ),
-                                          ],
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                      ),
+                                      ],
+                                    ),
+                                  ),
 
                                       // Divider
                                       Padding(

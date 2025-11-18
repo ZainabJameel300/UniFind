@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:unifind/components/post_card.dart';
+import 'package:unifind/Components/post/post_card.dart';
+import 'package:unifind/Components/post/post_card_loading.dart';
+import 'package:unifind/services/post_service.dart';
 
 class MySearchDelegate extends SearchDelegate<void> {
+  MySearchDelegate() : super(searchFieldLabel: 'Search items');
+  final PostService _postService = PostService();
+
   @override
   ThemeData appBarTheme(BuildContext context) {
     final theme = Theme.of(context);
@@ -41,10 +46,7 @@ class MySearchDelegate extends SearchDelegate<void> {
   @override
   Widget buildSuggestions(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('posts')
-          .orderBy('createdAt', descending: true)
-          .snapshots(),
+      stream: _postService.searchPosts(limit: 7),
 
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -87,19 +89,18 @@ class MySearchDelegate extends SearchDelegate<void> {
       return buildSuggestions(context);
     }
     
-    final postsStream = FirebaseFirestore.instance
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .snapshots();
-
     return StreamBuilder(
-      stream: postsStream,
+      stream: _postService.searchPosts(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Center(child: Text('Error loading results'));
         }
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return ListView.builder(
+            padding: const EdgeInsets.all(15),
+            itemCount: 5,
+            itemBuilder: (context, _) => const PostCardLoading(),
+          );
         }
 
         // match only whole words in description
@@ -118,27 +119,29 @@ class MySearchDelegate extends SearchDelegate<void> {
         }
     
         return Container(
-          color: const Color.fromARGB(77, 223, 218, 236),
+          color: const Color(0xFFF7F7F7),
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
             itemCount: matchedPosts.length,
             itemBuilder: (context, index) {
               DocumentSnapshot postData = matchedPosts[index];
+              String uid = postData["uid"];
 
               return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(postData['uid'])
-                    .get(),
+                future: _postService.getPublisherByID(uid),
                 builder: (context, snapshot) {
-                  if (snapshot.hasError) return const SizedBox.shrink();
-                  if (!snapshot.hasData) return const SizedBox.shrink();
-                      
-                  Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
-                  return PostCard(
-                    publisherData: publisherData,
-                    postData: postData,
-                  );
+                  if (snapshot.hasError) return Text("Error");
+
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    Map<String, dynamic> publisherData = snapshot.data!.data() as Map<String, dynamic>;
+
+                    return PostCard(
+                      publisherData: publisherData,
+                      postData: postData,
+                    );
+                  }
+
+                  return const PostCardLoading();
                 },
               );
             },
