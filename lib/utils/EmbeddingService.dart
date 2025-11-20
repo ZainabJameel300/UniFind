@@ -12,7 +12,7 @@ class EmbeddingService {
       // Decide the server URL based on the platform
       final String baseUrl = Platform.isAndroid
           ? 'http://10.0.2.2:5001' // Android Emulator
-          : 'http://192.168.1.3:5001'; // IOS Emulator
+          : 'http://127.0.0.1:5001'; // IOS Emulator
 
       final uri = Uri.parse('$baseUrl/generate_embedding');
 
