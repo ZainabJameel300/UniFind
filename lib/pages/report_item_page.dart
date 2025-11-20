@@ -69,7 +69,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
     "S4-Food Court",
     "S40-IT College",
     "S41-Science College",
-    "S47-Sciance and IT Library",
+    "S47-Science and IT Library",
     "S48-Class Rooms",
     "S50-Khunji Hall",
     "S51-Food Court",
@@ -177,19 +177,16 @@ class _ReportItemPageState extends State<ReportItemPage> {
       // Create Firestore document data
       //  request embedding from Flask using descreption + image
       //send the descreption and the image Url to the EmbeddingService Method
-      List<double>? embedding;
+      //  Request embeddings (text + image) from Flask
+      Map<String, List<double>>? embeddings;
       try {
-        embedding = await EmbeddingService.fetchEmbeddingFromServer(
+        embeddings = await EmbeddingService.fetchEmbeddingFromServer(
           description: desccontroller.text.trim(),
           imageUrl: imageUrl,
         );
       } catch (e) {
-        // If embedding fetch fails, you can decide:
-        // - proceed without embedding (set null),
-        // - or show error and stop submission.
-        // I'll proceed without embedding but log the error.
         print('Embedding fetch error: $e');
-        embedding = null;
+        embeddings = null;
       }
 
       // Create postData; include embedding if available
@@ -205,26 +202,35 @@ class _ReportItemPageState extends State<ReportItemPage> {
         "title": titlecontroller.text.trim(),
         "type": type,
         "uid": user.uid,
-        "embedding": embedding,
+        "embedding_text": embeddings?["textEmbedding"],
+        "embedding_image": embeddings?["imageEmbedding"],
+        "embedding_combined": embeddings?["combinedEmbedding"],
       };
 
       // Save post to Firestore
       await docRef.set(postData);
 
-      //  Send embedding to Flask ---
+      //  Send embeddings to Flask to find matches
       List<MatchItem> matchItems = [];
-      if (embedding != null) {
+      if (embeddings != null) {
         try {
-          // Decide the server URL based on the platform
           final String baseUrl = Platform.isAndroid
-              ? 'http://10.0.2.2:5001' // Android Emulator
-              : 'http://192.168.1.3:5001'; // IOS Emulator
+              ? 'http://10.0.2.2:5001'
+              : 'http://192.168.1.3:5001';
+
+          // Decide what to send to server:
+          // if post has image → send combined, else → send text
+          final bool hasImage = imageUrl.isNotEmpty;
+          final List<double> embeddingToSend = hasImage
+              ? (embeddings["combinedEmbedding"] ?? [])
+              : (embeddings["textEmbedding"] ?? []);
 
           final response = await http.post(
             Uri.parse('$baseUrl/find_matches'),
             headers: {"Content-Type": "application/json"},
             body: jsonEncode({
-              "embedding": embedding,
+              "embedding": embeddingToSend,
+              "has_image": hasImage,
               "uid": user.uid,
               "type": type,
               "postID": docRef.id,

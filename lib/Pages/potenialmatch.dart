@@ -244,11 +244,7 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                       ),
 
                                       // Title
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 8,
-                                          top: 8,
-                                        ),
+                                      Center(
                                         child: Text(
                                           match.title,
                                           maxLines: 1,
@@ -261,13 +257,13 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                         ),
                                       ),
 
-                                      // Date & Location
+                                      // Date
                                       Padding(
                                         padding: const EdgeInsets.fromLTRB(
                                           8,
                                           10,
                                           8,
-                                          8,
+                                          4,
                                         ),
                                         child: Row(
                                           children: [
@@ -276,20 +272,34 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                               size: 14,
                                               color: Color(0xFFD0B1DB),
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 6),
                                             Text(
                                               formattedDate,
                                               style: const TextStyle(
                                                 fontSize: 12,
                                               ),
                                             ),
-                                            const SizedBox(width: 12),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(height: 5),
+
+                                      // Location
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          8,
+                                          0,
+                                          8,
+                                          8,
+                                        ),
+                                        child: Row(
+                                          children: [
                                             const Icon(
                                               Symbols.location_on,
                                               size: 14,
                                               color: Color(0xFFD0B1DB),
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 6),
                                             Expanded(
                                               child: Text(
                                                 match.location,

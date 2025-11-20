@@ -47,11 +47,10 @@ class ImageBottomSheet {
                     ),
                   ),
                 ),
-                SizedBox(height: 25),
+                SizedBox(height: 10),
                 // X for exiting the sheet and title
                 Row(
                   children: [
-                    // close button
                     IconButton(
                       icon: const Icon(
                         Icons.close,

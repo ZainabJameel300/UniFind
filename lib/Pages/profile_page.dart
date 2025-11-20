@@ -511,7 +511,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           children: [
                             Icon(
                               Symbols.logout,
-                              color: Color(0xFF771F98),
+                              color: Colors.red,
                               size: 30,
                               weight: 450,
                             ),

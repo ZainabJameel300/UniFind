@@ -189,6 +189,8 @@ class _AccountPageState extends State<AccountPage> {
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w300),
               ),
               SizedBox(height: 20),
+              //------------------------Lost Items------------------
+              //----------------------------------------------------
               //Lost Items
               Padding(
                 padding: const EdgeInsets.only(left: 10),
@@ -208,15 +210,53 @@ class _AccountPageState extends State<AccountPage> {
 
                   if (snapshot.hasError) {
                     return Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text("Error: ${snapshot.error}"),
+                      padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 30),
+                          Icon(
+                            Symbols.camera_alt_rounded,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            "Something went wrong, please try again later!",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF771F98),
+                            ),
+                          ),
+                          SizedBox(height: 30),
+                        ],
+                      ),
                     );
                   }
 
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Text("No lost items reported yet."),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 30),
+                          Icon(
+                            Symbols.camera_alt_rounded,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            "No Lost items reported yet!",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF771F98),
+                            ),
+                          ),
+                          SizedBox(height: 30),
+                        ],
+                      ),
                     );
                   }
 
@@ -230,7 +270,7 @@ class _AccountPageState extends State<AccountPage> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: 0.73,
+                          childAspectRatio: 0.72,
                         ),
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
@@ -257,6 +297,122 @@ class _AccountPageState extends State<AccountPage> {
                         title: title,
                         date: formattedDate,
                         status: statusText,
+                        postID: data['postID'],
+                      );
+                    },
+                  );
+                },
+              ),
+              SizedBox(height: 20),
+              //------------------------Found Items------------------
+              //----------------------------------------------------
+              //Found Items
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Text(
+                  "Found",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                ),
+              ),
+              SizedBox(height: 8),
+
+              StreamBuilder<QuerySnapshot>(
+                stream: getFoundPosts(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 30),
+                          Icon(
+                            Symbols.camera_alt_rounded,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            "Something went wrong , please try again later!",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF771F98),
+                            ),
+                          ),
+                          SizedBox(height: 30),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 30),
+                          Icon(
+                            Symbols.camera_alt_rounded,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            "No Found items reported yet!",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF771F98),
+                            ),
+                          ),
+                          SizedBox(height: 30),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final docs = snapshot.data!.docs;
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.72,
+                        ),
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      final data = docs[index].data() as Map<String, dynamic>;
+
+                      final imageUrl = (data['picture'] ?? "").toString();
+                      final title = data['title'] ?? "";
+
+                      final bool claimStatus =
+                          (data['claim_status'] ?? false) == true;
+                      final statusText = claimStatus ? "Claimed" : "Unclaimed";
+
+                      DateTime createdAt;
+                      if (data['createdAt'] is Timestamp) {
+                        createdAt = (data['createdAt'] as Timestamp).toDate();
+                      } else {
+                        createdAt = DateTime.now();
+                      }
+                      final formattedDate =
+                          "${createdAt.day}/${createdAt.month}/${createdAt.year}";
+
+                      return ItemCard(
+                        imageUrl: imageUrl,
+                        title: title,
+                        date: formattedDate,
+                        status: statusText,
+                        postID: data['postID'],
                       );
                     },
                   );
