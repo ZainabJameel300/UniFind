@@ -11,7 +11,6 @@ import 'package:unifind/Components/app_button.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/post_actions.dart';
-import 'package:unifind/Components/show_snackbar.dart';
 import 'package:unifind/Pages/potenialmatch.dart';
 import 'package:unifind/utils/date_formats.dart';
 import 'package:unifind/pages/chat_page.dart';
@@ -25,7 +24,7 @@ class ViewPostEdit extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: MyAppbar(title: "View Post Edit"),
+      appBar: MyAppbar(title: "View Post"),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('posts')
@@ -171,7 +170,7 @@ class ViewPostEdit extends StatelessWidget {
                                   },
                                   onViewMatches: () async {
                                     try {
-                                      // --- 1) Read embedding fields from Firestore ---
+                                      // 1) Read embedding fields from Firestore
                                       final List<dynamic>? textEmb =
                                           postData["embedding_text"];
                                       final List<dynamic>? imageEmb =
@@ -188,7 +187,7 @@ class ViewPostEdit extends StatelessWidget {
                                       List<double>? embeddingToSend;
 
                                       if (hasImage) {
-                                        // Both sides have images → we want combined embeddings
+                                        // Both sides have images --> we want combined embeddings
                                         if (combinedEmb == null) {
                                           ScaffoldMessenger.of(
                                             context,
@@ -204,7 +203,7 @@ class ViewPostEdit extends StatelessWidget {
                                         embeddingToSend = combinedEmb
                                             .cast<double>();
                                       } else {
-                                        // No image → send text-only embedding
+                                        // No image --> send text-only embedding
                                         if (textEmb == null) {
                                           ScaffoldMessenger.of(
                                             context,
@@ -232,7 +231,7 @@ class ViewPostEdit extends StatelessWidget {
                                         return;
                                       }
 
-                                      // --- 2) Prepare payload for Flask ---
+                                      // 2) Prepare payload for Flask ---
                                       final user =
                                           FirebaseAuth.instance.currentUser!;
                                       final Timestamp lostTS = postData["date"];
@@ -250,7 +249,7 @@ class ViewPostEdit extends StatelessWidget {
                                         },
                                       };
 
-                                      // --- 3) Send request to Flask server ---
+                                      // 3) Send request to Flask server
                                       final String baseUrl = Platform.isAndroid
                                           ? 'http://10.0.2.2:5001'
                                           : 'http://192.168.1.3:5001';
@@ -280,7 +279,7 @@ class ViewPostEdit extends StatelessWidget {
                                         return;
                                       }
 
-                                      // --- 4) Parse matches ---
+                                      //  4) Parse matches (recive respone from json and decode into a dart list )
                                       final data = jsonDecode(response.body);
                                       List matches = data["matches"] ?? [];
 
@@ -288,7 +287,7 @@ class ViewPostEdit extends StatelessWidget {
                                           .map((m) => MatchItem.fromJson(m))
                                           .toList();
 
-                                      // --- 5) Navigate to PotentialMatch page ---
+                                      //  5) Navigate to PotentialMatch page to show the results
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -314,7 +313,7 @@ class ViewPostEdit extends StatelessWidget {
                                   onDeletePost: () {
                                     showDialog(
                                       context: context,
-                                      builder: (context) => AlertDialog(
+                                      builder: (dialogContext) => AlertDialog(
                                         backgroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(
@@ -345,79 +344,58 @@ class ViewPostEdit extends StatelessWidget {
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              // Cancel button
                                               TextButton(
-                                                onPressed: () =>
-                                                    Navigator.pop(context),
-                                                style: TextButton.styleFrom(
-                                                  foregroundColor:
-                                                      Colors.black87,
-                                                  backgroundColor: const Color(
-                                                    0xFFF3F3F3,
-                                                  ),
-
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                  ),
+                                                onPressed: () => Navigator.pop(
+                                                  dialogContext,
                                                 ),
                                                 child: const Text("Cancel"),
                                               ),
 
-                                              const SizedBox(width: 15),
+                                              SizedBox(width: 15),
 
-                                              // DELETE button
                                               TextButton(
                                                 onPressed: () async {
-                                                  Navigator.pop(
+                                                  //  Close dialog
+                                                  Navigator.pop(dialogContext);
+
+                                                  // Immediately navigate back to AccountPage to avoid bad state
+                                                  Navigator.pushReplacementNamed(
                                                     context,
-                                                  ); // close dialog
+                                                    'AccountPage',
+                                                  );
 
-                                                  try {
-                                                    //  Delete image from Firebase Storage (if exists)
-                                                    if (pic.isNotEmpty) {
-                                                      final ref =
-                                                          FirebaseStorage
-                                                              .instance
-                                                              .refFromURL(pic);
-                                                      await ref.delete();
-                                                    }
+                                                  // After navigation finishes, delete the post , delay a little bit!
+                                                  Future.delayed(
+                                                    Duration(milliseconds: 250),
+                                                    () async {
+                                                      try {
+                                                        if (pic.isNotEmpty) {
+                                                          final ref =
+                                                              FirebaseStorage
+                                                                  .instance
+                                                                  .refFromURL(
+                                                                    pic,
+                                                                  );
+                                                          await ref.delete();
+                                                        }
 
-                                                    //  Delete post document
-                                                    await FirebaseFirestore
-                                                        .instance
-                                                        .collection("posts")
-                                                        .doc(postID)
-                                                        .delete();
-
-                                                    //  Go back after deletion
-                                                    Navigator.pop(context);
-
-                                                    //  Show snackbar
-                                                    showSnackBar(
-                                                      context,
-                                                      "Post deleted successfully!",
-                                                    );
-                                                  } catch (e) {
-                                                    showSnackBar(
-                                                      context,
-                                                      "Failed to delete post.",
-                                                    );
-                                                    print("Delete error: $e");
-                                                  }
+                                                        await FirebaseFirestore
+                                                            .instance
+                                                            .collection("posts")
+                                                            .doc(postID)
+                                                            .delete();
+                                                      } catch (e) {
+                                                        print(
+                                                          "Error deleting post: $e",
+                                                        );
+                                                      }
+                                                    },
+                                                  );
                                                 },
                                                 style: TextButton.styleFrom(
                                                   foregroundColor: Colors.white,
                                                   backgroundColor: Color(
                                                     0xFF771F98,
-                                                  ),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
                                                   ),
                                                 ),
                                                 child: const Text("Delete"),
@@ -443,7 +421,7 @@ class ViewPostEdit extends StatelessWidget {
                       height: 1,
                     ),
 
-                    if (pic.isNotEmpty && type == "Lost" || isCurrentUser)
+                    if (pic.isNotEmpty)
                       GestureDetector(
                         onTap: () {
                           Navigator.push(

@@ -37,30 +37,38 @@ class ItemCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Image
-            if (imageUrl.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
-                child: GestureDetector(
-                  onTap: () {
+            Padding(
+              padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
+              child: GestureDetector(
+                onTap: () {
+                  if (imageUrl.isNotEmpty) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => FullScreenImage(imageUrl: imageUrl),
                       ),
                     );
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      imageUrl,
-                      width: double.infinity,
-                      height: 150,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                  }
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          width: double.infinity,
+                          height: 150,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset(
+                          "assets/no-pictures.png",
+                          width: double.infinity,
+                          height: 150,
+                          fit: BoxFit.cover,
+                          color: Colors.grey[200],
+                        ),
                 ),
               ),
-
+            ),
             SizedBox(height: 10),
 
             // Title
@@ -126,6 +134,7 @@ class ItemCard extends StatelessWidget {
                 ],
               ),
             ),
+            SizedBox(height: 15),
           ],
         ),
       ),

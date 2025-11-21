@@ -134,7 +134,7 @@ def find_matches():
                 print("Error parsing selected_date:", e)
                 selected_date = None
 
-        # IMPORTANT FIX — MUST BE OUTSIDE THE EXCEPT
+        # IMPORTANT FIX 
         candidates = []
 
         # ---------------------------

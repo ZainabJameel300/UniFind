@@ -262,16 +262,17 @@ class _AccountPageState extends State<AccountPage> {
 
                   final docs = snapshot.data!.docs;
 
+                  // Use a regular GridView so tiles have fixed layout/ratio
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.72,
-                        ),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio:
+                          0.72, // adjust to make cards slightly taller/shorter
+                    ),
                     itemCount: docs.length,
                     itemBuilder: (context, index) {
                       final data = docs[index].data() as Map<String, dynamic>;
@@ -377,6 +378,7 @@ class _AccountPageState extends State<AccountPage> {
 
                   final docs = snapshot.data!.docs;
 
+                  // Use regular GridView for Found items as well
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),

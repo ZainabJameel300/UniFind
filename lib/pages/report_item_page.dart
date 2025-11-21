@@ -69,7 +69,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
     "S4-Food Court",
     "S40-IT College",
     "S41-Science College",
-    "S47-Science and IT Library",
+    "S47-Sciance and IT Library",
     "S48-Class Rooms",
     "S50-Khunji Hall",
     "S51-Food Court",
