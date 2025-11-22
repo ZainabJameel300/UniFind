@@ -96,8 +96,11 @@ def generate_embedding():
 # -------------------------------------------------------
 # Find matches route
 # -------------------------------------------------------
+# -------------------------------------------------------
+# Find matches route
+# -------------------------------------------------------
 @app.route("/find_matches", methods=["POST"])
-def find_matches_robust():
+def find_matches_filtered():
     try:
         data = request.get_json()
         caller_emb = np.array(data.get("embedding", []))
@@ -105,16 +108,20 @@ def find_matches_robust():
         current_uid = data.get("uid", "")
         post_type = data.get("type", "")
         post_id = data.get("postID", "")
+        selected_location = data.get("location", None)
         selected_date_raw = data.get("date", None)
 
         if caller_emb.size == 0 or not current_uid or post_type not in ("Lost", "Found"):
             return jsonify({"error": "Invalid request"}), 400
 
-        # Determine opposite post type
+        # ----------------------------
+        # Determine opposite type to search
+        # ----------------------------
         target_type = "Lost" if post_type == "Found" else "Found"
-        docs = db.collection("posts").where("type", "==", target_type).get()
+        posts_ref = db.collection("posts").where("type", "==", target_type)
+        docs = posts_ref.get()
 
-        # Convert selected date from Firestore timestamp
+        # Convert selected date if provided
         selected_date = None
         if selected_date_raw:
             try:
@@ -128,30 +135,48 @@ def find_matches_robust():
         for doc in docs:
             post = doc.to_dict()
 
-            # Skip same user or claimed posts
-            if post.get("uid") == current_uid or post.get("claim_status") is True:
+            # ----------------------------
+            # Apply agreed filters
+            # ----------------------------
+            # 1. Skip posts by same user
+            if post.get("uid") == current_uid:
                 continue
 
-            # Date filter ±2 days
+            # 2. Skip claimed posts
+            if post.get("claim_status") is True:
+                continue
+
+            # 3. Filter by location (if provided)
+            if selected_location and post.get("location") != selected_location:
+                continue
+
+            # 4. Filter by date ±2 days (if provided) — FIXED
             if selected_date and post.get("date"):
                 post_date = post["date"]
                 if hasattr(post_date, "to_datetime"):
                     post_date = post_date.to_datetime()
+
+                # Convert both to naive datetimes
                 if post_date.tzinfo is not None:
                     post_date = post_date.astimezone().replace(tzinfo=None)
-                selected_date_naive = selected_date
+                selected_date_naive = selected_date.replace(tzinfo=None)
+
+                # Zero out time
                 post_date = post_date.replace(hour=0, minute=0, second=0, microsecond=0)
                 selected_date_naive = selected_date_naive.replace(hour=0, minute=0, second=0, microsecond=0)
+
                 if abs((post_date - selected_date_naive).days) > 2:
                     continue
 
-            text_emb = post.get("embedding_text")
-            image_emb = post.get("embedding_image") or []
-            combined_emb = post.get("embedding_combined") or text_emb
-            if not text_emb:
+            # Skip posts without embeddings
+            if "embedding_text" not in post:
                 continue
 
+            text_emb = post["embedding_text"]
+            image_emb = post.get("embedding_image") or []
+            combined_emb = post.get("embedding_combined") or text_emb
             post["_has_image"] = bool(image_emb)
+
             candidates.append({
                 "data": post,
                 "text_emb": text_emb,
@@ -159,7 +184,9 @@ def find_matches_robust():
                 "combined_emb": combined_emb
             })
 
+        # ----------------------------
         # Cosine similarity helper
+        # ----------------------------
         def cosine(a, b):
             a, b = np.array(a), np.array(b)
             if np.linalg.norm(a) == 0 or np.linalg.norm(b) == 0:
@@ -171,27 +198,27 @@ def find_matches_robust():
             post = cand["data"]
             post_has_image = post.get("_has_image", False)
 
-            #The NEW LOGIC:
-            # - if both have images → use weighted combined
-            # - else → text-only similarity
             if caller_has_image and post_has_image:
                 ref_emb = cand["combined_emb"]
                 similarity = cosine(caller_emb, ref_emb)
             else:
-                # Compare text embeddings only
                 similarity = cosine(caller_emb, cand["text_emb"])
 
             post["similarity_score"] = similarity
             matches.append(post)
 
-        # Filter and sort top matches
+        # ----------------------------
+        # Filter top matches (similarity >= 0.75)
+        # ----------------------------
         top_matches = sorted(
-            [m for m in matches if m["similarity_score"] >= 0.75], 
+            [m for m in matches if m["similarity_score"] >= 0.75],
             key=lambda x: x["similarity_score"],
             reverse=True
         )[:4]
 
-        # Add notifications and print
+        # ----------------------------
+        # Add notifications
+        # ----------------------------
         for match in top_matches:
             try:
                 notification_ref = db.collection("notifications").document()
@@ -209,9 +236,9 @@ def find_matches_robust():
             except Exception as e:
                 print(f"Notification error for {match['postID']}: {e}")
 
-        print(f"{len(top_matches)} notifications added successfully!")
-
+        # ----------------------------
         # Return matches
+        # ----------------------------
         response = [{
             "postID": m.get("postID"),
             "uid": m.get("uid"),
@@ -226,9 +253,8 @@ def find_matches_robust():
         return jsonify({"matches": response}), 200
 
     except Exception as e:
-        print("Error in robust find_matches:", e)
+        print("Error in find_matches_filtered:", e)
         return jsonify({"error": str(e)}), 500
-
 
 # -------------------------------------------------------
 # Run the Flask app

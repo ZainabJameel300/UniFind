@@ -78,6 +78,8 @@ class ImageBottomSheet {
                 _bottomOption(
                   icon: Symbols.photo_camera,
                   label: "Camera",
+                  iconColor: Color(0xFF771F98),
+                  textColor: Colors.black87,
                   onTap: () async {
                     final picked = await picker.pickImage(
                       source: ImageSource.camera,
@@ -95,6 +97,8 @@ class ImageBottomSheet {
                 _bottomOption(
                   icon: Symbols.image,
                   label: "Gallery",
+                  iconColor: Color(0xFF771F98),
+                  textColor: Colors.black87,
                   onTap: () async {
                     final picked = await picker.pickImage(
                       source: ImageSource.gallery,
@@ -112,6 +116,8 @@ class ImageBottomSheet {
                   _bottomOption(
                     icon: Symbols.delete,
                     label: "Delete Image",
+                    iconColor: Colors.red,
+                    textColor: Colors.red,
                     onTap: () {
                       Navigator.pop(context, null);
                       if (onDelete != null) onDelete();
@@ -129,6 +135,8 @@ class ImageBottomSheet {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    required Color iconColor,
+    required Color textColor,
   }) {
     return InkWell(
       onTap: onTap,
@@ -139,14 +147,14 @@ class ImageBottomSheet {
         padding: const EdgeInsets.symmetric(horizontal: 18),
         child: Row(
           children: [
-            Icon(icon, color: Color(0xFF771F98), size: 26),
+            Icon(icon, color: iconColor, size: 26),
             const SizedBox(width: 18),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: Colors.black87,
+                color: textColor,
               ),
             ),
           ],
