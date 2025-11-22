@@ -75,7 +75,6 @@ class _PotenialmatchState extends State<Potenialmatch> {
       // Wrap body with a Stack so we can overlay the floating message
       body: Stack(
         children: [
-          // existing body content (empty state or grid)
           widget.matchItems.isEmpty
               ? const EmptyStateWidget(
                   icon: Symbols.empty_dashboard,
@@ -135,58 +134,65 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                 ts,
                               );
 
-                          return GestureDetector(
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ViewPost(postID: match.postID),
-                              ),
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(
-                                  color: const Color(0xFFE0D9E6),
-                                  width: 1.5,
+                              return GestureDetector(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ViewPost(postID: match.postID),
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Top bar: avatar + name
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      8,
-                                      8,
-                                      8,
-                                      0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border.all(
+                                      color: Color(0xFFE6E6E6),
+                                      width: 1.7,
                                     ),
-                                    child: Row(
-                                      children: [
-                                        UserAvatar(avatarUrl: avatar, radius: 16),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            name,
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Color(
+                                          0xFF771F98,
+                                        ).withValues(alpha: 0.1),
+                                        blurRadius: 20,
+                                        offset: const Offset(1, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Top bar: avatar + name
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          8,
+                                          8,
+                                          8,
+                                          0,
                                         ),
-                                      ],
-                                    ),
-                                  ),
+                                        child: Row(
+                                          children: [
+                                            UserAvatar(
+                                              avatarUrl: avatar,
+                                              radius:
+                                                  16, // keeps size consistent
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text(
+                                                name,
+                                                style: const TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
 
                                       // Divider
                                       Padding(
@@ -203,25 +209,36 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                       Padding(
                                         padding: const EdgeInsets.all(6),
                                         child: GestureDetector(
-                                          onTap: () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  FullScreenImage(
-                                                    imageUrl: match.picture,
-                                                  ),
-                                            ),
-                                          ),
+                                          onTap: () {
+                                            if (match.picture.isNotEmpty) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      FullScreenImage(
+                                                        imageUrl: match.picture,
+                                                      ),
+                                                ),
+                                              );
+                                            }
+                                          },
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
                                               6,
                                             ),
-                                            child: Image.network(
-                                              match.picture,
-                                              width: double.infinity,
-                                              height: 100,
-                                              fit: BoxFit.cover,
-                                            ),
+                                            child: match.picture.isNotEmpty
+                                                ? Image.network(
+                                                    match.picture,
+                                                    width: double.infinity,
+                                                    height: 100,
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : Image.asset(
+                                                    "assets/no-pictures.png",
+                                                    width: double.infinity,
+                                                    height: 100,
+                                                    fit: BoxFit.cover,
+                                                  ),
                                           ),
                                         ),
                                       ),
@@ -229,8 +246,7 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                       // Title
                                       Padding(
                                         padding: const EdgeInsets.only(
-                                          left: 8,
-                                          top: 8,
+                                          left: 10,
                                         ),
                                         child: Text(
                                           match.title,
@@ -244,13 +260,13 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                         ),
                                       ),
 
-                                      // Date & Location
+                                      // Date
                                       Padding(
                                         padding: const EdgeInsets.fromLTRB(
                                           8,
                                           10,
                                           8,
-                                          8,
+                                          4,
                                         ),
                                         child: Row(
                                           children: [
@@ -259,20 +275,34 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                               size: 14,
                                               color: Color(0xFFD0B1DB),
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 6),
                                             Text(
                                               formattedDate,
                                               style: const TextStyle(
                                                 fontSize: 12,
                                               ),
                                             ),
-                                            const SizedBox(width: 12),
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(height: 5),
+
+                                      // Location
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          8,
+                                          0,
+                                          8,
+                                          8,
+                                        ),
+                                        child: Row(
+                                          children: [
                                             const Icon(
                                               Symbols.location_on,
                                               size: 14,
                                               color: Color(0xFFD0B1DB),
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 6),
                                             Expanded(
                                               child: Text(
                                                 match.location,
@@ -299,35 +329,36 @@ class _PotenialmatchState extends State<Potenialmatch> {
                 ),
 
           //Message "Not what you're looking for?"
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 180,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5ECFA),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(1, 2),
+          if (widget.matchItems.isNotEmpty)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 182,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Not what you're looking for?",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF771F98),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    "You'll get notified when new matches are found.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ],
               ),
-              child: const Text(
-                "Not what you're looking for?\nYou'll get notified when any of your items get matched!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF771F98),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  height: 2,
-                ),
-              ),
             ),
-          ),
         ],
       ),
     );

@@ -24,6 +24,22 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
+  String _getErrorMessage(String code) {
+    switch (code) {
+      case "invalid-credential":
+      case "wrong-password":
+        return "Incorrect email or password. Please try again.";
+      case "user-not-found":
+        return "No account found with this email.";
+      case "invalid-email":
+        return "Invalid email format.";
+      case "too-many-requests":
+        return "Too many attempts. Please try again later.";
+      default:
+        return "Something went wrong. Please try again.";
+    }
+  }
+
   Future<void> login() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -50,6 +66,8 @@ class _LoginState extends State<Login> {
 
       //if there's an error show the diaoulge box
     } on FirebaseAuthException catch (e) {
+      FocusScope.of(context).unfocus(); //closes the keyboard
+      final String message = _getErrorMessage(e.code);
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -67,10 +85,7 @@ class _LoginState extends State<Login> {
               ),
             ],
           ),
-          content: Text(
-            "Error: ${e.code}",
-            style: const TextStyle(fontSize: 16),
-          ),
+          content: Text(message, style: const TextStyle(fontSize: 16)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),

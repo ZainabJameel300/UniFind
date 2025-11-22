@@ -4,11 +4,11 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/image_bottomsheet.dart';
+import 'package:unifind/Components/label.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/my_button.dart';
-import 'package:unifind/Components/label.dart';
 import 'package:unifind/Components/report_item_textfield.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -88,34 +88,47 @@ class _ReportItemPageState extends State<ReportItemPage> {
   String? _imageError;
 
   void _showDatePicker() {
+    final today = DateTime.now();
+
     showDatePicker(
       context: context,
+      initialDate: selectedDate ?? today,
       firstDate: DateTime(2010),
-      lastDate: DateTime(2030),
+      lastDate: DateTime(today.year, today.month, today.day),
+      helpText: "Select date",
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(primary: Color(0xFF771F98)),
+          ),
+          child: child!,
+        );
+      },
     ).then((value) {
-      setState(() {
-        selectedDate = value;
-        _dateError = null;
-      });
+      if (value != null) {
+        setState(() {
+          selectedDate = value;
+          _dateError = null;
+        });
+      }
     });
   }
 
   File? _image;
 
-  final ImagePicker _picker =
-      ImagePicker(); // this line baiscally builds an instance of the image picker
+  // final ImagePicker _picker =
+  //     ImagePicker(); // this line baiscally builds an instance of the image picker
 
-  Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery, // or ImageSource.camera
-      maxWidth: 800,
-      maxHeight: 800,
+  Future<void> _pickImageFromSheet() async {
+    final File? pickedFile = await ImageBottomSheet.show(
+      context: context,
+      title: "Upload Photo",
+      showDelete: false,
     );
 
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path);
-        _imageError = null;
+        _image = pickedFile;
       });
     }
   }
@@ -164,19 +177,16 @@ class _ReportItemPageState extends State<ReportItemPage> {
       // Create Firestore document data
       //  request embedding from Flask using descreption + image
       //send the descreption and the image Url to the EmbeddingService Method
-      List<double>? embedding;
+      //  Request embeddings (text + image) from Flask
+      Map<String, List<double>>? embeddings;
       try {
-        embedding = await EmbeddingService.fetchEmbeddingFromServer(
+        embeddings = await EmbeddingService.fetchEmbeddingFromServer(
           description: desccontroller.text.trim(),
           imageUrl: imageUrl,
         );
       } catch (e) {
-        // If embedding fetch fails, you can decide:
-        // - proceed without embedding (set null),
-        // - or show error and stop submission.
-        // I'll proceed without embedding but log the error.
         print('Embedding fetch error: $e');
-        embedding = null;
+        embeddings = null;
       }
 
       // Create postData; include embedding if available
@@ -192,26 +202,54 @@ class _ReportItemPageState extends State<ReportItemPage> {
         "title": titlecontroller.text.trim(),
         "type": type,
         "uid": user.uid,
-        "embedding": embedding,
+        "embedding_text": embeddings?["textEmbedding"],
+        "embedding_image": embeddings?["imageEmbedding"],
+        "embedding_combined": embeddings?["combinedEmbedding"],
       };
 
       // Save post to Firestore
       await docRef.set(postData);
 
-      //  Send embedding to Flask ---
+      //  Send embeddings to Flask to find matches
       List<MatchItem> matchItems = [];
-      if (embedding != null) {
+      if (embeddings != null) {
         try {
-          // Decide the server URL based on the platform
           final String baseUrl = Platform.isAndroid
               ? 'http://10.0.2.2:5001' // Android Emulator
-              : 'http://127.0.0.1:5001'; // IOS Emulator
+              : 'http://127.0.0.1:5001'; // IOS Emulator;
+
+          // Decide what to send to server:
+          // if post has image → send combined, else → send text
+          // Decide what to send to server based on TYPE + IMAGE
+          final bool postHasImage = imageUrl.isNotEmpty;
+          final String postType = type; // "Lost" or "Found"
+
+          late final List<double> embeddingToSend;
+          late final bool hasImageFlag;
+
+          if (postType == "Found") {
+            // FOUND → always text vs text, so send TEXT and lie: has_image = false
+            embeddingToSend = (embeddings["textEmbedding"] ?? []);
+            hasImageFlag = false;
+          } else {
+            // LOST
+            if (postHasImage) {
+              // Lost with image → combined vs combined
+              embeddingToSend = (embeddings["combinedEmbedding"] ?? []);
+              hasImageFlag = true;
+            } else {
+              // Lost without image → text vs text
+              embeddingToSend = (embeddings["textEmbedding"] ?? []);
+              hasImageFlag = false;
+            }
+          }
 
           final response = await http.post(
             Uri.parse('$baseUrl/find_matches'),
             headers: {"Content-Type": "application/json"},
             body: jsonEncode({
-              "embedding": embedding,
+              "embedding": embeddingToSend,
+              "has_image": hasImageFlag,
               "uid": user.uid,
               "type": type,
               "postID": docRef.id,
@@ -279,7 +317,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
               child: Column(
                 children: [
                   SizedBox(height: 30),
-                
+
                   //The toggle buttons
                   Center(
                     child: ToggleButtons(
@@ -319,7 +357,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     ),
                   ),
                   SizedBox(height: 25),
-                
+
                   // title label + red info icon for the found items only
                   Stack(
                     clipBehavior: Clip.none,
@@ -341,9 +379,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         ),
                     ],
                   ),
-                
+
                   SizedBox(height: 5),
-                
+
                   //title textfield
                   ReportItemTextfield(
                     hintText: "Enter a short title (e.g. Lost student ID card)",
@@ -361,7 +399,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     },
                   ),
                   SizedBox(height: 20),
-                
+
                   // Descreption label + red info icon for the found items only
                   Stack(
                     clipBehavior: Clip.none,
@@ -383,9 +421,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                         ),
                     ],
                   ),
-                
+
                   SizedBox(height: 5),
-                
+
                   //description textfield
                   ReportItemTextfield(
                     hintText: "Describe the item (e.g. color, size, brand..)",
@@ -403,17 +441,17 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     },
                   ),
                   SizedBox(height: 20),
-                
+
                   //category label
                   Label(text: "Category :"),
                   SizedBox(height: 5),
-                
+
                   //category drop down list
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 241, 241, 241),
                         border: Border.all(
                           color: const Color(0xFF771F98),
                           width: 2.5,
@@ -425,10 +463,11 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       padding: const EdgeInsets.only(left: 20, right: 10),
                       child: DropdownButtonFormField<String>(
                         value: selectedCategory,
+                        dropdownColor: Colors.white,
                         hint: const Text(
                           "Select a Category...",
                           style: TextStyle(
-                            color: Color.fromARGB(255, 198, 196, 196),
+                            color: Color.fromARGB(255, 158, 157, 157),
                           ),
                         ),
                         decoration: InputDecoration(
@@ -467,19 +506,19 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       ),
                     ),
                   ),
-                
+
                   SizedBox(height: 20),
-                
+
                   //Location Label
                   Label(text: "Location :"),
                   SizedBox(height: 5),
-                
+
                   //Location DropDownList
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Color.fromARGB(255, 241, 241, 241),
                         border: Border.all(
                           color: const Color(0xFF771F98),
                           width: 2.5,
@@ -491,10 +530,11 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       padding: const EdgeInsets.only(left: 20, right: 10),
                       child: DropdownButtonFormField<String>(
                         value: selectedlocation,
+                        dropdownColor: Colors.white,
                         hint: const Text(
                           "Select a Location...",
                           style: TextStyle(
-                            color: Color.fromARGB(255, 198, 196, 196),
+                            color: Color.fromARGB(255, 158, 157, 157),
                           ),
                         ),
                         decoration: InputDecoration(
@@ -533,13 +573,13 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       ),
                     ),
                   ),
-                
+
                   SizedBox(height: 20),
-                
+
                   //Date Label
                   Label(text: "Date :"),
                   SizedBox(height: 5),
-                
+
                   //Date Picker
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
@@ -548,7 +588,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Color.fromARGB(255, 241, 241, 241),
                             border: Border.all(
                               color: const Color(0xFF771F98),
                               width: 2.5,
@@ -596,30 +636,32 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     ),
                   ),
                   SizedBox(height: 20),
-                
+
                   //Upload a photo label
                   Label(text: "Uplaod a Photo :"),
                   SizedBox(height: 5),
-                
+
                   // Upload Photo
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: Stack(
                       children: [
                         GestureDetector(
-                          onTap: _pickImage,
+                          onTap: _pickImageFromSheet,
                           child: DottedBorder(
                             options: RoundedRectDottedBorderOptions(
                               radius: const Radius.circular(25),
-                              padding: const EdgeInsets.all(8),
                               color: const Color(0xFF771F98),
                               strokeWidth: 2.5,
                               dashPattern: [10, 5],
                             ),
                             child: Container(
-                              color: Colors.white,
                               height: 185,
                               width: 380,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(25),
+                                color: Color.fromARGB(255, 241, 241, 241),
+                              ),
                               child: _image == null
                                   ? const Center(
                                       child: Icon(
@@ -680,9 +722,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       ],
                     ),
                   ),
-                
+
                   SizedBox(height: 45),
-                
+
                   //Submit Button
                   MyButton(
                     text: "Submit",
@@ -697,12 +739,10 @@ class _ReportItemPageState extends State<ReportItemPage> {
                             : null;
                         if (selectedDate == null) {
                           _dateError = "Date is required!";
-                        } else if (selectedDate!.isAfter(DateTime.now())) {
-                          _dateError = "The Date cannot be in the future!";
                         } else {
                           _dateError = null;
                         }
-                
+
                         // Image error logic
                         if (type == "Found" && _image == null) {
                           setState(() {
@@ -714,7 +754,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                           });
                         }
                       });
-                
+
                       if (isValid &&
                           _categoryError == null &&
                           _locationError == null &&
@@ -725,7 +765,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       }
                     },
                   ),
-                
+
                   SizedBox(height: 50),
                 ],
               ),

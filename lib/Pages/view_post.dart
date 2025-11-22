@@ -9,7 +9,7 @@ import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/services/post_service.dart';
 import 'package:unifind/utils/date_formats.dart';
-import 'package:unifind/pages/chat_page.dart';
+import 'package:unifind/Pages/chat_page.dart';
 
 class ViewPost extends StatelessWidget {
   final String postID;
@@ -49,7 +49,7 @@ class ViewPost extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-    
+
           // post deleted or not found
           if (snapshot.hasData && !snapshot.data!.exists) {
             return const EmptyStateWidget(
@@ -58,7 +58,7 @@ class ViewPost extends StatelessWidget {
               subtitle: "This post has been deleted or no longer exists.",
             );
           }
-    
+
           final postDoc = snapshot.data!;
           return _buildView(context, postDoc, null);
         },
@@ -95,7 +95,8 @@ class ViewPost extends StatelessWidget {
     DocumentSnapshot<Object?> postData,
     Map<String, dynamic> publisherData,
   ) {
-    final bool isCurrentUser = postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
+    final bool isCurrentUser =
+        postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
     final String pubID = publisherData["uid"];
     final String pubName = publisherData["username"];
     final String name = isCurrentUser ? "You" : publisherData["username"];
@@ -218,7 +219,7 @@ class ViewPost extends StatelessWidget {
           ),
           const SizedBox(height: 6.0),
 
-          // Show description - only if current user is the publisher or Lost 
+          // Show description - only if current user is the publisher or Lost
           if (type == "Lost" || isCurrentUser)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -229,15 +230,21 @@ class ViewPost extends StatelessWidget {
             ),
           const SizedBox(height: 16.0),
 
-          // details 
+          // details
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              buildDetail(Symbols.calendar_today, DateFormats.formatLostDate(lostDate)),
+              buildDetail(
+                Symbols.calendar_today,
+                DateFormats.formatLostDate(lostDate),
+              ),
               buildDetail(Symbols.location_on, location),
               buildDetail(Symbols.sell, category),
-              buildDetail(Symbols.task_alt, statusText, valueColor: statusColor),
-
+              buildDetail(
+                Symbols.task_alt,
+                statusText,
+                valueColor: statusColor,
+              ),
             ],
           ),
           const Spacer(),
@@ -261,7 +268,6 @@ class ViewPost extends StatelessWidget {
                 ),
               ),
             ),
-
         ],
       ),
     );
@@ -279,7 +285,7 @@ Widget buildDetail(IconData icon, String value, {Color? valueColor}) {
             color: Colors.grey.shade200,
             shape: BoxShape.circle,
           ),
-          padding: const EdgeInsets.all(7), 
+          padding: const EdgeInsets.all(7),
           child: Icon(icon, color: const Color(0xFF771F98), size: 20),
         ),
         const SizedBox(width: 10),
@@ -287,8 +293,8 @@ Widget buildDetail(IconData icon, String value, {Color? valueColor}) {
           child: Text(
             value,
             style: TextStyle(
-              fontSize: 15, 
-              color: valueColor ??  Colors.grey.shade800,
+              fontSize: 15,
+              color: valueColor ?? Colors.grey.shade800,
               fontWeight: FontWeight.w500,
               height: 1.2,
             ),
@@ -298,4 +304,3 @@ Widget buildDetail(IconData icon, String value, {Color? valueColor}) {
     ),
   );
 }
-

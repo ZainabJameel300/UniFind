@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/badge_icon.dart';
 import 'package:unifind/Components/filters/filters_drawer.dart';
+import 'package:unifind/Pages/Account_page.dart';
 import 'package:unifind/pages/home_page.dart';
 import 'package:unifind/pages/keepers_page.dart';
 import 'package:unifind/pages/report_item_page.dart';
 import 'package:unifind/pages/chatrooms_page.dart';
-import 'package:unifind/pages/profile_page.dart';
 import 'package:unifind/services/chat_service.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -18,7 +18,7 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   final chatService = ChatService();
-  
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int selectedIndex = 0;
 
@@ -27,18 +27,16 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const KeepersPage(),
     Container(),
     const ChatroomsPage(),
-    const ProfilePage(),
+    const AccountPage(),
   ];
 
   void onTabTapped(int index) {
     if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => ReportItemPage(),
-        ),
+        MaterialPageRoute(builder: (context) => ReportItemPage()),
       );
-      return; 
+      return;
     }
 
     setState(() => selectedIndex = index);
@@ -55,10 +53,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border(
-            top: BorderSide(
-              color: Colors.black.withOpacity(0.08), 
-              width: 1,
-            ),
+            top: BorderSide(color: Colors.black.withOpacity(0.08), width: 1),
           ),
         ),
 
@@ -94,18 +89,13 @@ class _BottomNavBarState extends State<BottomNavBar> {
             BottomNavigationBarItem(
               label: "Add",
               icon: Container(
-                width: 40, 
+                width: 40,
                 height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.black.withOpacity(0.06), 
+                  color: Colors.black.withOpacity(0.06),
                 ),
-                child: Center(
-                  child: Icon(
-                    Symbols.add,
-                    size: 28, 
-                  ),
-                ),
+                child: Center(child: Icon(Symbols.add, size: 28)),
               ),
             ),
 

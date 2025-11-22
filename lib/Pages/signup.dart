@@ -20,30 +20,10 @@ class _SignupState extends State<Signup> {
       TextEditingController();
 
   String password = ""; // For password strenght indicator
-
-  int _passwordScore(String password) {
-    int score = 0;
-    if (password.length >= 8) score++;
-    if (password.contains(RegExp(r'[A-Z]'))) score++;
-    if (password.contains(RegExp(r'[a-z]'))) score++;
-    if (password.contains(RegExp(r'\d'))) score++;
-    if (password.contains(RegExp(r'[@$!%*?&._-]'))) score++;
-    return score; // returns 0–5
-  }
-
-  Color _strengthColor(int score) {
-    if (score <= 2) return Colors.red; // weak
-    if (score == 3) return const Color.fromARGB(255, 243, 119, 81); // medium
-    return Colors.green; // strong
-  }
-
-  String _strengthLabel(int score) {
-    if (score <= 2) return "Weak";
-    if (score == 3) return "Medium";
-    return "Strong";
-  }
+  bool hideRequirements = false; // to hide the password list later!
 
   bool obscureText = true;
+  bool obscureConfirm = true;
 
   @override
   void dispose() {
@@ -259,84 +239,84 @@ class _SignupState extends State<Signup> {
                       ),
                     ),
                   ),
-                  // Password strength indicator
                   Builder(
                     builder: (context) {
-                      final score = _passwordScore(password);
-                      if (password.isNotEmpty && !_isStrongPassword(password)) {
-                        return Column(
+                      bool hasUpper = password.contains(RegExp(r'[A-Z]'));
+                      bool hasLower = password.contains(RegExp(r'[a-z]'));
+                      bool hasNumber = password.contains(RegExp(r'\d'));
+                      bool hasSymbol = password.contains(
+                        RegExp(r'[@$!%*?&._-]'),
+                      );
+                      bool isLongEnough = password.length >= 8;
+
+                      // If nothing typed, reset and hide list
+                      if (password.isEmpty) {
+                        hideRequirements = false;
+                        return const SizedBox.shrink();
+                      }
+
+                      // All requirements met (NUMBER AND SYMBOL)
+                      bool allGood =
+                          isLongEnough &&
+                          hasUpper &&
+                          hasLower &&
+                          hasNumber &&
+                          hasSymbol;
+
+                      if (allGood) {
+                        if (!hideRequirements) {
+                          hideRequirements = true;
+
+                          Future.delayed(const Duration(seconds: 10), () {
+                            if (mounted) {
+                              setState(() {
+                                password = "";
+                                hideRequirements = false;
+                              });
+                            }
+                          });
+                        }
+                        return const SizedBox.shrink();
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          top: 8,
+                          left: 32,
+                          right: 32,
+                        ),
+                        child: Row(
                           children: [
-                            const SizedBox(height: 6),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                              ),
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 7,
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          child: LinearProgressIndicator(
-                                            value: score / 5,
-                                            minHeight: 6,
-                                            backgroundColor:
-                                                Colors.grey.shade300,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                  _strengthColor(score),
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Tooltip(
-                                        message:
-                                            "Password must contain:\n• At least 8 characters\n• Uppercase letter (A-Z)\n• Lowercase letter (a-z)\n• Number (0-9)\n• Symbol (@, #, !, _)",
-                                        decoration: BoxDecoration(
-                                          color: const Color.fromARGB(
-                                            221,
-                                            161,
-                                            159,
-                                            159,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        textStyle: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 13,
-                                        ),
-                                        child: const Icon(
-                                          Icons.info_outline,
-                                          size: 18,
-                                          color: Color(0xFF771F98),
-                                        ),
-                                      ),
-                                    ],
+                                  _reqItem(
+                                    "At least 8 characters",
+                                    isLongEnough,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _strengthLabel(score),
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: _strengthColor(score),
-                                    ),
+                                  const SizedBox(height: 6),
+                                  _reqItem("Uppercase letter (A-Z)", hasUpper),
+                                ],
+                              ),
+                            ),
+
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _reqItem("Lowercase letter (a-z)", hasLower),
+                                  const SizedBox(height: 6),
+                                  _reqItem(
+                                    "Number and Symbol",
+                                    hasNumber && hasSymbol,
                                   ),
                                 ],
                               ),
                             ),
                           ],
-                        );
-                      }
-                      return const SizedBox.shrink();
+                        ),
+                      );
                     },
                   ),
 
@@ -345,7 +325,7 @@ class _SignupState extends State<Signup> {
                   // Confirm Password Textfield
                   MyTextField(
                     hintText: 'Confirm Password',
-                    obscureText: true,
+                    obscureText: obscureConfirm,
                     controller: confirmpasswordController,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -356,6 +336,20 @@ class _SignupState extends State<Signup> {
                       }
                       return null;
                     },
+                    suffixIcon: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          obscureConfirm = !obscureConfirm;
+                        });
+                      },
+                      child: Icon(
+                        obscureConfirm
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                        color: const Color(0xFF771F98),
+                        size: 28,
+                      ),
+                    ),
                   ),
                   SizedBox(height: 40),
 
@@ -404,4 +398,27 @@ class _SignupState extends State<Signup> {
       ),
     );
   }
+}
+
+Widget _reqItem(String text, bool ok) {
+  return Row(
+    children: [
+      Icon(
+        ok ? Icons.check_circle : Icons.cancel,
+        size: 18,
+        color: ok ? Colors.green : Colors.red,
+      ),
+      const SizedBox(width: 6),
+      Expanded(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 13,
+            color: ok ? Colors.green : Colors.red,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    ],
+  );
 }

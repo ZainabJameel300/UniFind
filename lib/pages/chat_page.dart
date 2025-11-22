@@ -17,8 +17,8 @@ class ChatPage extends StatefulWidget {
   final String avatar;
 
   const ChatPage({
-    super.key, 
-    required this.receiverID,                                            
+    super.key,
+    required this.receiverID,
     required this.name,
     required this.avatar,
   });
@@ -70,7 +70,6 @@ class _ChatPageState extends State<ChatPage> {
         }
       });
     });
-
   }
 
   @override
@@ -93,10 +92,10 @@ class _ChatPageState extends State<ChatPage> {
   // send text
   Future<void> _sendTextMessage() async {
     if (_messageController.text.trim().isEmpty) return;
-    
+
     final text = _messageController.text.trim();
     _messageController.clear();
-    
+
     await chatService.sendMessage(widget.receiverID, text, 'text');
     scrollDown();
   }
@@ -108,7 +107,7 @@ class _ChatPageState extends State<ChatPage> {
     final file = _selectedImage!;
     final int timestamp = DateTime.now().millisecondsSinceEpoch;
     final String chatroomID = chatService.getChatroomID(widget.receiverID);
-    
+
     setState(() => _isUploading = true); // start loading
 
     final ref = FirebaseStorage.instance.ref().child(
@@ -133,22 +132,23 @@ class _ChatPageState extends State<ChatPage> {
     Timestamp lastMessageTime,
     Timestamp? myLastReadTime,
   ) async {
-    // skip if last message sent by current user 
+    // skip if last message sent by current user
     if (lastSenderId == currentUserID) return;
 
     final int lastMessageMs = lastMessageTime.millisecondsSinceEpoch;
     final int myReadMs = myLastReadTime?.millisecondsSinceEpoch ?? 0;
 
-    // skip if last message is already read 
-    if (lastMessageMs <= myReadMs || lastMessageMs <= _lastMarkedTimestamp) return;
-    if (_isMarkingRead) return; 
+    // skip if last message is already read
+    if (lastMessageMs <= myReadMs || lastMessageMs <= _lastMarkedTimestamp)
+      return;
+    if (_isMarkingRead) return;
 
     _isMarkingRead = true;
     try {
       await chatService.markAsReadUpTo(widget.receiverID, lastMessageTime);
-      _lastMarkedTimestamp = lastMessageMs; 
+      _lastMarkedTimestamp = lastMessageMs;
     } finally {
-      _isMarkingRead = false; 
+      _isMarkingRead = false;
     }
   }
 
@@ -165,46 +165,53 @@ class _ChatPageState extends State<ChatPage> {
               stream: chatService.getChatroomInfo(widget.receiverID),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return Expanded(child: const Center(child: Text("Error loading chat")));
+                  return Expanded(
+                    child: const Center(child: Text("Error loading chat")),
+                  );
                 }
-        
+
                 // chat room doesn't exist
-                if (!snapshot.hasData || !snapshot.data!.exists){ 
+                if (!snapshot.hasData || !snapshot.data!.exists) {
                   return Expanded(
                     child: ListView(
                       padding: const EdgeInsets.only(top: 10, bottom: 10),
                       children: [_buildSystemMessage()],
                     ),
-                  );             
+                  );
                 }
-        
+
                 final chatroomData = snapshot.data?.data() ?? {};
                 final lastSenderID = chatroomData['lastSender'] ?? "";
-                final Timestamp lastMsgTime = chatroomData['lastMsgTime'] ?? Timestamp.now();
+                final Timestamp lastMsgTime =
+                    chatroomData['lastMsgTime'] ?? Timestamp.now();
                 final lastReadMap = chatroomData['lastReadTime'] ?? {};
-                final Timestamp? receiverReadTime = lastReadMap[widget.receiverID];
+                final Timestamp? receiverReadTime =
+                    lastReadMap[widget.receiverID];
                 final Timestamp? myLastReadTime = lastReadMap[currentUserID];
-        
+
                 // mark as read when chatroom info update
                 _markAsReadIfNeeded(lastSenderID, lastMsgTime, myLastReadTime);
-        
+
                 return Expanded(
                   child: StreamBuilder(
                     stream: chatService.getMessages(widget.receiverID),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        return const Center(child: Text("Error loading messages"));
+                        return const Center(
+                          child: Text("Error loading messages"),
+                        );
                       }
-                
+
                       final messages = snapshot.data?.docs ?? [];
-        
+
                       // find current user last message read by other user
                       int? lastSeenIndex;
                       if (receiverReadTime != null) {
                         for (int i = messages.length - 1; i >= 0; i--) {
                           final msg = messages[i].data();
                           if (msg['senderId'] == currentUserID) {
-                            final msgTime = (msg['timestamp'] as Timestamp).toDate();
+                            final msgTime = (msg['timestamp'] as Timestamp)
+                                .toDate();
                             if (!msgTime.isAfter(receiverReadTime.toDate())) {
                               lastSeenIndex = i;
                               break;
@@ -212,25 +219,33 @@ class _ChatPageState extends State<ChatPage> {
                           }
                         }
                       }
-        
-                      // Build messages list 
+
+                      // Build messages list
                       List<Widget> messagesList = [];
                       DateTime? lastDay;
-                
+
                       for (int i = 0; i < messages.length; i++) {
                         final msg = messages[i].data();
-                        final DateTime time = msg['timestamp'].toDate() ?? DateTime.now();
-                        final bool isCurrentUser = msg['senderId'] == currentUserID;
+                        final DateTime time =
+                            msg['timestamp'].toDate() ?? DateTime.now();
+                        final bool isCurrentUser =
+                            msg['senderId'] == currentUserID;
                         final bool isLastSeen = (i == lastSeenIndex);
-        
+
                         // day header
-                        final DateTime messageDay = DateTime(time.year, time.month, time.day);
-                        final String dayLabel = DateFormats.formatDayHeader(time);
+                        final DateTime messageDay = DateTime(
+                          time.year,
+                          time.month,
+                          time.day,
+                        );
+                        final String dayLabel = DateFormats.formatDayHeader(
+                          time,
+                        );
                         if (lastDay == null || messageDay != lastDay) {
                           messagesList.add(_buildDateHeader(dayLabel));
                           lastDay = messageDay;
                         }
-        
+
                         messagesList.add(
                           ChatBubble(
                             message: msg['content'],
@@ -246,12 +261,15 @@ class _ChatPageState extends State<ChatPage> {
                       // 1. user is already near bottom
                       // 2. message was sent by the other user
                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (!_scrollController.hasClients || messages.isEmpty) return;
+                        if (!_scrollController.hasClients || messages.isEmpty)
+                          return;
 
                         final position = _scrollController.position;
-                        final atBottom = position.pixels >= position.maxScrollExtent - 100; 
+                        final atBottom =
+                            position.pixels >= position.maxScrollExtent - 100;
                         final lastMessage = messages.last.data();
-                        final isFromOtherUser = lastMessage['senderId'] != currentUserID;
+                        final isFromOtherUser =
+                            lastMessage['senderId'] != currentUserID;
 
                         if (atBottom || isFromOtherUser) {
                           _scrollController.animateTo(
@@ -261,21 +279,18 @@ class _ChatPageState extends State<ChatPage> {
                           );
                         }
                       });
-                
+
                       // show messages
                       return ListView(
                         controller: _scrollController,
-                        reverse: false, 
+                        reverse: false,
                         padding: const EdgeInsets.only(top: 10, bottom: 10),
-                        children: [
-                          _buildSystemMessage(),
-                          ...messagesList,
-                        ],
+                        children: [_buildSystemMessage(), ...messagesList],
                       );
                     },
                   ),
                 );
-              }
+              },
             ),
             // user input
             _buildUserInput(),
@@ -285,7 +300,7 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  // system message  
+  // system message
   Widget _buildSystemMessage() {
     const basePurple = Color(0xFF771F98);
     return Center(
@@ -294,7 +309,7 @@ class _ChatPageState extends State<ChatPage> {
         margin: const EdgeInsets.symmetric(vertical: 12),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
         decoration: BoxDecoration(
-          color: basePurple.withAlpha(20), 
+          color: basePurple.withAlpha(20),
           border: Border.all(color: basePurple.withAlpha(60)),
           borderRadius: BorderRadius.circular(14),
         ),
@@ -329,18 +344,18 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  // user input 
+  // user input
   Widget _buildUserInput() {
     return StatefulBuilder(
       builder: (context, setState) {
         bool hasText = _messageController.text.trim().isNotEmpty;
 
         _messageController.addListener(() {
-          setState(() {}); 
+          setState(() {});
         });
 
         return SafeArea(
-          minimum: EdgeInsets.symmetric(vertical: 6, horizontal: 18),          
+          minimum: EdgeInsets.symmetric(vertical: 6, horizontal: 18),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -355,7 +370,7 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                   child: _selectedImage == null
                       ? // text input
-                      MyTextField(
+                        MyTextField(
                           hintText: "Type a message",
                           obscureText: false,
                           controller: _messageController,
@@ -363,101 +378,103 @@ class _ChatPageState extends State<ChatPage> {
                           chatField: true,
                         )
                       : // image input
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.all(10),
-                          width: MediaQuery.of(context).size.width * 0.35,
-                          height: 120,
-                          child: Stack(
-                            children: [
-                              // picked pic
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(14),
-                                child: Image.file(
-                                  _selectedImage!,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                ),
-                              ),
-          
-                              // show loading while uploading the pic
-                              if (_isUploading)
-                                Container(
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withAlpha(100),
-                                    borderRadius: BorderRadius.circular(14),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.all(10),
+                            width: MediaQuery.of(context).size.width * 0.35,
+                            height: 120,
+                            child: Stack(
+                              children: [
+                                // picked pic
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: Image.file(
+                                    _selectedImage!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
                                   ),
-                                  child: const Center(
-                                    child: SizedBox(
-                                      width: 30,
-                                      height: 30,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white70,
-                                        strokeWidth: 2.5,
+                                ),
+
+                                // show loading while uploading the pic
+                                if (_isUploading)
+                                  Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withAlpha(100),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 30,
+                                        height: 30,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white70,
+                                          strokeWidth: 2.5,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-          
-                              // cancel only if not uploading
-                              if (!_isUploading)
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() => _selectedImage = null);
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withAlpha(100),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      padding: const EdgeInsets.all(4),
-                                      child: const Icon(
-                                        Symbols.close,
-                                        color: Colors.white,
-                                        size: 16,
+
+                                // cancel only if not uploading
+                                if (!_isUploading)
+                                  Positioned(
+                                    top: 6,
+                                    right: 6,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() => _selectedImage = null);
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withAlpha(100),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        padding: const EdgeInsets.all(4),
+                                        child: const Icon(
+                                          Symbols.close,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                 ),
               ),
-          
+
               // action button (send or pick image)
               Container(
                 decoration: BoxDecoration(
                   color: _isUploading
                       ? const Color(0xFF771F98).withAlpha(120)
                       : (hasText || _selectedImage != null)
-                          ? const Color(0xFF771F98)
-                          : Colors.transparent,
+                      ? const Color(0xFF771F98)
+                      : Colors.transparent,
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
                   onPressed: _isUploading
-                    ? null
-                    : () async {
-                        if (_selectedImage != null) {
-                          await _sendImageMessage();
-                        } else if (hasText) {
-                          _sendTextMessage();
-                          setState(() => hasText = false);
-                        } else {
-                          _showImagePickerMenu(context);
-                        }
-                      },
+                      ? null
+                      : () async {
+                          if (_selectedImage != null) {
+                            await _sendImageMessage();
+                          } else if (hasText) {
+                            _sendTextMessage();
+                            setState(() => hasText = false);
+                          } else {
+                            _showImagePickerMenu(context);
+                          }
+                        },
                   icon: Icon(
-                    (hasText || _selectedImage != null) ? Symbols.send : Symbols.add,
+                    (hasText || _selectedImage != null)
+                        ? Symbols.send
+                        : Symbols.add,
                     color: (hasText || _selectedImage != null)
                         ? Colors.white
                         : Colors.grey[800],
@@ -480,7 +497,7 @@ class _ChatPageState extends State<ChatPage> {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final position = renderBox.localToGlobal(Offset.zero);
     final ImagePicker picker = ImagePicker();
- 
+
     // options
     final options = [
       {
@@ -501,7 +518,12 @@ class _ChatPageState extends State<ChatPage> {
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       elevation: 1,
-      position: RelativeRect.fromLTRB(position.dx + 40, position.dy - 120, 20, 0),
+      position: RelativeRect.fromLTRB(
+        position.dx + 40,
+        position.dy - 120,
+        20,
+        0,
+      ),
       items: options.map((opt) {
         return PopupMenuItem(
           onTap: () async {
@@ -510,7 +532,7 @@ class _ChatPageState extends State<ChatPage> {
             );
             if (picked != null) {
               setState(() => _selectedImage = File(picked.path));
-            }          
+            }
           },
           child: Row(
             children: [
@@ -534,6 +556,4 @@ class _ChatPageState extends State<ChatPage> {
       }).toList(),
     );
   }
-
 }
-

@@ -17,6 +17,8 @@ import requests
 from sentence_transformers import SentenceTransformer
 import os
 import numpy as np
+from datetime import datetime
+
 
 # Firebase Admin SDK imports , this will enable us to read from the database
 import firebase_admin
@@ -61,168 +63,197 @@ def log_request_info():
 # -------------------------------------------------------
 @app.route("/generate_embedding", methods=["POST"])
 def generate_embedding():
-    """
-    Expects form fields:
-      - title (string)
-      - image_url (string)  <-- URL to the image (Firebase download URL)
-    Returns JSON: { "embedding": [float, float, ...] }
-    """
     description = request.form.get("description", "")
     image_url = request.form.get("image_url", "")
 
-
     try:
-        # Always compute text embedding
+        # TEXT embedding always
         text_emb = model.encode(description, convert_to_tensor=True, show_progress_bar=False)
+        text_emb_list = text_emb.cpu().tolist()
 
-        # If image is provided, combine text + image
+        image_emb_list = []
+        combined_list = text_emb_list  # default if no image
+
+        # If image exists → also compute image + combined
         if image_url:
             img = download_image(image_url)
             img_emb = model.encode(img, convert_to_tensor=True, show_progress_bar=False)
-            combined = ((text_emb + img_emb) / 2).cpu().tolist()
-        else:
-            combined = text_emb.cpu().tolist()  # if no image is available , then take only the text embedding
+            image_emb_list = img_emb.cpu().tolist()
 
-        return jsonify({"embedding": combined})
+            # Combined embedding = average of (text + image)
+            combined_list = ((text_emb + img_emb) / 2).cpu().tolist()
+
+        return jsonify({
+            "text_embedding": text_emb_list,
+            "image_embedding": image_emb_list,
+            "combined_embedding": combined_list
+        })
+
     except Exception as e:
-        # return helpful error for debugging
         return jsonify({"error": str(e)}), 500
+
     
 # -------------------------------------------------------
 # Find matches route
 # -------------------------------------------------------
+# -------------------------------------------------------
+# Find matches route
+# -------------------------------------------------------
 @app.route("/find_matches", methods=["POST"])
-def find_matches():
-    """
-    Expects JSON:
-    {
-        "embedding": [float, ...],
-        "uid": "current_user_uid",
-        "type": "Lost" or "Found",
-        "location": "S4-Food Court",
-        "date": "2025-01-15T00:00:00.000Z"  # client already sends Firestore date
-    }
-    Returns: top 3 similar items from Firestore excluding user's own posts and only of the opposite type.
-    """
+def find_matches_filtered():
     try:
         data = request.get_json()
-        new_emb = np.array(data.get("embedding", []))
+        caller_emb = np.array(data.get("embedding", []))
+        caller_has_image = bool(data.get("has_image", False))
         current_uid = data.get("uid", "")
         post_type = data.get("type", "")
         post_id = data.get("postID", "")
-        selected_location = data.get("location", "")
+        selected_location = data.get("location", None)
         selected_date_raw = data.get("date", None)
 
-        if new_emb.size == 0:
-            return jsonify({"error": "Embedding is required"}), 400
-        if not current_uid:
-            return jsonify({"error": "User UID is required"}), 400
-        if post_type not in ("Lost", "Found"):
-            return jsonify({"error": "Post type is required and must be 'Lost' or 'Found'"}), 400
+        if caller_emb.size == 0 or not current_uid or post_type not in ("Lost", "Found"):
+            return jsonify({"error": "Invalid request"}), 400
 
+        # ----------------------------
         # Determine opposite type to search
+        # ----------------------------
         target_type = "Lost" if post_type == "Found" else "Found"
-
-        # Query Firestore for posts with the opposite type (avoid inequality queries combination issues)
         posts_ref = db.collection("posts").where("type", "==", target_type)
         docs = posts_ref.get()
 
-        # Convert selected date from client if provided
+        # Convert selected date if provided
         selected_date = None
         if selected_date_raw:
             try:
-                selected_date = firestore.Timestamp.from_json({"_seconds": selected_date_raw["_seconds"], "_nanoseconds": selected_date_raw["_nanoseconds"]}).to_datetime()
-            except:
+                selected_date = datetime.fromtimestamp(selected_date_raw["_seconds"])
+                selected_date = selected_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            except Exception as e:
+                print("Error parsing selected_date:", e)
                 selected_date = None
 
         candidates = []
-        from datetime import timedelta
-
         for doc in docs:
             post = doc.to_dict()
 
-            # skip posts without embeddings or posts created by the same user
-            if "embedding" not in post or post.get("uid") == current_uid:
+            # ----------------------------
+            # Apply agreed filters
+            # ----------------------------
+            # 1. Skip posts by same user
+            if post.get("uid") == current_uid:
                 continue
 
-            # skip claimed items
+            # 2. Skip claimed posts
             if post.get("claim_status") is True:
                 continue
 
-            # filter by SAME location
+            # 3. Filter by location (if provided)
             if selected_location and post.get("location") != selected_location:
                 continue
 
-            # filter by DATE (±2 days)
-            if selected_date:
-                post_date = post.get("date")
-                if post_date is None:
+            # 4. Filter by date ±2 days (if provided) — FIXED
+            if selected_date and post.get("date"):
+                post_date = post["date"]
+                if hasattr(post_date, "to_datetime"):
+                    post_date = post_date.to_datetime()
+
+                # Convert both to naive datetimes
+                if post_date.tzinfo is not None:
+                    post_date = post_date.astimezone().replace(tzinfo=None)
+                selected_date_naive = selected_date.replace(tzinfo=None)
+
+                # Zero out time
+                post_date = post_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                selected_date_naive = selected_date_naive.replace(hour=0, minute=0, second=0, microsecond=0)
+
+                if abs((post_date - selected_date_naive).days) > 2:
                     continue
-                post_date_dt = post_date.to_datetime()
-                if abs((post_date_dt - selected_date).days) > 2:
-                    continue
 
-            candidates.append(post)
+            # Skip posts without embeddings
+            if "embedding_text" not in post:
+                continue
 
-        if not candidates:
-            return jsonify({"matches": []}), 200
+            text_emb = post["embedding_text"]
+            image_emb = post.get("embedding_image") or []
+            combined_emb = post.get("embedding_combined") or text_emb
+            post["_has_image"] = bool(image_emb)
 
-        # Compute cosine similarity
-        def cosine_similarity(a, b):
+            candidates.append({
+                "data": post,
+                "text_emb": text_emb,
+                "image_emb": image_emb,
+                "combined_emb": combined_emb
+            })
+
+        # ----------------------------
+        # Cosine similarity helper
+        # ----------------------------
+        def cosine(a, b):
+            a, b = np.array(a), np.array(b)
+            if np.linalg.norm(a) == 0 or np.linalg.norm(b) == 0:
+                return 0.0
             return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
-        for post in candidates:
-            post_emb = np.array(post["embedding"])
-            post["similarity_score"] = cosine_similarity(new_emb, post_emb)
+        matches = []
+        for cand in candidates:
+            post = cand["data"]
+            post_has_image = post.get("_has_image", False)
 
+            if caller_has_image and post_has_image:
+                ref_emb = cand["combined_emb"]
+                similarity = cosine(caller_emb, ref_emb)
+            else:
+                similarity = cosine(caller_emb, cand["text_emb"])
 
-        # Sort candidates by similarity (highest first)
-        sorted_candidates = sorted(candidates, key=lambda x: x["similarity_score"], reverse=True)
+            post["similarity_score"] = similarity
+            matches.append(post)
 
-        # Keep only matches with similarity >= 0.6
-        filtered_matches = [m for m in sorted_candidates if m["similarity_score"] >= 0.7]
+        # ----------------------------
+        # Filter top matches (similarity >= 0.75)
+        # ----------------------------
+        top_matches = sorted(
+            [m for m in matches if m["similarity_score"] >= 0.75],
+            key=lambda x: x["similarity_score"],
+            reverse=True
+        )[:4]
 
-        # Select top 4 AFTER filtering
-        top_matches = filtered_matches[:4]
-
-
-        # Add notification for each matched post 
+        # ----------------------------
+        # Add notifications
+        # ----------------------------
         for match in top_matches:
-            notification_ref = db.collection("notifications").document() 
+            try:
+                notification_ref = db.collection("notifications").document()
+                notification_data = {
+                    "notificationID": notification_ref.id,
+                    "toUserID": match["uid"],
+                    "userPostID": match["postID"],
+                    "matchPostID": post_id,
+                    "matchScore": round(match["similarity_score"], 2),
+                    "message": f"Possible match found for your post '{match['title']}'.",
+                    "timestamp": firestore.SERVER_TIMESTAMP,
+                    "isRead": False,
+                }
+                notification_ref.set(notification_data)
+            except Exception as e:
+                print(f"Notification error for {match['postID']}: {e}")
 
-            notification_data = {
-                "notificationID": notification_ref.id,
-                "toUserID": match["uid"],  
-                "userPostID": match["postID"], 
-                "matchPostID": post_id,  
-                "matchScore": round(match["similarity_score"], 2),
-                "message": f"Possible match found for your post '{match['title']}'.", 
-                "timestamp": firestore.SERVER_TIMESTAMP,
-                "isRead": False,
-            }
-
-            notification_ref.set(notification_data)
-
-        print(f"{len(top_matches)} notifications added successfully!")
-
-        # Return all relvent fields (needed to display in PM page)
-        response = [
-            {
-                "postID": m["postID"],
-                 "uid": m.get("uid", ""),
-                "title": m.get("title", ""),
-                "type": m.get("type", ""),
-                "location": m.get("location", ""),
-                "picture": m.get("picture", ""),
-                "date": m.get("date").isoformat() if m.get("date") else None,
-                "similarity_score": round(m["similarity_score"], 4)
-            }
-            for m in top_matches
-        ]
+        # ----------------------------
+        # Return matches
+        # ----------------------------
+        response = [{
+            "postID": m.get("postID"),
+            "uid": m.get("uid"),
+            "title": m.get("title"),
+            "type": m.get("type"),
+            "location": m.get("location"),
+            "picture": m.get("picture"),
+            "date": m.get("date").isoformat() if m.get("date") else None,
+            "similarity_score": round(m["similarity_score"], 4)
+        } for m in top_matches]
 
         return jsonify({"matches": response}), 200
 
     except Exception as e:
+        print("Error in find_matches_filtered:", e)
         return jsonify({"error": str(e)}), 500
 
 # -------------------------------------------------------
