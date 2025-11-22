@@ -220,17 +220,36 @@ class _ReportItemPageState extends State<ReportItemPage> {
 
           // Decide what to send to server:
           // if post has image → send combined, else → send text
-          final bool hasImage = imageUrl.isNotEmpty;
-          final List<double> embeddingToSend = hasImage
-              ? (embeddings["combinedEmbedding"] ?? [])
-              : (embeddings["textEmbedding"] ?? []);
+          // Decide what to send to server based on TYPE + IMAGE
+          final bool postHasImage = imageUrl.isNotEmpty;
+          final String postType = type; // "Lost" or "Found"
+
+          late final List<double> embeddingToSend;
+          late final bool hasImageFlag;
+
+          if (postType == "Found") {
+            // FOUND → always text vs text, so send TEXT and lie: has_image = false
+            embeddingToSend = (embeddings["textEmbedding"] ?? []);
+            hasImageFlag = false;
+          } else {
+            // LOST
+            if (postHasImage) {
+              // Lost with image → combined vs combined
+              embeddingToSend = (embeddings["combinedEmbedding"] ?? []);
+              hasImageFlag = true;
+            } else {
+              // Lost without image → text vs text
+              embeddingToSend = (embeddings["textEmbedding"] ?? []);
+              hasImageFlag = false;
+            }
+          }
 
           final response = await http.post(
             Uri.parse('$baseUrl/find_matches'),
             headers: {"Content-Type": "application/json"},
             body: jsonEncode({
               "embedding": embeddingToSend,
-              "has_image": hasImage,
+              "has_image": hasImageFlag,
               "uid": user.uid,
               "type": type,
               "postID": docRef.id,

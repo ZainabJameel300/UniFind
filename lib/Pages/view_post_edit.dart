@@ -169,7 +169,6 @@ class ViewPostEdit extends StatelessWidget {
                                   },
                                   onViewMatches: () async {
                                     try {
-                                      // 1) Read embedding fields from Firestore
                                       final List<dynamic>? textEmb =
                                           postData["embedding_text"];
                                       final List<dynamic>? imageEmb =
@@ -177,37 +176,25 @@ class ViewPostEdit extends StatelessWidget {
                                       final List<dynamic>? combinedEmb =
                                           postData["embedding_combined"];
 
-                                      // Determine if the post has an image
-                                      final bool hasImage =
+                                      final String postType =
+                                          postData["type"]; // "Lost" or "Found"
+
+                                      // Does THIS post have an image saved?
+                                      final bool postHasImage =
                                           imageEmb != null &&
                                           imageEmb.isNotEmpty;
 
-                                      // Choose embedding to send (same logic as ReportItemPage)
                                       List<double>? embeddingToSend;
+                                      bool hasImageFlag;
 
-                                      if (hasImage) {
-                                        // Both sides have images --> we want combined embeddings
-                                        if (combinedEmb == null) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                "Combined embedding missing.",
-                                              ),
-                                            ),
-                                          );
-                                          return;
-                                        }
-                                        embeddingToSend = combinedEmb
-                                            .cast<double>();
-                                      } else {
-                                        // No image --> send text-only embedding
+                                      // 🔹 If this is a FOUND post → we will match against LOST posts.
+                                      //    We want TEXT vs TEXT (because some Lost posts have no image).
+                                      if (postType == "Found") {
                                         if (textEmb == null) {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
-                                            SnackBar(
+                                            const SnackBar(
                                               content: Text(
                                                 "Text embedding missing.",
                                               ),
@@ -215,15 +202,55 @@ class ViewPostEdit extends StatelessWidget {
                                           );
                                           return;
                                         }
+
                                         embeddingToSend = textEmb
                                             .cast<double>();
+                                        hasImageFlag =
+                                            false; // force server to treat caller as "no image"
+                                      } else {
+                                        // 🔹 For LOST posts:
+                                        // If this Lost post has an image → use combined (text+image) vs combined.
+                                        // If no image → use text vs text.
+                                        if (postHasImage) {
+                                          if (combinedEmb == null) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "Combined embedding missing.",
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                          embeddingToSend = combinedEmb
+                                              .cast<double>();
+                                          hasImageFlag = true;
+                                        } else {
+                                          if (textEmb == null) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "Text embedding missing.",
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+                                          embeddingToSend = textEmb
+                                              .cast<double>();
+                                          hasImageFlag = false;
+                                        }
                                       }
 
                                       if (embeddingToSend.isEmpty) {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          SnackBar(
+                                          const SnackBar(
                                             content: Text("Embedding is empty"),
                                           ),
                                         );
@@ -237,7 +264,7 @@ class ViewPostEdit extends StatelessWidget {
 
                                       final payload = {
                                         "embedding": embeddingToSend,
-                                        "has_image": hasImage,
+                                        "has_image": hasImageFlag,
                                         "uid": user.uid,
                                         "type": postData["type"],
                                         "postID": postID,
