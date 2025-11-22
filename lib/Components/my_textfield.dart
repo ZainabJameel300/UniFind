@@ -42,7 +42,17 @@ class MyTextField extends StatelessWidget {
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: hintText,
-              suffixIcon: suffixIcon,
+              suffixIcon: suffixIcon != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 12.0),
+                      child: suffixIcon,
+                    )
+                  : null,
+
+              suffixIconConstraints: const BoxConstraints(
+                minWidth: 30,
+                minHeight: 30,
+              ),
             ),
             validator: validator, // only used if wrapped in a Form
           ),

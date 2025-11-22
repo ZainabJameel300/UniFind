@@ -51,7 +51,7 @@ class PostActions {
                 _bottomOption(
                   icon: Symbols.task_alt,
                   iconcolor: Color(0xFF771F98),
-                  label: "Mark as Claimed / Unclaimed",
+                  label: isClaimed ? "Mark as Unclaimed" : "Mark as Claimed",
                   textcolor: Colors.black87,
                   onTap: () {
                     Navigator.pop(context);

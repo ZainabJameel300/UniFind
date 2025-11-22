@@ -97,34 +97,24 @@ def generate_embedding():
 # Find matches route
 # -------------------------------------------------------
 @app.route("/find_matches", methods=["POST"])
-def find_matches():
+def find_matches_robust():
     try:
         data = request.get_json()
-        new_emb = np.array(data.get("embedding", []))
+        caller_emb = np.array(data.get("embedding", []))
+        caller_has_image = bool(data.get("has_image", False))
         current_uid = data.get("uid", "")
         post_type = data.get("type", "")
         post_id = data.get("postID", "")
-        selected_location = data.get("location", "")
         selected_date_raw = data.get("date", None)
-        caller_has_image = bool(data.get("has_image", False))
 
-        if new_emb.size == 0:
-            return jsonify({"error": "Embedding is required"}), 400
-        if not current_uid:
-            return jsonify({"error": "User UID is required"}), 400
-        if post_type not in ("Lost", "Found"):
-            return jsonify({"error": "Post type must be Lost or Found"}), 400
+        if caller_emb.size == 0 or not current_uid or post_type not in ("Lost", "Found"):
+            return jsonify({"error": "Invalid request"}), 400
 
-        # Determine opposite type
+        # Determine opposite post type
         target_type = "Lost" if post_type == "Found" else "Found"
+        docs = db.collection("posts").where("type", "==", target_type).get()
 
-        # Query opposite-type posts
-        posts_ref = db.collection("posts").where("type", "==", target_type)
-        docs = posts_ref.get()
-
-        # ---------------------------
-        # Date conversion
-        # ---------------------------
+        # Convert selected date from Firestore timestamp
         selected_date = None
         if selected_date_raw:
             try:
@@ -134,150 +124,111 @@ def find_matches():
                 print("Error parsing selected_date:", e)
                 selected_date = None
 
-        # IMPORTANT FIX 
         candidates = []
-
-        # ---------------------------
-        # Build candidate list
-        # ---------------------------
         for doc in docs:
             post = doc.to_dict()
 
-            # Skip same user
-            if post.get("uid") == current_uid:
+            # Skip same user or claimed posts
+            if post.get("uid") == current_uid or post.get("claim_status") is True:
                 continue
 
-            # Skip claimed
-            if post.get("claim_status") is True:
-                continue
-
-            # Location filter
-            if selected_location and post.get("location") != selected_location:
-                continue
-
-            # ---------- DATE FILTER (±2 days) ----------
-            if selected_date:
-                post_date = post.get("date")
-                if not post_date:
+            # Date filter ±2 days
+            if selected_date and post.get("date"):
+                post_date = post["date"]
+                if hasattr(post_date, "to_datetime"):
+                    post_date = post_date.to_datetime()
+                if post_date.tzinfo is not None:
+                    post_date = post_date.astimezone().replace(tzinfo=None)
+                selected_date_naive = selected_date
+                post_date = post_date.replace(hour=0, minute=0, second=0, microsecond=0)
+                selected_date_naive = selected_date_naive.replace(hour=0, minute=0, second=0, microsecond=0)
+                if abs((post_date - selected_date_naive).days) > 2:
                     continue
 
-                try:
-                    post_date_dt = post_date.to_datetime()
-                except:
-                    post_date_dt = post_date
-
-                post_date_norm = post_date_dt.replace(hour=0, minute=0, second=0, microsecond=0)
-
-                if post_date_norm.tzinfo:
-                    post_date_norm = post_date_norm.replace(tzinfo=None)
-                if selected_date.tzinfo:
-                    selected_date_norm = selected_date.replace(tzinfo=None)
-                else:
-                    selected_date_norm = selected_date
-
-                days_diff = abs((post_date_norm - selected_date_norm).total_seconds() / 86400)
-                if days_diff > 2:
-                    continue
-            # ------------------------------------------------
-
-            # Embedding existence check
-            has_new_text = "embedding_text" in post
-            has_old_embedding = "embedding" in post
-
-            if not (has_new_text or has_old_embedding):
+            text_emb = post.get("embedding_text")
+            image_emb = post.get("embedding_image") or []
+            combined_emb = post.get("embedding_combined") or text_emb
+            if not text_emb:
                 continue
 
-            post["_has_image"] = bool(post.get("embedding_image"))
-            candidates.append(post)
-
-        if not candidates:
-            return jsonify({"matches": []}), 200
+            post["_has_image"] = bool(image_emb)
+            candidates.append({
+                "data": post,
+                "text_emb": text_emb,
+                "image_emb": image_emb,
+                "combined_emb": combined_emb
+            })
 
         # Cosine similarity helper
-        def cosine_similarity(a, b):
-            a = np.array(a)
-            b = np.array(b)
+        def cosine(a, b):
+            a, b = np.array(a), np.array(b)
+            if np.linalg.norm(a) == 0 or np.linalg.norm(b) == 0:
+                return 0.0
             return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
-        caller_emb = new_emb.tolist()
-
-        # ---------------------------
-        # Compute similarity
-        # ---------------------------
-        for post in candidates:
-
-            # New embedding system
-            if "embedding_text" in post:
-                text_emb = post["embedding_text"]
-                image_emb = post.get("embedding_image", [])
-                combined_emb = post.get("embedding_combined", text_emb)
-
-            else:
-                # OLD posts — only 1 embedding exists
-                text_emb = post["embedding"]
-                image_emb = []
-                combined_emb = text_emb
-
+        matches = []
+        for cand in candidates:
+            post = cand["data"]
             post_has_image = post.get("_has_image", False)
 
-            # Matching rules:
-            # both have images → COMBINED
-            # otherwise → TEXT
+            #The NEW LOGIC:
+            # - if both have images → use weighted combined
+            # - else → text-only similarity
             if caller_has_image and post_has_image:
-                ref_emb = combined_emb
+                ref_emb = cand["combined_emb"]
+                similarity = cosine(caller_emb, ref_emb)
             else:
-                ref_emb = text_emb
+                # Compare text embeddings only
+                similarity = cosine(caller_emb, cand["text_emb"])
 
-            post["similarity_score"] = cosine_similarity(caller_emb, ref_emb)
+            post["similarity_score"] = similarity
+            matches.append(post)
 
-        # Sort by similarity
-        sorted_candidates = sorted(
-            candidates, key=lambda x: x["similarity_score"], reverse=True
-        )
+        # Filter and sort top matches
+        top_matches = sorted(
+            [m for m in matches if m["similarity_score"] >= 0.75], 
+            key=lambda x: x["similarity_score"],
+            reverse=True
+        )[:4]
 
-        # Apply threshold 0.8
-        filtered_matches = [m for m in sorted_candidates if m["similarity_score"] >= 0.8]
-
-        # Keep top 4
-        top_matches = filtered_matches[:4]
-
-        # ---------------------------
-        # Create notifications
-        # ---------------------------
+        # Add notifications and print
         for match in top_matches:
-            notification_ref = db.collection("notifications").document()
-            notification_ref.set({
-                "notificationID": notification_ref.id,
-                "toUserID": match["uid"],
-                "userPostID": match["postID"],
-                "matchPostID": post_id,
-                "matchScore": round(match["similarity_score"], 2),
-                "message": f"Possible match found for your post '{match['title']}'.",
-                "timestamp": firestore.SERVER_TIMESTAMP,
-                "isRead": False,
-            })
+            try:
+                notification_ref = db.collection("notifications").document()
+                notification_data = {
+                    "notificationID": notification_ref.id,
+                    "toUserID": match["uid"],
+                    "userPostID": match["postID"],
+                    "matchPostID": post_id,
+                    "matchScore": round(match["similarity_score"], 2),
+                    "message": f"Possible match found for your post '{match['title']}'.",
+                    "timestamp": firestore.SERVER_TIMESTAMP,
+                    "isRead": False,
+                }
+                notification_ref.set(notification_data)
+            except Exception as e:
+                print(f"Notification error for {match['postID']}: {e}")
 
         print(f"{len(top_matches)} notifications added successfully!")
 
-        # Response for Flutter
-        response = [
-            {
-                "postID": m.get("postID", ""),
-                "uid": m.get("uid", ""),
-                "title": m.get("title", ""),
-                "type": m.get("type", ""),
-                "location": m.get("location", ""),
-                "picture": m.get("picture", ""),
-                "date": m.get("date").isoformat() if m.get("date") else None,
-                "similarity_score": round(m["similarity_score"], 4),
-            }
-            for m in top_matches
-        ]
+        # Return matches
+        response = [{
+            "postID": m.get("postID"),
+            "uid": m.get("uid"),
+            "title": m.get("title"),
+            "type": m.get("type"),
+            "location": m.get("location"),
+            "picture": m.get("picture"),
+            "date": m.get("date").isoformat() if m.get("date") else None,
+            "similarity_score": round(m["similarity_score"], 4)
+        } for m in top_matches]
 
         return jsonify({"matches": response}), 200
 
     except Exception as e:
+        print("Error in robust find_matches:", e)
         return jsonify({"error": str(e)}), 500
+
 
 # -------------------------------------------------------
 # Run the Flask app

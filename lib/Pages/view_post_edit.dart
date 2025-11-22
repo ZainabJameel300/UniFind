@@ -13,7 +13,6 @@ import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/post_actions.dart';
 import 'package:unifind/Pages/potenialmatch.dart';
 import 'package:unifind/utils/date_formats.dart';
-import 'package:unifind/pages/chat_page.dart';
 
 class ViewPostEdit extends StatelessWidget {
   final String postID;
@@ -62,7 +61,7 @@ class ViewPostEdit extends StatelessWidget {
               final bool isCurrentUser =
                   postData['uid'] == FirebaseAuth.instance.currentUser!.uid;
 
-              final String pubID = publisherData["uid"];
+              // final String pubID = publisherData["uid"];
               final String name = isCurrentUser
                   ? "You"
                   : publisherData["username"];
@@ -488,19 +487,21 @@ class ViewPostEdit extends StatelessWidget {
 
                     const Spacer(),
 
-                    if (!isCurrentUser && status == false)
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: AppButton(
-                          text: "Chat",
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ChatPage(receiverID: pubID),
-                            ),
-                          ),
-                        ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: AppButton(
+                        text: status ? "Mark as Unclaimed" : "Mark as Claimed",
+                        onTap: () async {
+                          final currentStatus =
+                              postData['claim_status'] as bool;
+
+                          await FirebaseFirestore.instance
+                              .collection('posts')
+                              .doc(postID)
+                              .update({'claim_status': !currentStatus});
+                        },
                       ),
+                    ),
                   ],
                 ),
               );

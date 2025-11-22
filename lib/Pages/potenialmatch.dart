@@ -146,13 +146,8 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     border: Border.all(
-                                      color: const Color.fromARGB(
-                                        255,
-                                        161,
-                                        158,
-                                        163,
-                                      ),
-                                      width: 1.5,
+                                      color: Color(0xFFE6E6E6),
+                                      width: 1.7,
                                     ),
                                     borderRadius: BorderRadius.circular(16),
                                     boxShadow: [
@@ -220,31 +215,45 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                       Padding(
                                         padding: const EdgeInsets.all(6),
                                         child: GestureDetector(
-                                          onTap: () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  FullScreenImage(
-                                                    imageUrl: match.picture,
-                                                  ),
-                                            ),
-                                          ),
+                                          onTap: () {
+                                            if (match.picture.isNotEmpty) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      FullScreenImage(
+                                                        imageUrl: match.picture,
+                                                      ),
+                                                ),
+                                              );
+                                            }
+                                          },
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
                                               6,
                                             ),
-                                            child: Image.network(
-                                              match.picture,
-                                              width: double.infinity,
-                                              height: 100,
-                                              fit: BoxFit.cover,
-                                            ),
+                                            child: match.picture.isNotEmpty
+                                                ? Image.network(
+                                                    match.picture,
+                                                    width: double.infinity,
+                                                    height: 100,
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : Image.asset(
+                                                    "assets/no-pictures.png",
+                                                    width: double.infinity,
+                                                    height: 100,
+                                                    fit: BoxFit.cover,
+                                                  ),
                                           ),
                                         ),
                                       ),
 
                                       // Title
-                                      Center(
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 10,
+                                        ),
                                         child: Text(
                                           match.title,
                                           maxLines: 1,
@@ -330,48 +339,30 @@ class _PotenialmatchState extends State<Potenialmatch> {
             Positioned(
               left: 16,
               right: 16,
-              bottom: 180,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 14,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF7F7F7),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Color(0xFFE5E5E5)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: .05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
+              bottom: 182,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "Not what you're looking for?",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF771F98),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Not what you're looking for?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Color(0xFF771F98),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    "You'll get notified when new matches are found.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
                     ),
-                    SizedBox(height: 6),
-                    Text(
-                      "You'll get notified when new matches are found.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
         ],

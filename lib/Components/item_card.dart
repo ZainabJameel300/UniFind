@@ -72,7 +72,8 @@ class ItemCard extends StatelessWidget {
             SizedBox(height: 10),
 
             // Title
-            Center(
+            Padding(
+              padding: const EdgeInsets.only(left: 15),
               child: Text(
                 title,
                 maxLines: 1,

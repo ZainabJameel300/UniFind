@@ -46,7 +46,7 @@ class KeepersPage extends StatelessWidget {
                 SizedBox(height: 15),
                 KeepersContainer(
                   code: "S1",
-                  title: "College of Art - 2017",
+                  title: "College of Art - 170",
                   circleColor: sakhirCircle,
                   fillColor: sakhirFill,
                   borderColor: sakhirBorder,
@@ -54,7 +54,7 @@ class KeepersPage extends StatelessWidget {
                 SizedBox(height: 15),
                 KeepersContainer(
                   code: "S20",
-                  title: "English Language Center - 2017",
+                  title: "English Language Center - 119",
                   circleColor: sakhirCircle,
                   fillColor: sakhirFill,
                   borderColor: sakhirBorder,
@@ -86,7 +86,7 @@ class KeepersPage extends StatelessWidget {
                 SizedBox(height: 15),
                 KeepersContainer(
                   code: "S22",
-                  title: "BTC - 2017",
+                  title: "BTC - 15A",
                   circleColor: sakhirCircle,
                   fillColor: sakhirFill,
                   borderColor: sakhirBorder,
@@ -110,7 +110,7 @@ class KeepersPage extends StatelessWidget {
                 SizedBox(height: 15),
                 KeepersContainer(
                   code: "S39",
-                  title: "College of Law - 2017",
+                  title: "College of Law - 28",
                   circleColor: sakhirCircle,
                   fillColor: sakhirFill,
                   borderColor: sakhirBorder,
@@ -134,7 +134,7 @@ class KeepersPage extends StatelessWidget {
                 SizedBox(height: 15),
                 KeepersContainer(
                   code: "S47",
-                  title: "Science and IT Liabrary - 2017",
+                  title: "Science and IT Liabrary - 1038",
                   circleColor: sakhirCircle,
                   fillColor: sakhirFill,
                   borderColor: sakhirBorder,
