@@ -208,7 +208,7 @@ class ViewPostEdit extends StatelessWidget {
                                         hasImageFlag =
                                             false; // force server to treat caller as "no image"
                                       } else {
-                                        // 🔹 For LOST posts:
+                                        //  For LOST posts:
                                         // If this Lost post has an image → use combined (text+image) vs combined.
                                         // If no image → use text vs text.
                                         if (postHasImage) {
@@ -277,8 +277,8 @@ class ViewPostEdit extends StatelessWidget {
 
                                       // 3) Send request to Flask server
                                       final String baseUrl = Platform.isAndroid
-                                          ? 'http://10.0.2.2:5001'
-                                          : 'http://192.168.1.3:5001';
+                                          ? 'http://10.0.2.2:5001' // Android Emulator
+                                          : 'http://127.0.0.1:5001'; // IOS Emulator;
 
                                       final response = await http.post(
                                         Uri.parse('$baseUrl/find_matches'),
