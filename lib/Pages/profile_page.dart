@@ -9,6 +9,7 @@ import 'package:unifind/Components/edit_bottom_sheet.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/image_bottomsheet.dart';
 import 'package:unifind/Components/my_appbar.dart';
+import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/login.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -102,8 +103,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final avatarToShow = currentAvatar ?? "";
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: MyAppbar(
@@ -125,15 +124,16 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 11),
 
             // Avatar
+            // Avatar
             Center(
               child: GestureDetector(
                 onTap: () {
-                  if (avatarToShow.isNotEmpty) {
+                  if (currentAvatar != null && currentAvatar!.isNotEmpty) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            FullScreenImage(imageUrl: avatarToShow),
+                            FullScreenImage(imageUrl: currentAvatar!),
                       ),
                     );
                   }
@@ -150,13 +150,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: SizedBox(
                       width: 130,
                       height: 130,
-                      child: avatarToShow.isNotEmpty
-                          ? Image.network(avatarToShow, fit: BoxFit.cover)
-                          : const Icon(
-                              Icons.account_circle,
-                              size: 130,
-                              color: Colors.grey,
-                            ),
+                      child: UserAvatar(
+                        avatarUrl: currentAvatar ?? "",
+                        radius:
+                            65, // half of width/height to match CircleAvatar
+                      ),
                     ),
                   ),
                 ),

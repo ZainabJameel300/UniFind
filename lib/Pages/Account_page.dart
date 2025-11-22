@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:unifind/Components/item_card.dart';
 import 'package:unifind/Components/my_AppBar.dart';
+import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/profile_page.dart';
 
 class AccountPage extends StatefulWidget {
@@ -131,13 +132,7 @@ class _AccountPageState extends State<AccountPage> {
                             child: SizedBox(
                               width: 65,
                               height: 65,
-                              child: avatar.isNotEmpty
-                                  ? Image.network(avatar, fit: BoxFit.cover)
-                                  : const Icon(
-                                      Icons.account_circle,
-                                      size: 65,
-                                      color: Colors.grey,
-                                    ),
+                              child: UserAvatar(avatarUrl: avatar, radius: 28),
                             ),
                           ),
                         ),
