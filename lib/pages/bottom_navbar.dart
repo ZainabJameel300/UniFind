@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:unifind/Components/badge_icon.dart';
+import 'package:unifind/Components/filters/filters_drawer.dart';
 import 'package:unifind/Pages/Account_page.dart';
 import 'package:unifind/pages/home_page.dart';
 import 'package:unifind/pages/keepers_page.dart';
-import 'package:unifind/pages/chatrooms_page.dart';
 import 'package:unifind/pages/report_item_page.dart';
-
-import '../Components/filters_drawer.dart';
+import 'package:unifind/pages/chatrooms_page.dart';
+import 'package:unifind/services/chat_service.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -16,36 +17,29 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
+  final chatService = ChatService();
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int selectedIndex = 0;
 
   final List<Widget> pages = [
     const HomePage(),
     const KeepersPage(),
-    const ReportItemPage(),
+    Container(),
     const ChatroomsPage(),
     const AccountPage(),
   ];
 
   void onTabTapped(int index) {
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ReportItemPage()),
+      );
+      return;
+    }
+
     setState(() => selectedIndex = index);
-  }
-
-  Widget _buildNavItem(IconData icon, int index) {
-    final bool isSelected = selectedIndex == index;
-
-    return GestureDetector(
-      onTap: () => onTabTapped(index),
-      child: Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(),
-        child: Icon(
-          icon,
-          fill: isSelected ? 1 : 0,
-          color: isSelected ? Colors.black : Colors.black45,
-        ),
-      ),
-    );
   }
 
   @override
@@ -53,32 +47,78 @@ class _BottomNavBarState extends State<BottomNavBar> {
     return Scaffold(
       key: _scaffoldKey,
       endDrawer: const FiltersDrawer(),
-      backgroundColor: Colors.white,
       body: pages[selectedIndex],
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF771F98),
-        foregroundColor: Colors.white,
-        shape: const CircleBorder(),
-        elevation: 4,
-        onPressed: () {
-          onTabTapped(2);
-        },
-        child: const Icon(Symbols.add),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        color: const Color(0xFFF1F1F1),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Symbols.home, 0),
-            _buildNavItem(Symbols.location_on, 1),
 
-            const SizedBox(width: 40),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Colors.black.withOpacity(0.08), width: 1),
+          ),
+        ),
 
-            _buildNavItem(Symbols.chat_bubble, 3),
-            _buildNavItem(Symbols.person, 4),
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: selectedIndex,
+          onTap: onTabTapped,
+          backgroundColor: Colors.white,
+          selectedItemColor: Colors.black,
+          unselectedItemColor: Colors.black45,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+
+          items: [
+            BottomNavigationBarItem(
+              label: "Home",
+              icon: Icon(
+                Symbols.home,
+                fill: selectedIndex == 0 ? 1 : 0,
+                size: 28,
+              ),
+            ),
+
+            BottomNavigationBarItem(
+              label: "Keepers",
+              icon: Icon(
+                Symbols.location_on,
+                fill: selectedIndex == 1 ? 1 : 0,
+                size: 28,
+              ),
+            ),
+
+            BottomNavigationBarItem(
+              label: "Add",
+              icon: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withOpacity(0.06),
+                ),
+                child: Center(child: Icon(Symbols.add, size: 28)),
+              ),
+            ),
+
+            BottomNavigationBarItem(
+              label: "Chats",
+              icon: BadgeIcon(
+                badgeStream: chatService.unreadChatsCount(),
+                icon: Icon(
+                  Symbols.chat_bubble,
+                  fill: selectedIndex == 3 ? 1 : 0,
+                  size: 28,
+                ),
+              ),
+            ),
+
+            BottomNavigationBarItem(
+              label: "Profile",
+              icon: Icon(
+                Symbols.person,
+                fill: selectedIndex == 4 ? 1 : 0,
+                size: 28,
+              ),
+            ),
           ],
         ),
       ),

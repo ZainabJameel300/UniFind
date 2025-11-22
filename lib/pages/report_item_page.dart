@@ -69,7 +69,7 @@ class _ReportItemPageState extends State<ReportItemPage> {
     "S4-Food Court",
     "S40-IT College",
     "S41-Science College",
-    "S47-Sciance and IT Library",
+    "S47-Science and IT Library",
     "S48-Class Rooms",
     "S50-Khunji Hall",
     "S51-Food Court",
@@ -215,8 +215,8 @@ class _ReportItemPageState extends State<ReportItemPage> {
       if (embeddings != null) {
         try {
           final String baseUrl = Platform.isAndroid
-              ? 'http://10.0.2.2:5001'
-              : 'http://192.168.1.3:5001';
+              ? 'http://10.0.2.2:5001' // Android Emulator
+              : 'http://127.0.0.1:5001'; // IOS Emulator;
 
           // Decide what to send to server:
           // if post has image → send combined, else → send text
@@ -288,8 +288,9 @@ class _ReportItemPageState extends State<ReportItemPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: MyAppbar(title: "Report Item", showBack: false),
-      body: SafeArea(
+      appBar: MyAppbar(title: "Report Item"),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
         child: ListView(
           children: [
             Form(
@@ -740,63 +741,8 @@ class _ReportItemPageState extends State<ReportItemPage> {
                           _locationError == null &&
                           _dateError == null &&
                           _imageError == null) {
-                        // Show confirmation dialog before saving
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            title: Row(
-                              children: [
-                                Icon(
-                                  Symbols.help_outline,
-                                  color: Color(0xFF771F98),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  "Submit this report?",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            content: const Text(
-                              "The system will automatically try to find similar items using AI matching.",
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            actions: [
-                              // Cancel button
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.black87,
-                                  backgroundColor: const Color(0xFFF3F3F3),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text("Cancel"),
-                              ),
-
-                              // OK button
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context); // close the dialog
-                                  _savePost(); // proceed with saving
-                                },
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: const Color(0xFF771F98),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text("OK"),
-                              ),
-                            ],
-                          ),
-                        );
+                        // LOGIC AFTER THE FORM IS VALIDATED
+                        _savePost();
                       }
                     },
                   ),

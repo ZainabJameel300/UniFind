@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:provider/provider.dart'; 
-import 'package:unifind/Components/my_choice_chip.dart';
-import 'package:unifind/Components/my_drawer_button.dart';
+import 'package:unifind/Components/filters/my_choice_chip.dart';
+import 'package:unifind/Components/filters/my_drawer_button.dart';
 import 'package:unifind/providers/filter_provider.dart';
 
 class FiltersDrawer extends StatefulWidget {
@@ -40,7 +40,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
     "S4-Food Court",
     "S40-IT College",
     "S41-Science College",
-    "S47-Sciance and IT Library",
+    "S47-Science and IT Library",
     "S48-Class Rooms",
     "S50-Khunji Hall",
     "S51-Food Court",
@@ -86,13 +86,13 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
               // header
               Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Symbols.close),
-                    onPressed: closeDrawer,
+                  GestureDetector(
+                    onTap: closeDrawer,
+                    child: const Icon(Symbols.close, size: 24),
                   ),
                   Expanded(
                     child: Center(
-                      child: const Text(
+                      child: Text(
                         "Filter",
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
@@ -100,7 +100,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 30),
 
               // filters
               Expanded(
@@ -113,6 +113,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
                         "Category",
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                       ),
+                      const SizedBox(height: 4),
                       Wrap(
                         spacing: 6, 
                         children: categories.map(
@@ -135,6 +136,7 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      const SizedBox(height: 4),
                       Wrap(
                         spacing: 6,
                         children: dates.map(
@@ -158,17 +160,20 @@ class _FiltersDrawerState extends State<FiltersDrawer> {
                             "Location",
                             style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
-                          IconButton(
-                            icon: Icon(
-                              isExpanded ? Symbols.keyboard_arrow_up : Symbols.keyboard_arrow_down,
-                              size: 20,
-                            ),
-                            onPressed: () => setState(() {
+                          GestureDetector(
+                            onTap: () => setState(() {
                               filterProvider.toggleLocationExpanded();
                             }),
+                            child: Icon(
+                              isExpanded
+                                  ? Symbols.keyboard_arrow_up
+                                  : Symbols.keyboard_arrow_down,
+                              size: 20,
+                            ),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 4),
                       Wrap(
                         spacing: 6,
                         children: [
