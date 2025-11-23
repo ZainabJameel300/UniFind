@@ -6,6 +6,7 @@ import 'package:unifind/Components/app_button.dart';
 import 'package:unifind/Components/empty_state_widget.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
+import 'package:unifind/Components/post/big_detail.dart';
 import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/services/post_service.dart';
 import 'package:unifind/utils/date_formats.dart';
@@ -232,19 +233,18 @@ class ViewPost extends StatelessWidget {
 
           // details
           Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              buildDetail(
-                Symbols.calendar_today,
-                DateFormats.formatLostDate(lostDate),
+              BigDetail(
+                icon: Symbols.calendar_today,
+                text: DateFormats.formatLostDate(lostDate),
               ),
-              buildDetail(Symbols.location_on, location),
-              buildDetail(Symbols.sell, category),
-              buildDetail(
-                Symbols.task_alt,
-                statusText,
-                valueColor: statusColor,
+              BigDetail(icon: Symbols.location_on, text: location),
+              BigDetail(
+                icon: Symbols.task_alt,
+                text: statusText,
+                textColor: statusColor,
               ),
+              BigDetail(icon: Symbols.sell, text: category),
             ],
           ),
           const Spacer(),
@@ -274,33 +274,3 @@ class ViewPost extends StatelessWidget {
   }
 }
 
-Widget buildDetail(IconData icon, String value, {Color? valueColor}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 14),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            shape: BoxShape.circle,
-          ),
-          padding: const EdgeInsets.all(7),
-          child: Icon(icon, color: const Color(0xFF771F98), size: 20),
-        ),
-        const SizedBox(width: 10),
-        Flexible(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              color: valueColor ?? Colors.grey.shade800,
-              fontWeight: FontWeight.w500,
-              height: 1.2,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}

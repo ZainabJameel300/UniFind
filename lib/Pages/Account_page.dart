@@ -98,7 +98,7 @@ class _AccountPageState extends State<AccountPage> {
                   // User Detail Card
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
+                      horizontal: 12,
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
@@ -130,14 +130,14 @@ class _AccountPageState extends State<AccountPage> {
                           ),
                           child: ClipOval(
                             child: SizedBox(
-                              width: 65,
-                              height: 65,
+                              width: 55,
+                              height: 55,
                               child: UserAvatar(avatarUrl: avatar, radius: 28),
                             ),
                           ),
                         ),
 
-                        const SizedBox(width: 20),
+                        const SizedBox(width: 10),
 
                         // Username and email
                         Expanded(
@@ -160,6 +160,7 @@ class _AccountPageState extends State<AccountPage> {
                                   fontSize: 16,
                                   color: Colors.black87,
                                   fontWeight: FontWeight.w500,
+                                  
                                 ),
                               ),
                             ],
