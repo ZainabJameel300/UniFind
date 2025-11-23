@@ -93,7 +93,7 @@ void showEditFieldSheet({
                       child: Text(
                         "Save",
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -120,7 +120,7 @@ void showEditFieldSheet({
                       child: Text(
                         "Cancel",
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

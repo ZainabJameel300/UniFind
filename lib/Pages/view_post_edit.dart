@@ -379,10 +379,7 @@ class ViewPostEdit extends StatelessWidget {
                                             Navigator.pop(dialogContext);
 
                                             // Immediately navigate back to AccountPage to avoid bad state
-                                            Navigator.pushReplacementNamed(
-                                              context,
-                                              'AccountPage',
-                                            );
+                                            Navigator.pop(context);
 
                                             // After navigation finishes, delete the post , delay a little bit!
                                             Future.delayed(

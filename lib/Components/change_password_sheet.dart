@@ -31,7 +31,7 @@ void showChangePasswordSheet(BuildContext context) {
       return StatefulBuilder(
         builder: (context, setModalState) {
           return SizedBox(
-            height: MediaQuery.of(context).size.height * 0.50,
+            height: MediaQuery.of(context).size.height * 0.55,
             child: Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -128,7 +128,7 @@ void showChangePasswordSheet(BuildContext context) {
                       },
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
 
                     // Confirm Password
                     TextFormField(
@@ -248,7 +248,7 @@ void showChangePasswordSheet(BuildContext context) {
                             child: const Text(
                               "Save",
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
@@ -273,7 +273,7 @@ void showChangePasswordSheet(BuildContext context) {
                             child: Text(
                               "Cancel",
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

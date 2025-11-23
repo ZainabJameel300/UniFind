@@ -124,7 +124,6 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 11),
 
             // Avatar
-            // Avatar
             Center(
               child: GestureDetector(
                 onTap: () {
@@ -245,7 +244,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               size: 30,
                               weight: 450,
                             ),
-                            const SizedBox(width: 25),
+                            const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,7 +321,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               size: 28,
                               weight: 450,
                             ),
-                            const SizedBox(width: 25),
+                            const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +373,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               size: 30,
                               weight: 450,
                             ),
-                            SizedBox(width: 25),
+                            SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -431,7 +430,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 const SizedBox(width: 8),
                                 const Text(
                                   "Log out of your account?",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -513,7 +512,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               size: 30,
                               weight: 450,
                             ),
-                            SizedBox(width: 25),
+                            SizedBox(width: 14),
                             Text(
                               "Log Out",
                               style: TextStyle(

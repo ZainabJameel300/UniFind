@@ -73,7 +73,7 @@ class _AccountPageState extends State<AccountPage> {
 
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 15),
           child: Skeletonizer(
             enabled: userData == null,
             child: ListView(
