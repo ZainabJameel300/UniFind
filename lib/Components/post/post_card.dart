@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/view_post.dart';
+import 'package:unifind/Pages/view_post_edit.dart';
 import 'package:unifind/components/post/post_detail.dart';
 import 'package:unifind/utils/date_formats.dart';
 
@@ -36,16 +37,26 @@ class PostCard extends StatelessWidget {
 
     // go to view post page
     void viewPost() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ViewPost(
-            postID: postID,
-            publisherDataFromHome: publisherData,
-            postDataFromHome: postData,
+      // if current user is publisher, send to view & edit page
+      if (isCurrentUser) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ViewPostEdit(postID: postID)),
+        );
+      } 
+      // else, view only
+      else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ViewPost(
+              postID: postID,
+              publisherDataFromHome: publisherData,
+              postDataFromHome: postData,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
 
     return GestureDetector(

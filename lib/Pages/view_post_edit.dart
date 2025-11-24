@@ -482,25 +482,26 @@ class ViewPostEdit extends StatelessWidget {
                       ),
 
                     const SizedBox(height: 16.0),
-
+                    
+                    // details
                     Column(
                       children: [
                         BigDetail(
                           icon: Symbols.calendar_today,
                           text: DateFormats.formatLostDate(lostDate),
                         ),
-                        BigDetail( 
+                        BigDetail(
                           icon: Symbols.location_on, 
                           text: location
+                        ),
+                        BigDetail(
+                          icon: Symbols.sell, 
+                          text: category
                         ),
                         BigDetail(
                           icon: Symbols.task_alt,
                           text: statusText,
                           textColor: statusColor,
-                        ),
-                        BigDetail(
-                          icon: Symbols.sell,  
-                          text: category
                         ),
                       ],
                     ),

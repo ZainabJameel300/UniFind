@@ -238,13 +238,19 @@ class ViewPost extends StatelessWidget {
                 icon: Symbols.calendar_today,
                 text: DateFormats.formatLostDate(lostDate),
               ),
-              BigDetail(icon: Symbols.location_on, text: location),
+              BigDetail(
+                icon: Symbols.location_on, 
+                text: location
+              ),
+              BigDetail(
+                icon: Symbols.sell, 
+                text: category
+              ),
               BigDetail(
                 icon: Symbols.task_alt,
                 text: statusText,
                 textColor: statusColor,
               ),
-              BigDetail(icon: Symbols.sell, text: category),
             ],
           ),
           const Spacer(),
