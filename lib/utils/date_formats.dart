@@ -12,8 +12,6 @@ class DateFormats {
       return DateFormat('h:mm a').format(timestamp);
     } else if (timestamp.isAfter(yesterday)) {
       return 'Yesterday ${DateFormat('h:mm a').format(timestamp)}';
-    } else if (now.difference(timestamp).inDays < 7) {
-      return DateFormat('EEEE h:mm a').format(timestamp); 
     } else if (timestamp.year == now.year) {
       return DateFormat('d MMM h:mm a').format(timestamp);
     } else {
