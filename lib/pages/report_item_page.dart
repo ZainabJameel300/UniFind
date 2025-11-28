@@ -730,28 +730,25 @@ class _ReportItemPageState extends State<ReportItemPage> {
                     text: "Submit",
                     onTap: () {
                       bool isValid = _formKey.currentState!.validate();
+
                       setState(() {
                         _categoryError = selectedCategory == null
                             ? "Category is required!"
                             : null;
+
                         _locationError = selectedlocation == null
                             ? "Location is required!"
                             : null;
-                        if (selectedDate == null) {
-                          _dateError = "Date is required!";
-                        } else {
-                          _dateError = null;
-                        }
+
+                        _dateError = selectedDate == null
+                            ? "Date is required!"
+                            : null;
 
                         // Image error logic
                         if (type == "Found" && _image == null) {
-                          setState(() {
-                            _imageError = "Image is required for Found items!";
-                          });
+                          _imageError = "Image is required for Found items!";
                         } else {
-                          setState(() {
-                            _imageError = null;
-                          });
+                          _imageError = null;
                         }
                       });
 
@@ -760,8 +757,71 @@ class _ReportItemPageState extends State<ReportItemPage> {
                           _locationError == null &&
                           _dateError == null &&
                           _imageError == null) {
-                        // LOGIC AFTER THE FORM IS VALIDATED
-                        _savePost();
+                        showDialog(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            title: Row(
+                              children: const [
+                                Icon(
+                                  Icons.help_outline,
+                                  color: Color(0xFF771F98),
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  "Submit this report?",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                            content: const Text(
+                              "The system will automatically try to find similar items using AI matching.",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            actions: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(dialogContext),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.black87,
+                                      backgroundColor: Colors.grey[200],
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadiusGeometry.circular(10),
+                                      ),
+                                    ),
+
+                                    child: const Text("Cancel"),
+                                  ),
+
+                                  const SizedBox(width: 15),
+
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(dialogContext);
+                                      _savePost();
+                                    },
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      backgroundColor: Color(0xFF771F98),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadiusGeometry.circular(10),
+                                      ),
+                                    ),
+                                    child: const Text("OK"),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
                       }
                     },
                   ),
