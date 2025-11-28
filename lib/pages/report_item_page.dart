@@ -134,7 +134,6 @@ class _ReportItemPageState extends State<ReportItemPage> {
   }
 
   //This method is used to save the entered data to the database
-
   Future<void> _savePost() async {
     try {
       // Show loading dialog
@@ -175,9 +174,8 @@ class _ReportItemPageState extends State<ReportItemPage> {
       );
 
       // Create Firestore document data
-      //  request embedding from Flask using descreption + image
+      // request embedding from Flask using descreption + image
       //send the descreption and the image Url to the EmbeddingService Method
-      //  Request embeddings (text + image) from Flask
       Map<String, List<double>>? embeddings;
       try {
         embeddings = await EmbeddingService.fetchEmbeddingFromServer(
@@ -218,47 +216,25 @@ class _ReportItemPageState extends State<ReportItemPage> {
               ? 'http://10.0.2.2:5001' // Android Emulator
               : 'http://127.0.0.1:5001'; // IOS Emulator;
 
-          // Decide what to send to server:
-          // if post has image → send combined, else → send text
-          // Decide what to send to server based on TYPE + IMAGE
-          final bool postHasImage = imageUrl.isNotEmpty;
-          final String postType = type; // "Lost" or "Found"
-
-          late final List<double> embeddingToSend;
-          late final bool hasImageFlag;
-
-          if (postType == "Found") {
-            // FOUND → always text vs text, so send TEXT and lie: has_image = false
-            embeddingToSend = (embeddings["textEmbedding"] ?? []);
-            hasImageFlag = false;
-          } else {
-            // LOST
-            if (postHasImage) {
-              // Lost with image → combined vs combined
-              embeddingToSend = (embeddings["combinedEmbedding"] ?? []);
-              hasImageFlag = true;
-            } else {
-              // Lost without image → text vs text
-              embeddingToSend = (embeddings["textEmbedding"] ?? []);
-              hasImageFlag = false;
-            }
-          }
+          final payload = {
+            "text_embedding": embeddings["textEmbedding"],
+            "image_embedding": embeddings["imageEmbedding"],
+            "combined_embedding": embeddings["combinedEmbedding"],
+            "has_image": imageUrl.isNotEmpty,
+            "uid": user.uid,
+            "type": type,
+            "postID": docRef.id,
+            "location": selectedlocation,
+            "date": {
+              "_seconds": dateTimestamp.seconds,
+              "_nanoseconds": dateTimestamp.nanoseconds,
+            },
+          };
 
           final response = await http.post(
             Uri.parse('$baseUrl/find_matches'),
             headers: {"Content-Type": "application/json"},
-            body: jsonEncode({
-              "embedding": embeddingToSend,
-              "has_image": hasImageFlag,
-              "uid": user.uid,
-              "type": type,
-              "postID": docRef.id,
-              "location": selectedlocation,
-              "date": {
-                "_seconds": dateTimestamp.seconds,
-                "_nanoseconds": dateTimestamp.nanoseconds,
-              },
-            }),
+            body: jsonEncode(payload),
           );
 
           if (response.statusCode == 200) {

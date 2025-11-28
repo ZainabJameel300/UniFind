@@ -51,7 +51,7 @@ class _SignupState extends State<Signup> {
             'uid': userCredential.user!.uid,
             'username': usernameController.text.trim(),
             'email': emailController.text.trim(),
-            'avatar': '', // Set later
+            'avatar': '', // empty for now , user can set later
           });
 
       // if Success then show SnackBar and navigate to homepage

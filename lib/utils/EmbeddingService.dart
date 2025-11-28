@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class EmbeddingService {
-  /// Sends the description and image URL to the Flask backend and returns
-  /// text, image, and combined embeddings.
+  /// Sends the description and image URL to the Flask backend
+  /// and then returns text, image, and combined embeddings.
   static Future<Map<String, List<double>>> fetchEmbeddingFromServer({
     required String description,
     required String imageUrl,
