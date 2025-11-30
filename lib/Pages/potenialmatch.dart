@@ -93,7 +93,7 @@ class _PotenialmatchState extends State<Potenialmatch> {
                           crossAxisCount: 2,
                           mainAxisSpacing: 20,
                           crossAxisSpacing: 15,
-                          childAspectRatio: 0.80,
+                          childAspectRatio: 0.70,
                         ),
                     itemCount: widget.matchItems.length,
                     itemBuilder: (context, index) {
@@ -333,7 +333,7 @@ class _PotenialmatchState extends State<Potenialmatch> {
             Positioned(
               left: 16,
               right: 16,
-              bottom: 182,
+              bottom: 95,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
