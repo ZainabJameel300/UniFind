@@ -368,8 +368,8 @@ class _ReportItemPageState extends State<ReportItemPage> {
                       if (value == null || value.isEmpty) {
                         return "Title is required";
                       }
-                      if (value.length > 50) {
-                        return "Title cannot exceed 50 characters";
+                      if (value.length > 20) {
+                        return "Title cannot exceed 20 characters";
                       }
                       return null;
                     },

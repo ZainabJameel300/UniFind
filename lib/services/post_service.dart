@@ -8,7 +8,7 @@ class PostService {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   final String currentUser = FirebaseAuth.instance.currentUser!.uid;
 
-  /// get filtered unclaimed posts 
+  /// get filtered unclaimed posts
   Stream<QuerySnapshot> getFilteredPosts(BuildContext context) {
     final filterProvider = Provider.of<FilterProvider>(context, listen: false);
 
@@ -65,7 +65,7 @@ class PostService {
         query = query
             .where('date', isGreaterThanOrEqualTo: start)
             .where('date', isLessThan: end);
-      } 
+      }
     }
 
     query = query.orderBy('createdAt', descending: true);
@@ -77,21 +77,17 @@ class PostService {
     return firestore.collection('posts').doc(postID).snapshots();
   }
 
-  /// get one publisher 
+  /// get one publisher
   Future<DocumentSnapshot> getPublisherByID(String uid) {
     return firestore.collection('users').doc(uid).get();
   }
 
-  // get unclaimed posts for search 
-  Stream<QuerySnapshot> searchPosts({int? limit}) {
+  // get unclaimed posts for search
+  Stream<QuerySnapshot> searchPosts() {
     var query = firestore
         .collection('posts')
         .where('claim_status', isEqualTo: false)
         .orderBy('createdAt', descending: true);
-
-    if (limit != null) {
-      query = query.limit(limit);
-    }
 
     return query.snapshots();
   }

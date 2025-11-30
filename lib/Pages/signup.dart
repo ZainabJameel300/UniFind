@@ -180,7 +180,7 @@ class _SignupState extends State<Signup> {
                       if (value == null || value.isEmpty) {
                         return "Username cannot be empty";
                       }
-                      if (value.length > 50) {
+                      if (value.length > 20) {
                         return "Username cannot exceed 20 characters";
                       }
                       return null;
