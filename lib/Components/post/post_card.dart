@@ -2,20 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
 import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/view_post.dart';
+import 'package:unifind/Pages/view_post_edit.dart';
 import 'package:unifind/components/post/post_detail.dart';
 import 'package:unifind/utils/date_formats.dart';
 
 class PostCard extends StatelessWidget {
   final Map<String, dynamic> publisherData;
-  final DocumentSnapshot<Object?> postData;
+  final dynamic postData;
+  final bool isLoading;
 
   const PostCard({
     super.key,
     required this.publisherData,
     required this.postData,
+    required this.isLoading,
   });
 
   @override
@@ -27,7 +31,7 @@ class PostCard extends StatelessWidget {
     final String postID = postData["postID"];
     final String type = postData["type"];
     final DateTime createdAt = postData["createdAt"].toDate();
-    final String pic = postData["picture"];
+    final String pic = postData["picture"] ?? "";
     final String title = postData["title"];
     final String desc = postData["description"];
     final Timestamp lostDate = postData["date"];
@@ -36,16 +40,26 @@ class PostCard extends StatelessWidget {
 
     // go to view post page
     void viewPost() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ViewPost(
-            postID: postID,
-            publisherDataFromHome: publisherData,
-            postDataFromHome: postData,
+      // if current user is publisher, send to view & edit page
+      if (isCurrentUser) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ViewPostEdit(postID: postID)),
+        );
+      } 
+      // else, view only
+      else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ViewPost(
+              postID: postID,
+              publisherDataFromHome: publisherData,
+              postDataFromHome: postData,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
 
     return GestureDetector(
@@ -62,7 +76,7 @@ class PostCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // publisher avatar
-                  UserAvatar(avatarUrl: avatarUrl, radius: 20),
+                  UserAvatar(avatarUrl: isLoading ? "" : avatarUrl, radius: 20),
                   const SizedBox(width: 8.0),
 
                   // publisher name & publish time
@@ -85,22 +99,24 @@ class PostCard extends StatelessWidget {
                   const Spacer(),
 
                   // post type - lost or found
-                  Container(
-                    width: 56,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: type == "Lost"
-                          ? Colors.red[400]
-                          : Colors.teal[400],
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Center(
-                      child: Text(
-                        type,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                  Skeleton.leaf(
+                    child: Container(
+                      width: 56,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: type == "Lost"
+                            ? Colors.red[400]
+                            : Colors.teal[400],
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: Center(
+                        child: Text(
+                          type,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -117,7 +133,7 @@ class PostCard extends StatelessWidget {
                 ),
 
               // item pic
-              if (pic.isNotEmpty && type == "Lost")
+              if (pic.isNotEmpty && (type == "Lost" || type == "All"))
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -127,7 +143,13 @@ class PostCard extends StatelessWidget {
                       ),
                     );
                   },
-                  child: ClipRRect(
+                  child: isLoading ?
+                    Container(
+                      width: double.infinity,
+                      height: 180,
+                      color: Colors.grey[300],
+                    )
+                  : ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: Image.network(
                       pic,
@@ -165,7 +187,7 @@ class PostCard extends StatelessWidget {
               const SizedBox(height: 4.0),
 
               // description
-              if (type == "Lost")
+              if (type == "Lost" || isLoading && type == "Lost")
                 Padding(
                   padding: const EdgeInsets.only(bottom: 9),
                   child: Text(

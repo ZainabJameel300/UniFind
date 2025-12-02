@@ -145,7 +145,7 @@ class _ForgotpasswordState extends State<Forgotpassword> {
             // Reset Link Button
             Center(
               child: SizedBox(
-                width: 180,
+                width: 200,
                 child: AppButton(
                   text: "Send Reset Link",
                   onTap: () {

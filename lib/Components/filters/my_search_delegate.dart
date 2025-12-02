@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:unifind/Components/post/post_card.dart';
-import 'package:unifind/Components/post/post_card_loading.dart';
 import 'package:unifind/services/post_service.dart';
 
 class MySearchDelegate extends SearchDelegate<void> {
@@ -105,8 +105,17 @@ class MySearchDelegate extends SearchDelegate<void> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return ListView.builder(
             padding: const EdgeInsets.all(15),
-            itemCount: 5,
-            itemBuilder: (context, _) => const PostCardLoading(),
+            itemCount: 6,
+            itemBuilder: (context, index) {
+              return Skeletonizer(
+                enabled: true,
+                child: PostCard(
+                  postData: dummyPostData,
+                  publisherData: dummyPublisherData,
+                  isLoading: true,
+                ),
+              );
+            },
           );
         }
 
@@ -143,17 +152,21 @@ class MySearchDelegate extends SearchDelegate<void> {
                 builder: (context, snapshot) {
                   if (snapshot.hasError) return Text("Error");
 
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    Map<String, dynamic> publisherData =
-                        snapshot.data!.data() as Map<String, dynamic>;
+                  bool isLoading =
+                      snapshot.connectionState != ConnectionState.done;
 
-                    return PostCard(
+                  Map<String, dynamic> publisherData = isLoading
+                      ? dummyPublisherData
+                      : snapshot.data!.data() as Map<String, dynamic>;
+
+                  return Skeletonizer(
+                    enabled: isLoading ? true : false,
+                    child: PostCard(
                       publisherData: publisherData,
-                      postData: postData,
-                    );
-                  }
-
-                  return const PostCardLoading();
+                      postData: isLoading ? dummyPostData : postData,
+                      isLoading: isLoading,
+                    ),
+                  );
                 },
               );
             },
@@ -163,3 +176,21 @@ class MySearchDelegate extends SearchDelegate<void> {
     );
   }
 }
+
+final Map<String, dynamic> dummyPublisherData = {
+  "username": BoneMock.words(2),
+  "avatar": BoneMock.words(1),
+};
+
+final Map<String, dynamic> dummyPostData = {
+  "postID": BoneMock.words(1),
+  "uid": BoneMock.words(1),
+  "type": "All",
+  "createdAt": Timestamp.fromDate(DateTime.now()),
+  "picture": BoneMock.words(1),
+  "title": BoneMock.words(2),
+  "description": BoneMock.words(40),
+  "date": Timestamp.fromDate(DateTime.now()),
+  "location": BoneMock.words(2),
+  "category": BoneMock.words(2),
+};

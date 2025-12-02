@@ -27,7 +27,7 @@ class ItemCard extends StatelessWidget {
         MaterialPageRoute(builder: (context) => ViewPostEdit(postID: postID)),
       ),
       child: Container(
-        margin: EdgeInsets.only(bottom: 16),
+        margin: EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: const Color(0xFFE6E6E6), width: 1.7),
@@ -35,10 +35,11 @@ class ItemCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
           children: [
             // Image
             Padding(
-              padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
+              padding: const EdgeInsets.all(8),
               child: GestureDetector(
                 onTap: () {
                   if (imageUrl.isNotEmpty) {
@@ -56,24 +57,33 @@ class ItemCard extends StatelessWidget {
                       ? Image.network(
                           imageUrl,
                           width: double.infinity,
-                          height: 150,
+                          height: 130,
                           fit: BoxFit.cover,
+                          loadingBuilder: (context, child, progress) {
+                            if (progress == null) return child; // image loaded
+
+                            // while loading, show placeholder container
+                            return Container(
+                              width: double.infinity,
+                              height: 130,
+                              color: Colors.grey[300],
+                            );
+                          },
                         )
                       : Image.asset(
                           "assets/no-pictures.png",
                           width: double.infinity,
-                          height: 150,
+                          height: 130,
                           fit: BoxFit.cover,
                           color: Colors.grey[200],
                         ),
                 ),
               ),
             ),
-            SizedBox(height: 10),
 
             // Title
             Padding(
-              padding: const EdgeInsets.only(left: 15),
+              padding: const EdgeInsets.only(left: 12),
               child: Text(
                 title,
                 maxLines: 1,
@@ -86,7 +96,7 @@ class ItemCard extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: 8),
+            SizedBox(height: 4),
 
             // Created at
             Padding(
@@ -96,29 +106,33 @@ class ItemCard extends StatelessWidget {
                   Icon(
                     Symbols.calendar_today,
                     size: 16,
-                    color: Color(0xFFD0B1DB),
+                    color: const Color(0xFF9B7FBF),
                   ),
-                  SizedBox(width: 6),
+                  SizedBox(width: 4),
                   Text(
-                    "Reported at: ",
+                    "Reported: ",
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                   ),
-                  Text(
-                    date,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[800]),
+                  Flexible(
+                    child: Text(
+                      date,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[800]),
+                    ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 4),
 
             // Status
             Padding(
               padding: const EdgeInsets.only(left: 10),
               child: Row(
                 children: [
-                  Icon(Symbols.task_alt, size: 16, color: Color(0xFFD0B1DB)),
-                  SizedBox(width: 6),
+                  Icon(Symbols.task_alt, size: 16, color: const Color(0xFF9B7FBF)),
+                  SizedBox(width: 4),
                   Text(
                     "Status: ",
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
