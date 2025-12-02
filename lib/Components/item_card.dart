@@ -59,6 +59,16 @@ class ItemCard extends StatelessWidget {
                           width: double.infinity,
                           height: 130,
                           fit: BoxFit.cover,
+                          loadingBuilder: (context, child, progress) {
+                            if (progress == null) return child; // image loaded
+
+                            // while loading, show placeholder container
+                            return Container(
+                              width: double.infinity,
+                              height: 130,
+                              color: Colors.grey[300],
+                            );
+                          },
                         )
                       : Image.asset(
                           "assets/no-pictures.png",

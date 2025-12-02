@@ -31,7 +31,7 @@ void showChangePasswordSheet(BuildContext context) {
       return StatefulBuilder(
         builder: (context, setModalState) {
           return SizedBox(
-            height: MediaQuery.of(context).size.height * 0.55,
+            height: MediaQuery.of(context).size.height * 0.58,
             child: Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -214,9 +214,7 @@ void showChangePasswordSheet(BuildContext context) {
                                         const SizedBox(width: 8),
                                         const Text(
                                           "Password Change Failed",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                                         ),
                                       ],
                                     ),

@@ -37,44 +37,54 @@ class ChatroomsPage extends StatelessWidget {
             return const EmptyStateWidget(
               icon: Symbols.inbox,
               title: "No chats yet",
-              subtitle: "You haven’t started any conversations. Start a chat to confirm ownership or return an item.",
+              subtitle:
+                  "You haven’t started any conversations. Start a chat to confirm ownership or return an item.",
             );
           }
 
-          return ListView.builder(
-            itemCount: chatrooms.length,
-            itemBuilder: (context, index) {
-              final chatData = chatrooms[index].data() as Map<String, dynamic>;
+          // get all other user IDs
+          final otherUserIDs = chatrooms.map((doc) {
+            final participants = List<String>.from(
+              (doc.data() as Map<String, dynamic>)['participants'],
+            );
+            participants.remove(currentUserID);
+            return participants.first;
+          }).toList();
 
-              // other user data
-              final participants = List<String>.from(chatData['participants']);
-              participants.remove(currentUserID);
-              final String otherUserID = participants.first;
+          // fetch all user info 
+          return FutureBuilder<List<Map<String, dynamic>?>>(
+            future: Future.wait(
+              otherUserIDs.map((id) => chatService.getUserInfo(id)),
+            ),
+            builder: (context, usersSnapshot) {
+              if (usersSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (usersSnapshot.hasError) {
+                return const Center(child: Text("Error loading users"));
+              }
 
-              // check if chat is read
-              final Timestamp? lastReadTime = (chatData['lastReadTime'] ?? {})[currentUserID];
-              final Timestamp lastMsgTimeStamp = chatData['lastMsgTime'];
-              final bool isReadCurrent =
-                  chatData['lastSender'] == currentUserID ||
-                  (lastReadTime != null && !lastReadTime.toDate().isBefore(lastMsgTimeStamp.toDate()));
+              final usersData = usersSnapshot.data ?? [];
 
-              // chat data
-              final String lastMsg = chatData['lastMsg'] ?? '';
-              final String lastMsgType = chatData['lastMsgType'] ?? '';
-              final DateTime lastMsgTime = lastMsgTimeStamp.toDate();
-              final bool isLastSender = chatData['lastSender'] == currentUserID;
-
-              // read sender name & avatar
-              return FutureBuilder<Map<String, dynamic>?>(
-                future: chatService.getUserInfo(otherUserID),
-                builder: (context, userSnapshot) {
-                  if (userSnapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox.shrink();
-                  }
-
-                  final userData = userSnapshot.data ?? {};
+              return ListView.builder(
+                itemCount: chatrooms.length,
+                itemBuilder: (context, index) {
+                  final chatData = chatrooms[index].data() as Map<String, dynamic>;
+                  final userData = usersData[index] ?? {};
                   final name = userData['username'] ?? "Unknown User";
                   final avatar = userData['avatar'] ?? "";
+
+                  final Timestamp? lastReadTime =
+                      (chatData['lastReadTime'] ?? {})[currentUserID];
+                  final Timestamp lastMsgTimeStamp = chatData['lastMsgTime'];
+                  final bool isReadCurrent =
+                      chatData['lastSender'] == currentUserID ||
+                      (lastReadTime != null &&!lastReadTime.toDate().isBefore(lastMsgTimeStamp.toDate()));
+
+                  final String lastMsg = chatData['lastMsg'] ?? '';
+                  final String lastMsgType = chatData['lastMsgType'] ?? '';
+                  final DateTime lastMsgTime = lastMsgTimeStamp.toDate();
+                  final bool isLastSender = chatData['lastSender'] == currentUserID;
 
                   return ChatTile(
                     name: name,
@@ -84,19 +94,18 @@ class ChatroomsPage extends StatelessWidget {
                     lastMsgTime: lastMsgTime,
                     isLastSender: isLastSender,
                     isRead: isReadCurrent,
-                    onTap: () async {
-                      // navigate to chat page
+                    onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ChatPage(
-                            receiverID: otherUserID,
+                            receiverID: otherUserIDs[index],
                             name: name,
                             avatar: avatar,
                           ),
                         ),
                       );
-                    }
+                    },
                   );
                 },
               );
