@@ -23,7 +23,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final PostService _postService = PostService();
   final NotificationService notificationService = NotificationService();
-  
+
   @override
   Widget build(BuildContext context) {
     final FilterProvider filterProvider = Provider.of<FilterProvider>(context);
@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
                 child: Column(
                   children: [
-                    // search 
+                    // search
                     Row(
                       children: [
                         Expanded(
@@ -90,7 +90,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         const SizedBox(width: 8.0),
-      
+
                         // notifications
                         GestureDetector(
                           onTap: () => Navigator.push(
@@ -105,16 +105,16 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(18.0),
                               color: const Color(0xFFF1F1F1),
                             ),
-                            child: 
-                            BadgeIcon(
-                              badgeStream: notificationService.unreadNotificationsCount(),
+                            child: BadgeIcon(
+                              badgeStream: notificationService
+                                  .unreadNotificationsCount(),
                               icon: const Icon(Symbols.notifications, size: 24),
                             ),
                           ),
                         ),
                       ],
                     ),
-      
+
                     // filters
                     Row(
                       children: [
@@ -160,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                 thickness: 1,
                 height: 1,
               ),
-      
+
               // posts
               Expanded(
                 child: StreamBuilder(
@@ -182,10 +182,10 @@ class _HomePageState extends State<HomePage> {
                               isLoading: true,
                             ),
                           );
-                        }
+                        },
                       );
                     }
-      
+
                     // no post found
                     final posts = snapshot.data!.docs;
                     if (posts.isEmpty) {
@@ -198,8 +198,8 @@ class _HomePageState extends State<HomePage> {
                             ? "No items match your current filters."
                             : "Items will show when other users report new items",
                       );
-                    } 
-      
+                    }
+
                     return Container(
                       color: const Color(0xFFF7F7F7),
                       child: ListView.builder(
@@ -210,16 +210,19 @@ class _HomePageState extends State<HomePage> {
                         physics: const ClampingScrollPhysics(),
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index) {
-                          DocumentSnapshot postData = snapshot.data!.docs.elementAt(index);
+                          DocumentSnapshot postData = snapshot.data!.docs
+                              .elementAt(index);
                           String uid = postData["uid"];
-      
+
                           // read the publisher data for each post
                           return FutureBuilder<DocumentSnapshot>(
                             future: _postService.getPublisherByID(uid),
                             builder: (context, snapshot) {
                               if (snapshot.hasError) return Text("Error");
 
-                              bool isLoading = snapshot.connectionState != ConnectionState.done;
+                              bool isLoading =
+                                  snapshot.connectionState !=
+                                  ConnectionState.done;
 
                               Map<String, dynamic> publisherData = isLoading
                                   ? dummyPublisherData
@@ -230,7 +233,9 @@ class _HomePageState extends State<HomePage> {
                                 enabled: isLoading ? true : false,
                                 child: PostCard(
                                   publisherData: publisherData,
-                                  postData: isLoading ? dummyPostData : postData,
+                                  postData: isLoading
+                                      ? dummyPostData
+                                      : postData,
                                   isLoading: isLoading,
                                 ),
                               );
@@ -249,5 +254,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-
