@@ -115,6 +115,7 @@ def find_matches_filtered():
         post_id = data.get("postID", "")
         selected_location = data.get("location", None)
         selected_date_raw = data.get("date", None)
+        create_notifications = bool(data.get("create_notifications", True))
 
         # Validate
         if text_emb.size == 0 or not current_uid or post_type not in ("Lost", "Found"):
@@ -230,22 +231,26 @@ def find_matches_filtered():
         # ----------------------------
         # Create notifications
         # ----------------------------
-        for match in top_matches:
+        # ----------------------------
+# Create notifications (optional)
+# ----------------------------
+        if create_notifications:
+          for match in top_matches:
             try:
-                notification_ref = db.collection("notifications").document()
-                notification_data = {
-                    "notificationID": notification_ref.id,
-                    "toUserID": match["uid"],
-                    "userPostID": match["postID"],
-                    "matchPostID": post_id,
-                    "matchScore": round(match["similarity_score"], 2),
-                    "message": f"Possible match found for your post '{match['title']}'.",
-                    "timestamp": firestore.SERVER_TIMESTAMP,
-                    "isRead": False,
-                }
-                notification_ref.set(notification_data)
+              notification_ref = db.collection("notifications").document()
+              notification_data = {
+                "notificationID": notification_ref.id,
+                "toUserID": match["uid"],
+                "userPostID": match["postID"],
+                "matchPostID": post_id,
+                "matchScore": round(match["similarity_score"], 2),
+                "message": f"Possible match found for your post '{match['title']}'.",
+                "timestamp": firestore.SERVER_TIMESTAMP,
+                "isRead": False,
+            }
+              notification_ref.set(notification_data)
             except Exception as e:
-                print(f"Notification error: {e}")
+              print(f"Notification error: {e}")
 
         # ----------------------------
         # The response payload

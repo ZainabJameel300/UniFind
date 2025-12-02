@@ -41,6 +41,16 @@ class ViewPostEdit extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
+          // If the post was deleted or doesn't exist
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(
+              child: Text(
+                "This post no longer exists.",
+                style: TextStyle(fontSize: 16),
+              ),
+            );
+          }
+
           final postData = snapshot.data!;
           final String publisherID = postData['uid'];
 
@@ -179,94 +189,27 @@ class ViewPostEdit extends StatelessWidget {
                                         postData["embedding_image"];
                                     final List<dynamic>? combinedEmb =
                                         postData["embedding_combined"];
-
-                                    final String postType =
-                                        postData["type"]; // "Lost" or "Found"
-
-                                    // Does THIS post have an image saved?
-                                    final bool postHasImage =
-                                        imageEmb != null && imageEmb.isNotEmpty;
-
-                                    List<double>? embeddingToSend;
-                                    bool hasImageFlag;
-
-                                    // 🔹 If this is a FOUND post → we will match against LOST posts.
-                                    //    We want TEXT vs TEXT (because some Lost posts have no image).
-                                    if (postType == "Found") {
-                                      if (textEmb == null) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              "Text embedding missing.",
-                                            ),
-                                          ),
-                                        );
-                                        return;
-                                      }
-
-                                      embeddingToSend = textEmb.cast<double>();
-                                      hasImageFlag =
-                                          false; // force server to treat caller as "no image"
-                                    } else {
-                                      //  For LOST posts:
-                                      // If this Lost post has an image → use combined (text+image) vs combined.
-                                      // If no image → use text vs text.
-                                      if (postHasImage) {
-                                        if (combinedEmb == null) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                "Combined embedding missing.",
-                                              ),
-                                            ),
-                                          );
-                                          return;
-                                        }
-                                        embeddingToSend = combinedEmb
-                                            .cast<double>();
-                                        hasImageFlag = true;
-                                      } else {
-                                        if (textEmb == null) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                "Text embedding missing.",
-                                              ),
-                                            ),
-                                          );
-                                          return;
-                                        }
-                                        embeddingToSend = textEmb
-                                            .cast<double>();
-                                        hasImageFlag = false;
-                                      }
-                                    }
-
-                                    if (embeddingToSend.isEmpty) {
+                                    if (textEmb == null ||
+                                        combinedEmb == null) {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
                                         const SnackBar(
-                                          content: Text("Embedding is empty"),
+                                          content: Text("Embeddings missing."),
                                         ),
                                       );
                                       return;
                                     }
-
-                                    // 2) Prepare payload for Flask ---
+                                    final bool postHasImage =
+                                        imageEmb != null && imageEmb.isNotEmpty;
                                     final user =
                                         FirebaseAuth.instance.currentUser!;
                                     final Timestamp lostTS = postData["date"];
-
                                     final payload = {
-                                      "embedding": embeddingToSend,
-                                      "has_image": hasImageFlag,
+                                      "text_embedding": textEmb,
+                                      "image_embedding": imageEmb,
+                                      "combined_embedding": combinedEmb,
+                                      "has_image": postHasImage,
                                       "uid": user.uid,
                                       "type": postData["type"],
                                       "postID": postID,
@@ -275,13 +218,11 @@ class ViewPostEdit extends StatelessWidget {
                                         "_seconds": lostTS.seconds,
                                         "_nanoseconds": lostTS.nanoseconds,
                                       },
+                                      "create_notifications": false,
                                     };
-
-                                    // 3) Send request to Flask server
                                     final String baseUrl = Platform.isAndroid
-                                        ? 'http://10.0.2.2:5001' // Android Emulator
-                                        : 'http://127.0.0.1:5001'; // IOS Emulator;
-
+                                        ? 'http://10.0.2.2:5001'
+                                        : 'http://127.0.0.1:5001';
                                     final response = await http.post(
                                       Uri.parse('$baseUrl/find_matches'),
                                       headers: {
@@ -289,16 +230,11 @@ class ViewPostEdit extends StatelessWidget {
                                       },
                                       body: jsonEncode(payload),
                                     );
-
-                                    print("STATUS: ${response.statusCode}");
-                                    print("BODY: ${response.body}");
-
                                     if (response.statusCode != 200) {
-                                      print("Error: ${response.body}");
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
-                                        SnackBar(
+                                        const SnackBar(
                                           content: Text(
                                             "Failed to fetch matches.",
                                           ),
@@ -306,16 +242,11 @@ class ViewPostEdit extends StatelessWidget {
                                       );
                                       return;
                                     }
-
-                                    //  4) Parse matches (recive respone from json and decode into a dart list )
                                     final data = jsonDecode(response.body);
                                     List matches = data["matches"] ?? [];
-
                                     final List<MatchItem> matchItems = matches
                                         .map((m) => MatchItem.fromJson(m))
                                         .toList();
-
-                                    //  5) Navigate to PotentialMatch page to show the results
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -333,7 +264,6 @@ class ViewPostEdit extends StatelessWidget {
                                     );
                                   }
                                 },
-
                                 onDeletePost: () {
                                   showDialog(
                                     context: context,
