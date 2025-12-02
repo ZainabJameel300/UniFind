@@ -58,7 +58,7 @@ class _AccountPageState extends State<AccountPage> {
           .get();
       if (snapshot.exists) {
         setState(() {
-          userData = snapshot.data() as Map<String, dynamic>?;
+          userData = snapshot.data();
           isLoadingUser = false;
         });
       } else {
@@ -157,10 +157,7 @@ class _AccountPageState extends State<AccountPage> {
                             child: SizedBox(
                               width: 55,
                               height: 55,
-                              child: UserAvatar(
-                                avatarUrl: avatar,
-                                radius: 28,
-                              ),
+                              child: UserAvatar(avatarUrl: avatar, radius: 28),
                             ),
                           ),
                         ),
@@ -220,7 +217,8 @@ class _AccountPageState extends State<AccountPage> {
               StreamBuilder<QuerySnapshot>(
                 stream: getLostPosts(),
                 builder: (context, snapshot) {
-                  final bool isWaiting = snapshot.connectionState == ConnectionState.waiting;
+                  final bool isWaiting =
+                      snapshot.connectionState == ConnectionState.waiting;
                   if (snapshot.hasError && !isWaiting) {
                     return _buildErrorPlaceholder(
                       "Something went wrong, please try again later!",
@@ -247,7 +245,8 @@ class _AccountPageState extends State<AccountPage> {
               StreamBuilder<QuerySnapshot>(
                 stream: getFoundPosts(),
                 builder: (context, snapshot) {
-                  final bool isWaiting = snapshot.connectionState == ConnectionState.waiting;
+                  final bool isWaiting =
+                      snapshot.connectionState == ConnectionState.waiting;
                   if (snapshot.hasError && !isWaiting) {
                     return _buildErrorPlaceholder(
                       "Something went wrong, please try again later!",
@@ -304,8 +303,8 @@ class _AccountPageState extends State<AccountPage> {
           childAspectRatio: 0.72,
         ),
         itemCount: isWaiting
-          ? dummyPostData.length
-          : (snapshot.data?.docs.length ?? 0),
+            ? dummyPostData.length
+            : (snapshot.data?.docs.length ?? 0),
         itemBuilder: (context, index) {
           final Map<String, dynamic> data = isWaiting
               ? dummyPostData[index]

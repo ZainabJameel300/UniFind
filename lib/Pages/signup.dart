@@ -51,7 +51,7 @@ class _SignupState extends State<Signup> {
             'uid': userCredential.user!.uid,
             'username': usernameController.text.trim(),
             'email': emailController.text.trim(),
-            'avatar': '', // Set later
+            'avatar': '', // empty for now , user can set later
           });
 
       // if Success then show SnackBar and navigate to homepage
@@ -180,7 +180,7 @@ class _SignupState extends State<Signup> {
                       if (value == null || value.isEmpty) {
                         return "Username cannot be empty";
                       }
-                      if (value.length > 50) {
+                      if (value.length > 20) {
                         return "Username cannot exceed 20 characters";
                       }
                       return null;

@@ -30,7 +30,10 @@ class MySearchDelegate extends SearchDelegate<void> {
   List<Widget>? buildActions(BuildContext context) {
     return [
       if (query.isNotEmpty)
-        IconButton(icon: const Icon(Symbols.clear), onPressed: () => query = ''),
+        IconButton(
+          icon: const Icon(Symbols.clear),
+          onPressed: () => query = '',
+        ),
     ];
   }
 
@@ -42,11 +45,11 @@ class MySearchDelegate extends SearchDelegate<void> {
     );
   }
 
-  // Suggestions: matching titles 
+  // Suggestions: matching titles
   @override
   Widget buildSuggestions(BuildContext context) {
     return StreamBuilder(
-      stream: _postService.searchPosts(limit: 7),
+      stream: _postService.searchPosts(),
 
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -56,9 +59,14 @@ class MySearchDelegate extends SearchDelegate<void> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final matched = snapshot.data!.docs.where((post) {
-          return post['title'].toLowerCase().contains(query.toLowerCase());
-        }).toList();
+        final matched = snapshot.data!.docs
+            .where((post) {
+              return post['title'].toLowerCase().contains(
+                query.trim().toLowerCase(),
+              );
+            })
+            .take(7)
+            .toList();
 
         return Container(
           color: Colors.white,
@@ -83,12 +91,11 @@ class MySearchDelegate extends SearchDelegate<void> {
   // Results: posts with matched title or description
   @override
   Widget buildResults(BuildContext context) {
-
     // if search is cleared, go back to suggestions
     if (query.isEmpty) {
       return buildSuggestions(context);
     }
-    
+
     return StreamBuilder(
       stream: _postService.searchPosts(),
       builder: (context, snapshot) {
@@ -113,20 +120,24 @@ class MySearchDelegate extends SearchDelegate<void> {
         }
 
         // match only whole words in description
-        final regex = RegExp(r'\b' + RegExp.escape(query) + r'\b', caseSensitive: false);
+        final regex = RegExp(
+          r'\b' + RegExp.escape(query.trim()) + r'\b',
+          caseSensitive: false,
+        );
 
         // match with title always, description only if (lost) because found description is hidden
         final matchedPosts = snapshot.data!.docs.where((post) {
           final title = (post['title'] ?? '').toLowerCase();
           final description = (post['description'] ?? '').toLowerCase();
           final type = (post['type'] ?? '');
-          return title.contains(query.toLowerCase()) || (type == 'Lost' && regex.hasMatch(description));
+          return title.contains(query.trim().toLowerCase()) ||
+              (type == 'Lost' && regex.hasMatch(description));
         }).toList();
 
         if (matchedPosts.isEmpty) {
           return const Center(child: Text('No results found'));
         }
-    
+
         return Container(
           color: const Color(0xFFF7F7F7),
           child: ListView.builder(
@@ -141,7 +152,8 @@ class MySearchDelegate extends SearchDelegate<void> {
                 builder: (context, snapshot) {
                   if (snapshot.hasError) return Text("Error");
 
-                  bool isLoading = snapshot.connectionState != ConnectionState.done;
+                  bool isLoading =
+                      snapshot.connectionState != ConnectionState.done;
 
                   Map<String, dynamic> publisherData = isLoading
                       ? dummyPublisherData

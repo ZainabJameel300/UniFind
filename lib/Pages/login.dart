@@ -47,7 +47,7 @@ class _LoginState extends State<Login> {
         password: passwordController.text.trim(),
       );
 
-      // if success -> show SnackBar and direct to homepage
+      // if success --> show SnackBar and direct to homepage
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
