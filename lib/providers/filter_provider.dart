@@ -58,5 +58,15 @@ class FilterProvider extends ChangeNotifier {
   bool get hasAnyFilter{
     return selectedCategory != null  || selectedDate != null || selectedLocation != null;
   }
+
+  // clear all filters if logged out
+  void resetAll() {
+    postType = "All";
+    selectedCategory = null;
+    selectedDate = null;
+    selectedLocation = null;
+    locationExpanded = false;
+    notifyListeners();
+  }
 }
 

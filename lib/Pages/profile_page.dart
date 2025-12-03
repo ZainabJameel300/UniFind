@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:provider/provider.dart';
 import 'package:unifind/Components/change_password_sheet.dart';
 import 'package:unifind/Components/edit_bottom_sheet.dart';
 import 'package:unifind/Components/fullscreen_image.dart';
@@ -11,6 +12,7 @@ import 'package:unifind/Components/image_bottomsheet.dart';
 import 'package:unifind/Components/my_appbar.dart';
 import 'package:unifind/Components/user_avatar.dart';
 import 'package:unifind/Pages/login.dart';
+import 'package:unifind/providers/filter_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   final String avatar;
@@ -459,6 +461,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ); // closes the dialog
                                       // Sign out the user
                                       await FirebaseAuth.instance.signOut();
+
+                                      // **Reset filters for the next user**
+                                      Provider.of<FilterProvider>(context, listen: false).resetAll();
 
                                       // Navigate to Splash
                                       Navigator.pushReplacement(

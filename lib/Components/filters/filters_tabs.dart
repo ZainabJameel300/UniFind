@@ -12,10 +12,22 @@ class FiltersTabs extends StatefulWidget {
 class _FiltersTabsState extends State<FiltersTabs> {
   List<bool> selections = [true, false, false];
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final filterProvider = Provider.of<FilterProvider>(context);
+    final type = filterProvider.postType;
+
+    // update selections according to provider
+    setState(() {
+      selections = [type == "All", type == "Lost", type == "Found"];
+    });
+  }
+
   void changeType(int index) {
     final filterProvider = Provider.of<FilterProvider>(context, listen: false);
     if (index == 0) {
-      filterProvider.setType("All"); 
+      filterProvider.setType("All");
     } else if (index == 1) {
       filterProvider.setType("Lost");
     } else if (index == 2) {
@@ -56,10 +68,7 @@ class _FiltersTabsState extends State<FiltersTabs> {
               ),
             ),
           ),
-          child: Text(
-            labels[index],
-            style: const TextStyle(fontSize: 20.0),
-          ),
+          child: Text(labels[index], style: const TextStyle(fontSize: 20.0)),
         );
       }),
     );
