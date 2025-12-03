@@ -21,7 +21,7 @@ void showEditFieldSheet({
     builder: (context) {
       //size of the bottom sheet
       return SizedBox(
-        height: MediaQuery.of(context).size.height * 0.38,
+        height: MediaQuery.of(context).size.height * 0.35,
         child: Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,

@@ -97,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
   // UOB email validator method for both students and staff/instructors
   bool _isUobEmail(String email) {
     final regex = RegExp(
-      r'^((20(1[0-9]|2[0-5])\d{5}@stu\.uob\.edu\.bh)|([a-zA-Z0-9._-]+@uob\.edu\.bh))$',
+      r'^(((201[0-9]\d{4})|(202[0-5]\d{5}))@stu\.uob\.edu\.bh|[a-zA-Z0-9._-]+@uob\.edu\.bh)$',
       caseSensitive: false,
     );
     return regex.hasMatch(email.trim());
@@ -432,7 +432,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                 const SizedBox(width: 8),
                                 const Text(
                                   "Log out of your account?",
-                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -463,7 +466,10 @@ class _ProfilePageState extends State<ProfilePage> {
                                       await FirebaseAuth.instance.signOut();
 
                                       // **Reset filters for the next user**
-                                      Provider.of<FilterProvider>(context, listen: false).resetAll();
+                                      Provider.of<FilterProvider>(
+                                        context,
+                                        listen: false,
+                                      ).resetAll();
 
                                       // Navigate to Splash
                                       Navigator.pushReplacement(

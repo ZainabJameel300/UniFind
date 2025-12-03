@@ -93,7 +93,7 @@ class _PotenialmatchState extends State<Potenialmatch> {
                           crossAxisCount: 2,
                           mainAxisSpacing: 20,
                           crossAxisSpacing: 15,
-                          childAspectRatio: 0.70,
+                          childAspectRatio: 0.75,
                         ),
                     itemCount: widget.matchItems.length,
                     itemBuilder: (context, index) {
@@ -233,11 +233,14 @@ class _PotenialmatchState extends State<Potenialmatch> {
                                                     height: 100,
                                                     fit: BoxFit.cover,
                                                   )
-                                                : Image.asset(
-                                                    "assets/no-pictures.png",
-                                                    width: double.infinity,
-                                                    height: 100,
-                                                    fit: BoxFit.cover,
+                                                : Center(
+                                                    child: Image.asset(
+                                                      "assets/no-pictures.png",
+                                                      width: 171,
+                                                      height: 120,
+                                                      fit: BoxFit.cover,
+                                                      color: Colors.grey[200],
+                                                    ),
                                                   ),
                                           ),
                                         ),
@@ -333,7 +336,7 @@ class _PotenialmatchState extends State<Potenialmatch> {
             Positioned(
               left: 16,
               right: 16,
-              bottom: 95,
+              bottom: 160,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
