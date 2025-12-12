@@ -67,7 +67,7 @@ def generate_embedding():
     image_url = request.form.get("image_url", "")
 
     try:
-        # TEXT embedding always
+        #Always Compute TEXT embedding always
         text_emb = model.encode(description, convert_to_tensor=True, show_progress_bar=False)
         text_emb_list = text_emb.cpu().tolist()
 

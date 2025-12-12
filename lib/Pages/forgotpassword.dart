@@ -25,9 +25,10 @@ class _ForgotpasswordState extends State<Forgotpassword> {
   // UOB email validator method
   bool _isUobEmail(String email) {
     final regex = RegExp(
-      r'^(20(1[0-9]|2[0-5]))\d{5}@((stu\.uob\.edu\.bh)|(uob\.edu\.bh))$',
+      r'^(((201[0-9]\d{4})|(202[0-5]\d{5}))@stu\.uob\.edu\.bh|[a-zA-Z0-9._-]+@uob\.edu\.bh)$',
+      caseSensitive: false,
     );
-    return regex.hasMatch(email);
+    return regex.hasMatch(email.trim());
   }
 
   //password reset function

@@ -261,6 +261,7 @@ class _AccountPageState extends State<AccountPage> {
                   return _buildPosts(isWaiting, snapshot);
                 },
               ),
+              SizedBox(height: 25),
             ],
           ),
         ),
@@ -300,7 +301,7 @@ class _AccountPageState extends State<AccountPage> {
           crossAxisCount: 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.72,
+          childAspectRatio: 0.84,
         ),
         itemCount: isWaiting
             ? dummyPostData.length
