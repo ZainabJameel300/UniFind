@@ -117,7 +117,7 @@ Watch the project demo here:
 
 ## 🌐 Project Website
 
-UniFind has an project website that introduces the system architecture, features, and design process.
+UniFind has a project website that introduces the system architecture, features, and design process.
 
 🔗 Visit the website here:  
 https://www.unifind.site
