@@ -4,7 +4,7 @@
 
 UniFind is a smart mobile application developed to modernize the lost and found process at the University of Bahrain. Traditional manual reporting methods are slow, disorganized, and inefficient. UniFind solves this problem by providing an AI-powered matching system that intelligently connects lost and found items.
 
-The system combines a Flutter mobile application, Firebase cloud services, and a Python Flask AI server integrated with CLIP for image-based matching.
+The system combines a Flutter mobile application, Firebase cloud services, and a Python Flask AI server integrated with CLIP for multimodal matching. The matching engine analyzes both item images and textual descriptions, allowing accurate matching even when only text is provided, and combining both modalities when available.
 
 ---
 
@@ -26,7 +26,7 @@ UniFind streamlines this process by:
 - University email registration
 - Secure login and logout
 - Password reset via email
-- Profile update (name & profile image)
+- Profile update 
 
 ### 📦 Item Management
 - Report lost or found items with:
@@ -61,6 +61,10 @@ UniFind streamlines this process by:
 - View matched item details
 - Automatic read status update
 
+### 🏢 Security Office Locations
+- View official university security office room numbers
+- Quick access to drop-off or claim physical items
+  
 ---
 
 ## 🏗 System Architecture
@@ -107,9 +111,6 @@ The AI server processes item images using OpenAI’s CLIP model and generates si
 ### 💬 Chat Feature
 ![Chat](screenshots/chat.png)
 
-### 🔔 Notifications
-![Notifications](screenshots/notifications.png)
-
 ---
 
 ## 🎥 Demo
@@ -124,5 +125,5 @@ Watch the project demo here:
 UniFind has an project website that introduces the system architecture, features, and design process.
 
 🔗 Visit the website here:  
-(https://www.unifind.site)
+https://www.unifind.site
 
