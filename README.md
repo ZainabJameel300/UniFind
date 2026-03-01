@@ -102,9 +102,6 @@ The AI server processes item images using OpenAI’s CLIP model and generates si
 ### 🏠 Home Page
 ![Home](screenshots/home.png)
 
-### 📝 Report Item
-![Report Item](screenshots/report.png)
-
 ### 🤖 Potential Matches
 ![Potential Matches](screenshots/match.png)
 
