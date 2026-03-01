@@ -97,16 +97,14 @@ The AI server processes item images using OpenAI’s CLIP model and generates si
 
 ---
 
-## 📱 Screenshots
-
 ### 🏠 Home Page
-![Home](screenshots/home.png)
+<img src="screenshots/home.png" width="250">
 
 ### 🤖 Potential Matches
-![Potential Matches](screenshots/match.png)
+<img src="screenshots/match.png" width="250">
 
 ### 💬 Chat Feature
-![Chat](screenshots/chat.png)
+<img src="screenshots/chat.png" width="250">
 
 ---
 
